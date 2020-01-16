@@ -57,7 +57,7 @@ import (
 
 const (
   AppDescription = "ESAM (Elementary SSH accounts management) Director"
-  AppVersion = "0.1"
+  AppVersion = "0.2"
 )
 
 const (

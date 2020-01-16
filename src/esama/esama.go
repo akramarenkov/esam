@@ -58,7 +58,7 @@ import (
 
 const (
   AppDescription = "ESAM (Elementary SSH accounts management) Agent"
-  AppVersion = "0.1"
+  AppVersion = "0.2"
 )
 
 type globDataType struct {
