@@ -1,0 +1,11 @@
+[Unit]
+Description=ESAM Client
+
+[Service]
+ExecStart=/usr/bin/esamc login --config .esamc/esamc.conf
+
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=ESAM Agent
+
+[Service]
+ExecStart=/usr/bin/esama start --config /etc/esam/esama.conf
+
+[Install]
+WantedBy=multi-user.target

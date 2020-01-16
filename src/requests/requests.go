@@ -943,3 +943,51 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
   
   return nil
 }
+
+func PassKeyPassword(conn net.Conn, password string, netTimeout time.Duration) (error) {
+  var err error
+  
+  var msgIn []byte
+  var msgOut []byte
+  var msgInHeader netapi.MsgHeader
+  var msgInReqResult netapi.ReqResult
+  
+  msgOut, err = netapi.BuildReqPassKeyPassword(password)
+  if err != nil {
+    return err
+  }
+  
+  _, err = netmsg.Send(conn, msgOut[:], netTimeout)
+  if err != nil {
+    return err
+  }
+  
+  msgIn, err = netmsg.Recv(conn, netTimeout)
+  if err != nil {
+    return err
+  }
+  
+  err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+  if err != nil {
+    return err
+  }
+  
+  if msgInHeader.Type != netapi.MsgTypeReply {
+    return errors.New("Message type does not match expected")
+  }
+  
+  if msgInHeader.SubType != netapi.ReqTypePassKeyPassword {
+    return errors.New("Request type does not match expected")
+  }
+  
+  err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+  if err != nil {
+    return err
+  }
+  
+  if msgInReqResult.Status != netapi.ReqResultStatusSuccessful {
+    return errors.New(msgInReqResult.Reason)
+  }
+  
+  return nil
+}

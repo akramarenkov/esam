@@ -2,10 +2,8 @@
 Description=ESAM Director
 
 [Service]
-Type=exec
-ExecStart=/usr/bin/esamd start --config /etc/esamd.conf
-
-TimeoutSec=15
+ExecStartPre=/usr/bin/esamd init-db --config /etc/esam/esamd.conf
+ExecStart=/usr/bin/esamd start --config /etc/esam/esamd.conf
 
 [Install]
 WantedBy=multi-user.target

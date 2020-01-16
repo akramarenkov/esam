@@ -217,44 +217,58 @@ func main() {
     }),
   }
   
+  initDBFlags := []cli.Flag{
+    &cli.StringFlag{
+      Name: "config",
+      Value: "",
+      Usage: "path to the configuration file",
+    },
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "db-name",
+      Value: "esamd",
+      Usage: "name of the created database",
+    }),
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "dbms-type",
+      Value: "sqlite",
+      Usage: "type of DBMS",
+    }),
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "dbms-addr",
+      Value: "esamd.db",
+      Usage: "address of connection to DBMS or database file path",
+    }),
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "dbms-port",
+      Value: "",
+      Usage: "port of connection to DBMS",
+    }),
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "dbms-user",
+      Value: "",
+      Usage: "DBMS user",
+    }),
+    altsrc.NewStringFlag(
+    &cli.StringFlag{
+      Name: "dbms-password",
+      Value: "",
+      Usage: "DBMS user password",
+    }),
+  }
+  
   app.Commands = []*cli.Command{
     {
       Name: "init-db",
       Usage: "Create a Director's database and tables in it",
       Action:  initDBHandler,
       BashComplete: misc.SubCommandBashCompleter,
-      Flags: []cli.Flag{
-        &cli.StringFlag{
-          Name: "db-name",
-          Value: "esamd",
-          Usage: "name of the created database",
-        },
-        &cli.StringFlag{
-          Name: "dbms-type",
-          Value: "sqlite",
-          Usage: "type of DBMS",
-        },
-        &cli.StringFlag{
-          Name: "dbms-addr",
-          Value: "esamd.db",
-          Usage: "address of connection to DBMS or database file path",
-        },
-        &cli.StringFlag{
-          Name: "dbms-port",
-          Value: "",
-          Usage: "port of connection to DBMS",
-        },
-        &cli.StringFlag{
-          Name: "dbms-user",
-          Value: "",
-          Usage: "DBMS user",
-        },
-        &cli.StringFlag{
-          Name: "dbms-password",
-          Value: "",
-          Usage: "DBMS user password",
-        },
-      },
+      Before: altsrc.InitInputSourceWithContext(initDBFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
+      Flags: initDBFlags,
     },
     {
       Name: "start",

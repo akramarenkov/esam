@@ -87,6 +87,7 @@ const (
   ReqTypeDelNode = "del_node"
   
   ReqTypeGetDirConnSettings = "get_dir_conn_settings"
+  ReqTypePassKeyPassword = "pass_key_password"
 )
 
 const (
@@ -104,6 +105,7 @@ const (
   ReqResultReasonAlreadyExist = "Already exist"
   ReqResultReasonNotFound = "Not found"
   ReqResultReasonPasswordTooSimple= "Password too simple"
+  ReqResultReasonKeyPasswordRequired = "Key password required"
 )
 
 const (
@@ -147,6 +149,7 @@ func TestReqType(requestType string) (error) {
     case ReqTypeDelNode:
     
     case ReqTypeGetDirConnSettings:
+    case ReqTypePassKeyPassword:
     
     default: return errors.New("Unsupported request")
   }
@@ -324,6 +327,7 @@ Suitable for:
  - ReqTypeAddNode
  - ReqTypeUpdateNode
  - ReqTypeDelNode
+ - ReqTypePassKeyPassword
 */
 /* For parse request use ParseReqResult */
 type repReqResult struct {

@@ -89,21 +89,18 @@ func main() {
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "esam-key",
-      Required: true,
       Value: "",
       Usage: "path to the private key file",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "dir-addr",
-      Required: true,
       Value: "",
       Usage: "address of connection to ESAM Director",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "dir-port",
-      Required: true,
       Value: "",
       Usage: "port of connection to ESAM Director",
     }),
@@ -116,7 +113,6 @@ func main() {
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "verify-key",
-      Required: true,
       Value: "",
       Usage: "path to the public key file used by the Agent to verify the authenticity of data received from the Director",
     }),
@@ -137,13 +133,11 @@ func main() {
       Flags: []cli.Flag{
         &cli.StringFlag{
           Name: "esam-key",
-          Required: true,
           Value: "",
           Usage: "path to the private key file",
         },
         &cli.StringFlag{
           Name: "esam-pub-key",
-          Required: true,
           Value: "",
           Usage: "path to the public key file",
         },

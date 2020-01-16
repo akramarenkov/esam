@@ -38,6 +38,7 @@ import (
   "strings"
   "os/exec"
   "context"
+  "path"
 )
 
 import (
@@ -63,6 +64,7 @@ import (
   "github.com/urfave/cli/v2"
   "github.com/urfave/cli/v2/altsrc"
   "gopkg.in/yaml.v3"
+  "github.com/mattn/go-isatty"
 )
 
 const (
@@ -71,6 +73,8 @@ const (
 )
 
 const (
+  workingDir = "${HOME}/.esamc"
+  udsName = "esamc.socket"
   cacheFilePrefix = "esamc-cache"
   cacheFileExt = ".json"
 )
@@ -98,21 +102,18 @@ func main() {
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "esam-key",
-      Required: true,
       Value: "",
       Usage: "path to the private key file",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "dir-addr",
-      Required: true,
       Value: "",
       Usage: "address of connection to Director",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "dir-port",
-      Required: true,
       Value: "",
       Usage: "port of connection to Director",
     }),
@@ -125,20 +126,19 @@ func main() {
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "verify-key",
-      Required: true,
       Value: "",
       Usage: "path to the public key file used by the Client to verify the authenticity of data received from the Director",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "uds-path",
-      Value: "esamc.socket",
+      Value: path.Join(workingDir, udsName),
       Usage: "path to the Unix socket used to interact with the authenticated Client",
     }),
     altsrc.NewStringFlag(
     &cli.StringFlag{
       Name: "cache-dir",
-      Value: ".",
+      Value: workingDir,
       Usage: "path to the directory with data cache",
     }),
   }
@@ -152,13 +152,11 @@ func main() {
       Flags: []cli.Flag{
         &cli.StringFlag{
           Name: "esam-key",
-          Required: true,
           Value: "",
           Usage: "path to the private key file",
         },
         &cli.StringFlag{
           Name: "esam-pub-key",
-          Required: true,
           Value: "",
           Usage: "path to the public key file",
         },
@@ -172,25 +170,21 @@ func main() {
       Flags: []cli.Flag{
         &cli.StringFlag{
           Name: "esam-pub-key",
-          Required: true,
           Value: "",
           Usage: "path to the public key file",
         },
         &cli.StringFlag{
           Name: "name",
-          Required: true,
           Value: "",
           Usage: "desired account name",
         },
         &cli.StringFlag{
           Name: "dir-addr",
-          Required: true,
           Value: "",
           Usage: "address of connection to Director",
         },
         &cli.StringFlag{
           Name: "dir-port",
-          Required: true,
           Value: "",
           Usage: "port of connection to Director",
         },
@@ -222,7 +216,7 @@ func main() {
       Flags: []cli.Flag{
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
       },
@@ -245,7 +239,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -278,7 +272,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -301,7 +295,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -329,7 +323,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -347,7 +341,7 @@ func main() {
       Flags: []cli.Flag{
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
       },
@@ -365,7 +359,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -388,7 +382,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -411,7 +405,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -434,7 +428,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -472,7 +466,7 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
@@ -495,13 +489,26 @@ func main() {
         },
         &cli.StringFlag{
           Name: "uds-path",
-          Value: "esamc.socket",
+          Value: path.Join(workingDir, udsName),
           Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
         &cli.StringFlag{
           Name: "dir-uds-path",
           Value: "",
           Usage: "path to the Unix socket used for local management of the Director",
+        },
+      },
+    },
+    {
+      Name: "pass-key-password",
+      Usage: "Pass to the running Client a password for the user encrypted private key",
+      Action: passKeyPasswordHandler,
+      BashComplete: misc.SubCommandBashCompleter,
+      Flags: []cli.Flag{
+        &cli.StringFlag{
+          Name: "uds-path",
+          Value: path.Join(workingDir, udsName),
+          Usage: "path to the Unix socket used to interact with the authenticated Client",
         },
       },
     },
@@ -615,44 +622,55 @@ func loginHandler(c *cli.Context) (error) {
   
   log.Println("Start logging")
   
-  esamKeyIsEncrypted, err = keysconv.KeyIsEncrypted(c.String("esam-key"))
+  esamKeyIsEncrypted, err = keysconv.KeyIsEncrypted(os.ExpandEnv(c.String("esam-key")))
   if err != nil {
+    log.WithFields(log.Fields{"details": err}).Errorln("Failed to determine encryption of key")
     return err
   }
   
   if esamKeyIsEncrypted {
-    esamKeyPassword, err = ui.ReadPassword("Enter a ESAM key password:", nil)
-    if err != nil {
-      ui.PrintError("Failed to read password", err)
-      return err
+    if isatty.IsTerminal(os.Stdout.Fd()) {
+      esamKeyPassword, err = ui.ReadPassword("Enter a ESAM key password:", nil)
+      if err != nil {
+        ui.PrintError("Failed to read password", err)
+        return err
+      }
+    } else {
+      log.Println("ESAM key encrypted - password required")
+      
+      esamKeyPassword, err = udsAskPassword(os.ExpandEnv(c.String("uds-path")))
+      if err != nil {
+        log.WithFields(log.Fields{"details": err}).Errorln("Failed to read password")
+        return err
+      }
     }
   }
   
-  loginContext, err = login.MakeContext(c.String("esam-key"), c.String("dir-addr"), c.String("dir-port"), c.String("tls-ca-cert"), c.String("verify-key"), esamKeyPassword)
+  loginContext, err = login.MakeContext(os.ExpandEnv(c.String("esam-key")), c.String("dir-addr"), c.String("dir-port"), os.ExpandEnv(c.String("tls-ca-cert")), os.ExpandEnv(c.String("verify-key")), esamKeyPassword)
   if err != nil {
     log.WithFields(log.Fields{"details": err}).Errorln("Failed to determine login context")
     return err
   }
   
-  dirConnSettings, err = makeDirConnSettings(c.String("esam-key"), c.String("dir-addr"), c.String("dir-port"), c.String("tls-ca-cert"), c.String("verify-key"))
+  dirConnSettings, err = makeDirConnSettings(os.ExpandEnv(c.String("esam-key")), c.String("dir-addr"), c.String("dir-port"), os.ExpandEnv(c.String("tls-ca-cert")), os.ExpandEnv(c.String("verify-key")))
   if err != nil {
     log.WithFields(log.Fields{"details": err}).Errorln("Failed to determine Director connection settings")
     return err
   }
   
-  udsListener, err = net.Listen("unix", c.String("uds-path"))
+  udsListener, err = net.Listen("unix", os.ExpandEnv(c.String("uds-path")))
   if err != nil {
     log.WithFields(log.Fields{"details": err}).Errorln("Failed to allocate Unix network listener")
     return err
   }
   
-  err = nodesCache.Init(c.String("cache-dir") + "/" + cacheFilePrefix + "-nodes" + cacheFileExt)
+  err = nodesCache.Init(path.Join(os.ExpandEnv(c.String("cache-dir")), cacheFilePrefix + "-nodes" + cacheFileExt))
   if err != nil {
     log.WithFields(log.Fields{"details": err}).Errorln("Failed to init nodes cache")
     return err
   }
   
-  err = authUserCache.Init(c.String("cache-dir") + "/" + cacheFilePrefix + "-user" + cacheFileExt)
+  err = authUserCache.Init(path.Join(os.ExpandEnv(c.String("cache-dir")), cacheFilePrefix + "-user" + cacheFileExt))
   if err != nil {
     log.WithFields(log.Fields{"details": err}).Errorln("Failed to init auth user cache")
     return err
@@ -688,6 +706,149 @@ func loginHandler(c *cli.Context) (error) {
   log.Println("Stop logging")
   
   return nil
+}
+
+func udsAskPassword(udsPath string) (string, error) {
+  var err error
+  var password string
+  var udsListener net.Listener
+  var udsConn net.Conn
+  var onceConnClose sync.Once
+  
+  ctx, cancel := context.WithCancel(context.Background())
+  
+  signalChan := make(chan os.Signal, 1)
+  signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+  
+  freeResources := func() {
+    closeConn := func() {
+      udsListener.Close()
+    }
+    
+    onceConnClose.Do(closeConn)
+    cancel()
+    signal.Reset(os.Interrupt, syscall.SIGTERM)
+  }
+  
+  udsListener, err = net.Listen("unix", udsPath)
+  if err != nil {
+    return "", err
+  }
+  defer freeResources()
+  
+  go func() {
+    <-signalChan
+    freeResources()
+  } ()
+  
+  for {
+    select {
+      case <-ctx.Done(): {
+        return "", errors.New("Interrupted")
+      }
+      
+      default: {
+        udsConn, err = udsListener.Accept()
+        if err != nil {
+          return "", err
+        }
+        
+        udsConnHandler := func() (string, error) {
+          defer udsConn.Close()
+          
+          var err error
+          var password string
+          
+          var msgIn []byte
+          var msgOut []byte
+          var msgInHeader netapi.MsgHeader
+          
+          sendErrorReply := func(reason string) {
+            var err error
+            
+            msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
+            if err == nil {
+            _, _ = netmsg.Send(udsConn, msgOut[:], opts.NetTimeout)
+            }
+          }
+          
+          sendSuccessfulReply := func() {
+            var err error
+            
+            msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
+            if err == nil {
+            _, _ = netmsg.Send(udsConn, msgOut[:], opts.NetTimeout)
+            }
+          }
+          
+          for {
+            select {
+              case <-ctx.Done(): {
+                return "", errors.New("Interrupted")
+              }
+              
+              default: {
+                msgIn, err = netmsg.Recv(udsConn, opts.NetTimeout)
+                if err != nil {
+                  if netmsg.IsTimeout(err) {
+                    continue
+                  }
+                  
+                  if netmsg.IsEOF(err) {
+                    return "", errors.New("Connection closed")
+                  }
+                  
+                  return "", err
+                }
+                
+                err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+                if err != nil {
+                  return "", err
+                }
+                
+                switch msgInHeader.Type {
+                  case netapi.MsgTypeRequest: {
+                    switch msgInHeader.SubType {
+                      case netapi.ReqTypePassKeyPassword: {
+                        password, err = netapi.ParseReqPassKeyPassword(msgIn[:])
+                        if err != nil {
+                          sendErrorReply(netapi.ReqResultReasonInvalidInputData)
+                          return "", err
+                        }
+                        
+                        sendSuccessfulReply()
+                        
+                        return password, nil
+                      }
+                      
+                      default: {
+                        sendErrorReply(netapi.ReqResultReasonKeyPasswordRequired)
+                      }
+                    }
+                  }
+                  
+                  default: {
+                    return "", errors.New("Unexpected message received")
+                  }
+                }
+              }
+            }
+          }
+          
+          return "", errors.New("Unexpected behavior")
+        }
+        
+        password, err = udsConnHandler()
+        if err != nil {
+          log.WithFields(log.Fields{"details": err}).Errorln("Key password required")
+        } else {
+          return password, nil
+        }
+      }
+    }
+  }
+  
+  return "", errors.New("Unexpected behavior")
 }
 
 func udsLoop(ctx context.Context, listener net.Listener, dirConnSettings *data.DirConnSettings, authUserCache *caches.UserAuth, nodesCache *caches.NodesAuth, wait *sync.WaitGroup) {
@@ -1248,8 +1409,9 @@ func sshHandler(c *cli.Context) (error) {
     nodeFilter.Name = c.Args().Get(0)
   }
   
-  clientConn, err = net.Dial("unix", c.String("uds-path"))
+  clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
   if err != nil {
+    ui.PrintError("Failed to connect to authenticated Client", err)
     return err
   }
   defer clientConn.Close()
@@ -1347,11 +1509,13 @@ func listAccessReqHandler(c *cli.Context) (error) {
   if c.Bool("json") {
     out, err = json.MarshalIndent(accessReqsList[:], "", " ")
     if err != nil {
+      ui.PrintError("Failed to marshal out to json", err)
       return err
     }
   } else {
     out, err = yaml.Marshal(accessReqsList[:])
     if err != nil {
+      ui.PrintError("Failed to marshal out to yaml", err)
       return err
     }
   }
@@ -1653,6 +1817,7 @@ func updateUserHandler(c *cli.Context) (error) {
     
     signKeyIsEncrypted, err = keysconv.KeyIsEncrypted(c.String("sign-key"))
     if err != nil {
+      ui.PrintError("Failed to determine encryption of key", err)
       return err
     }
     
@@ -1794,11 +1959,13 @@ func listUsersHandler(c *cli.Context) (error) {
   if c.Bool("json") {
     out, err = json.MarshalIndent(usersList[:], "", " ")
     if err != nil {
+      ui.PrintError("Failed to marshal out to json", err)
       return err
     }
   } else {
     out, err = yaml.Marshal(usersList[:])
     if err != nil {
+      ui.PrintError("Failed to marshal out to yaml", err)
       return err
     }
   }
@@ -2102,14 +2269,16 @@ func listNodesHandler(c *cli.Context) (error) {
     
     nodesList, _ = filterNodeAuthList(nodesList[:], &nodeFilterAuth, false)
   } else {
-    clientConn, err = net.Dial("unix", c.String("uds-path"))
+    clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
     if err != nil {
+      ui.PrintError("Failed to connect to authenticated Client", err)
       return err
     }
     defer clientConn.Close()
     
     nodesList, err = requests.FindInNodesCache(clientConn, &nodeFilterAuth, false, opts.NetTimeout)
     if err != nil {
+      ui.PrintError("Failed to search in nodes cache", err)
       return err
     }
   }
@@ -2123,11 +2292,13 @@ func listNodesHandler(c *cli.Context) (error) {
   if c.Bool("json") {
     out, err = json.MarshalIndent(nodesList[:], "", " ")
     if err != nil {
+      ui.PrintError("Failed to marshal out to json", err)
       return err
     }
   } else {
     out, err = yaml.Marshal(nodesList[:])
     if err != nil {
+      ui.PrintError("Failed to marshal out to yaml", err)
       return err
     }
   }
@@ -2197,6 +2368,36 @@ func delNodeHandler(c *cli.Context) (error) {
   return nil
 }
 
+func passKeyPasswordHandler(c *cli.Context) (error) {
+  var err error
+  
+  var esamKeyPassword string
+  var clientConn net.Conn
+  
+  clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
+  if err != nil {
+    ui.PrintError("Failed to connect to authenticated Client", err)
+    return err
+  }
+  defer clientConn.Close()
+  
+  esamKeyPassword, err = ui.ReadPassword("Enter a ESAM key password:", nil)
+  if err != nil {
+    ui.PrintError("Failed to read password", err)
+    return err
+  }
+  
+  err = requests.PassKeyPassword(clientConn, esamKeyPassword, opts.NetTimeout)
+  if err != nil {
+    ui.PrintError("Failed to pass key password", err)
+    return err
+  } else {
+    ui.PrintInfo("Key password passed successfully")
+  }
+  
+  return nil
+}
+
 func makeDirConnSettings(esamKeyPath string, dirAddr string, dirPort string, tlsCACertPath string, verifyKeyPath string) (*data.DirConnSettings, error) {
   var err error
   var dirConnSettings *data.DirConnSettings
@@ -2231,8 +2432,8 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
   var esamKeyIsEncrypted bool
   var esamKeyPassword string
   
-  if dirUDSPath != "" {
-    dirConn, err = net.Dial("unix", dirUDSPath)
+  if os.ExpandEnv(dirUDSPath) != "" {
+    dirConn, err = net.Dial("unix", os.ExpandEnv(dirUDSPath))
     if err != nil {
       return nil, nil, err
     }
@@ -2243,7 +2444,7 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
       var err error
       var clientConn net.Conn
       
-      clientConn, err = net.Dial("unix", udsPath)
+      clientConn, err = net.Dial("unix", os.ExpandEnv(udsPath))
       if err != nil {
         return err
       }
@@ -2270,7 +2471,6 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
     if esamKeyIsEncrypted {
       esamKeyPassword, err = ui.ReadPassword("Enter a ESAM key password:", nil)
       if err != nil {
-        ui.PrintError("Failed to read password", err)
         return nil, nil, err
       }
     }
