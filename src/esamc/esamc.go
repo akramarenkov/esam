@@ -585,7 +585,7 @@ func sendAccessReqHandler(c *cli.Context) (error) {
     tlsConfig.RootCAs = tlsCAPool
   }
   
-  dirConn, err = tls.Dial("tcp", c.String("dir-addr") + ":" + c.String("dir-port"), &tlsConfig)
+  dirConn, err = tls.DialWithDialer(&net.Dialer{ Timeout: opts.NetTimeout }, "tcp", c.String("dir-addr") + ":" + c.String("dir-port"), &tlsConfig)
   if err != nil {
     ui.PrintError("Failed to connect to Director", err)
     return err
@@ -741,6 +741,91 @@ func udsAskPassword(udsPath string) (string, error) {
     freeResources()
   } ()
   
+  udsConnHandler := func(conn net.Conn) (string, error) {
+    defer conn.Close()
+    
+    var err error
+    var password string
+    
+    var msgIn []byte
+    var msgOut []byte
+    var msgInHeader netapi.MsgHeader
+    
+    sendErrorReply := func(reason string) {
+      var err error
+      
+      msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
+      if err == nil {
+      _, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+      }
+    }
+    
+    sendSuccessfulReply := func() {
+      var err error
+      
+      msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
+      if err == nil {
+      _, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+      }
+    }
+    
+    for {
+      select {
+        case <-ctx.Done(): {
+          return "", errors.New("Interrupted")
+        }
+        
+        default: {
+          msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
+          if err != nil {
+            if netmsg.IsTimeout(err) {
+              continue
+            }
+            
+            if netmsg.IsEOF(err) {
+              return "", errors.New("Connection closed")
+            }
+            
+            return "", err
+          }
+          
+          err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+          if err != nil {
+            return "", err
+          }
+          
+          switch msgInHeader.Type {
+            case netapi.MsgTypeRequest: {
+              switch msgInHeader.SubType {
+                case netapi.ReqTypePassKeyPassword: {
+                  password, err = netapi.ParseReqPassKeyPassword(msgIn[:])
+                  if err != nil {
+                    sendErrorReply(netapi.ReqResultReasonInvalidInputData)
+                    return "", err
+                  }
+                  
+                  sendSuccessfulReply()
+                  
+                  return password, nil
+                }
+                
+                default: {
+                  sendErrorReply(netapi.ReqResultReasonKeyPasswordRequired)
+                }
+              }
+            }
+            
+            default: {
+              return "", errors.New("Unexpected message received")
+            }
+          }
+        }
+      }
+    }
+    
+    return "", errors.New("Unexpected behavior")
+  }
+  
   for {
     select {
       case <-ctx.Done(): {
@@ -750,99 +835,16 @@ func udsAskPassword(udsPath string) (string, error) {
       default: {
         udsConn, err = udsListener.Accept()
         if err != nil {
-          return "", err
-        }
-        
-        udsConnHandler := func() (string, error) {
-          defer udsConn.Close()
-          
-          var err error
-          var password string
-          
-          var msgIn []byte
-          var msgOut []byte
-          var msgInHeader netapi.MsgHeader
-          
-          sendErrorReply := func(reason string) {
-            var err error
-            
-            msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
-            if err == nil {
-            _, _ = netmsg.Send(udsConn, msgOut[:], opts.NetTimeout)
-            }
+          if netmsg.IsTemporary(err) {
+            log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
           }
-          
-          sendSuccessfulReply := func() {
-            var err error
-            
-            msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
-            if err == nil {
-            _, _ = netmsg.Send(udsConn, msgOut[:], opts.NetTimeout)
-            }
-          }
-          
-          for {
-            select {
-              case <-ctx.Done(): {
-                return "", errors.New("Interrupted")
-              }
-              
-              default: {
-                msgIn, err = netmsg.Recv(udsConn, opts.NetTimeout)
-                if err != nil {
-                  if netmsg.IsTimeout(err) {
-                    continue
-                  }
-                  
-                  if netmsg.IsEOF(err) {
-                    return "", errors.New("Connection closed")
-                  }
-                  
-                  return "", err
-                }
-                
-                err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
-                if err != nil {
-                  return "", err
-                }
-                
-                switch msgInHeader.Type {
-                  case netapi.MsgTypeRequest: {
-                    switch msgInHeader.SubType {
-                      case netapi.ReqTypePassKeyPassword: {
-                        password, err = netapi.ParseReqPassKeyPassword(msgIn[:])
-                        if err != nil {
-                          sendErrorReply(netapi.ReqResultReasonInvalidInputData)
-                          return "", err
-                        }
-                        
-                        sendSuccessfulReply()
-                        
-                        return password, nil
-                      }
-                      
-                      default: {
-                        sendErrorReply(netapi.ReqResultReasonKeyPasswordRequired)
-                      }
-                    }
-                  }
-                  
-                  default: {
-                    return "", errors.New("Unexpected message received")
-                  }
-                }
-              }
-            }
-          }
-          
-          return "", errors.New("Unexpected behavior")
-        }
-        
-        password, err = udsConnHandler()
-        if err != nil {
-          log.WithFields(log.Fields{"details": err}).Errorln("Key password required")
         } else {
-          return password, nil
+          password, err = udsConnHandler(udsConn)
+          if err != nil {
+            log.WithFields(log.Fields{"details": err}).Errorln("Key password required")
+          } else {
+            return password, nil
+          }
         }
       }
     }
@@ -1127,7 +1129,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
       default: {
         freeLoopResources()
         
-        dirConn, err = tls.Dial("tcp", loginContext.DirAddr + ":" + loginContext.DirPort, &loginContext.TLSConfig)
+        dirConn, err = tls.DialWithDialer(&net.Dialer{ Timeout: opts.NetTimeout }, "tcp", loginContext.DirAddr + ":" + loginContext.DirPort, &loginContext.TLSConfig)
         if err != nil {
           log.WithFields(log.Fields{"details": err}).Errorln("Failed to connect to Director")
           break
@@ -1409,7 +1411,7 @@ func sshHandler(c *cli.Context) (error) {
     nodeFilter.Name = c.Args().Get(0)
   }
   
-  clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
+  clientConn, err = net.DialTimeout("unix", os.ExpandEnv(c.String("uds-path")), opts.NetTimeout)
   if err != nil {
     ui.PrintError("Failed to connect to authenticated Client", err)
     return err
@@ -2269,7 +2271,7 @@ func listNodesHandler(c *cli.Context) (error) {
     
     nodesList, _ = filterNodeAuthList(nodesList[:], &nodeFilterAuth, false)
   } else {
-    clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
+    clientConn, err = net.DialTimeout("unix", os.ExpandEnv(c.String("uds-path")), opts.NetTimeout)
     if err != nil {
       ui.PrintError("Failed to connect to authenticated Client", err)
       return err
@@ -2374,7 +2376,7 @@ func passKeyPasswordHandler(c *cli.Context) (error) {
   var esamKeyPassword string
   var clientConn net.Conn
   
-  clientConn, err = net.Dial("unix", os.ExpandEnv(c.String("uds-path")))
+  clientConn, err = net.DialTimeout("unix", os.ExpandEnv(c.String("uds-path")), opts.NetTimeout)
   if err != nil {
     ui.PrintError("Failed to connect to authenticated Client", err)
     return err
@@ -2433,7 +2435,7 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
   var esamKeyPassword string
   
   if os.ExpandEnv(dirUDSPath) != "" {
-    dirConn, err = net.Dial("unix", os.ExpandEnv(dirUDSPath))
+    dirConn, err = net.DialTimeout("unix", os.ExpandEnv(dirUDSPath), opts.NetTimeout)
     if err != nil {
       return nil, nil, err
     }
@@ -2444,7 +2446,7 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
       var err error
       var clientConn net.Conn
       
-      clientConn, err = net.Dial("unix", os.ExpandEnv(udsPath))
+      clientConn, err = net.DialTimeout("unix", os.ExpandEnv(udsPath), opts.NetTimeout)
       if err != nil {
         return err
       }
@@ -2480,7 +2482,7 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
       return nil, nil, err
     }
     
-    dirConn, err = tls.Dial("tcp", dirConnSettings.DirAddr + ":" + dirConnSettings.DirPort, &loginContext.TLSConfig)
+    dirConn, err = tls.DialWithDialer(&net.Dialer{ Timeout: opts.NetTimeout }, "tcp", dirConnSettings.DirAddr + ":" + dirConnSettings.DirPort, &loginContext.TLSConfig)
     if err != nil {
       return nil, nil, err
     }

@@ -304,7 +304,14 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
           log.WithFields(log.Fields{"details": err}).Errorln("Login failed")
           
           if !accessRequestIsSended {
-            sendAccessReq(globData, loginContext)
+            log.Println("Send access request")
+            err = sendAccessReq(globData, loginContext)
+            if err != nil {
+              log.WithFields(log.Fields{"details": err}).Errorln("Failed to send access request")
+            } else {
+              log.Println("Successfully sent access request")
+            }
+            
             accessRequestIsSended = true
           }
           
@@ -589,7 +596,15 @@ func usersSetup(usersList []data.UserAuth) (error) {
         }
         
         case data.UserStateSuspended: {
-          err = setup.UserPresent(usersList[index].Name, &setup.UserPresentOpts{ExpireDate: "-1", Groups: []string{" "}, Password: "*", Shell: "/bin/false"})
+          var userOpts setup.UserPresentOpts
+          
+          userOpts.ExpireDate = "-1"
+          userOpts.Gid = opts.UsersGroup
+          userOpts.Password = "*"
+          userOpts.Shell = "/bin/false"
+          userOpts.Groups = []string{" "}
+          
+          err = setup.UserPresent(usersList[index].Name, &userOpts)
           if err != nil {
             return err
           }
