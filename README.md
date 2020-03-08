@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Used to create user accounts on many managed nodes, configure SSH access for these accounts and conveniently connect to managed nodes from user workstations
+Used to create user accounts on many managed nodes, configure SSH access for these accounts and conveniently connect over SSH to managed nodes from user workstations
 
 ## Features
 
