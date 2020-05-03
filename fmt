@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+go fmt ./...
+
+grep --recursive --null-data --perl-regexp --only-matching "var[ \t]+[^\n]*\n(([ \t]*\n)*[ \t]*var[ \t]+[^\n]*\n)+" "./"
+
+grep --recursive --null-data --perl-regexp --only-matching "case[ \t]+[^:]+[ \t]*:[ \t]*\n*[ \t]*{" "./"
