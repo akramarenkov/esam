@@ -33,7 +33,7 @@ import (
 )
 
 import (
-	"esam/src/types"
+	"github.com/akramarenkov/esam/src/types"
 )
 
 type Node struct {

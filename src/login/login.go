@@ -28,10 +28,10 @@ import (
 )
 
 import (
-	"esam/src/certs"
-	"esam/src/data"
-	"esam/src/keysconv"
-	"esam/src/opts"
+	"github.com/akramarenkov/esam/src/certs"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/opts"
 )
 
 type Context struct {

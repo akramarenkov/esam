@@ -29,8 +29,8 @@ import (
 )
 
 import (
-	"esam/src/crypt"
-	"esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/crypt"
+	"github.com/akramarenkov/esam/src/keysconv"
 )
 
 /*

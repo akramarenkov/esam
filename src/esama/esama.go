@@ -34,19 +34,19 @@ import (
 )
 
 import (
-	"esam/src/caches"
-	"esam/src/data"
-	"esam/src/keysconv"
-	"esam/src/login"
-	"esam/src/misc"
-	"esam/src/netapi"
-	"esam/src/netmsg"
-	"esam/src/opts"
-	"esam/src/requests"
-	"esam/src/setup"
-	"esam/src/types"
-	"esam/src/ui"
-	"esam/src/users"
+	"github.com/akramarenkov/esam/src/caches"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/login"
+	"github.com/akramarenkov/esam/src/misc"
+	"github.com/akramarenkov/esam/src/netapi"
+	"github.com/akramarenkov/esam/src/netmsg"
+	"github.com/akramarenkov/esam/src/opts"
+	"github.com/akramarenkov/esam/src/requests"
+	"github.com/akramarenkov/esam/src/setup"
+	"github.com/akramarenkov/esam/src/types"
+	"github.com/akramarenkov/esam/src/ui"
+	"github.com/akramarenkov/esam/src/users"
 )
 
 import (

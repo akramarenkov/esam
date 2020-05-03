@@ -35,18 +35,18 @@ import (
 )
 
 import (
-	"esam/src/auth"
-	"esam/src/crypt"
-	"esam/src/data"
-	"esam/src/db"
-	"esam/src/keysconv"
-	"esam/src/misc"
-	"esam/src/netapi"
-	"esam/src/netmsg"
-	"esam/src/opts"
-	"esam/src/opts2"
-	"esam/src/passwd"
-	"esam/src/ui"
+	"github.com/akramarenkov/esam/src/auth"
+	"github.com/akramarenkov/esam/src/crypt"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/db"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/misc"
+	"github.com/akramarenkov/esam/src/netapi"
+	"github.com/akramarenkov/esam/src/netmsg"
+	"github.com/akramarenkov/esam/src/opts"
+	"github.com/akramarenkov/esam/src/opts2"
+	"github.com/akramarenkov/esam/src/passwd"
+	"github.com/akramarenkov/esam/src/ui"
 )
 
 import (

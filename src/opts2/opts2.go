@@ -21,7 +21,7 @@
 package opts2
 
 import (
-	"esam/src/passwd"
+	"github.com/akramarenkov/esam/src/passwd"
 )
 
 const (

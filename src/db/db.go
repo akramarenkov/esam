@@ -29,8 +29,8 @@ import (
 )
 
 import (
-	"esam/src/data"
-	"esam/src/sqlqb"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/sqlqb"
 )
 
 const (

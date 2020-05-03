@@ -32,7 +32,7 @@ import (
 )
 
 import (
-	"esam/src/crypt"
+	"github.com/akramarenkov/esam/src/crypt"
 )
 
 func PEMIsEncrypted(data []byte) (bool, error) {

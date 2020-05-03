@@ -26,9 +26,9 @@ import (
 )
 
 import (
-	"esam/src/auth"
-	"esam/src/data"
-	"esam/src/types"
+	"github.com/akramarenkov/esam/src/auth"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/types"
 )
 
 func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) ([]data.UserAuth, error) {

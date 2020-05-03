@@ -29,8 +29,8 @@ import (
 )
 
 import (
-	"esam/src/opts"
-	"esam/src/types"
+	"github.com/akramarenkov/esam/src/opts"
+	"github.com/akramarenkov/esam/src/types"
 )
 
 func AuthorizedKeyPresent(userName string, authKeyIn *types.AuthorizedKey, exclusive bool) error {

@@ -27,8 +27,8 @@ import (
 )
 
 import (
-	"esam/src/data"
-	"esam/src/parallel"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/parallel"
 )
 
 type UsersAuth struct {

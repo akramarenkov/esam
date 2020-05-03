@@ -1,4 +1,4 @@
-module esam
+module github.com/akramarenkov/esam
 
 go 1.13
 

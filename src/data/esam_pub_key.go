@@ -28,7 +28,7 @@ import (
 )
 
 import (
-	"esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/keysconv"
 )
 
 import (

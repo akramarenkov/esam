@@ -32,8 +32,8 @@ import (
 )
 
 import (
-	"esam/src/opts2"
-	"esam/src/passwd"
+	"github.com/akramarenkov/esam/src/opts2"
+	"github.com/akramarenkov/esam/src/passwd"
 )
 
 func ExtractAddr(fullAddr string) string {

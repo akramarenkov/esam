@@ -28,10 +28,10 @@ import (
 )
 
 import (
-	"esam/src/data"
-	"esam/src/db"
-	"esam/src/keysconv"
-	"esam/src/netapi"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/db"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/netapi"
 )
 
 import (

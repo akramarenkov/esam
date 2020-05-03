@@ -28,7 +28,7 @@ import (
 )
 
 import (
-	"esam/src/data"
+	"github.com/akramarenkov/esam/src/data"
 )
 
 import (

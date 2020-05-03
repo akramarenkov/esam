@@ -34,8 +34,8 @@ import (
 )
 
 import (
-	"esam/src/types"
-	"esam/src/users"
+	"github.com/akramarenkov/esam/src/types"
+	"github.com/akramarenkov/esam/src/users"
 )
 
 const (

@@ -42,21 +42,21 @@ import (
 )
 
 import (
-	"esam/src/caches"
-	"esam/src/certs"
-	"esam/src/data"
-	"esam/src/keysconv"
-	"esam/src/login"
-	"esam/src/misc"
-	"esam/src/netapi"
-	"esam/src/netmsg"
-	"esam/src/opts"
-	"esam/src/opts2"
-	"esam/src/parallel"
-	"esam/src/passwd"
-	"esam/src/requests"
-	"esam/src/types"
-	"esam/src/ui"
+	"github.com/akramarenkov/esam/src/caches"
+	"github.com/akramarenkov/esam/src/certs"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/login"
+	"github.com/akramarenkov/esam/src/misc"
+	"github.com/akramarenkov/esam/src/netapi"
+	"github.com/akramarenkov/esam/src/netmsg"
+	"github.com/akramarenkov/esam/src/opts"
+	"github.com/akramarenkov/esam/src/opts2"
+	"github.com/akramarenkov/esam/src/parallel"
+	"github.com/akramarenkov/esam/src/passwd"
+	"github.com/akramarenkov/esam/src/requests"
+	"github.com/akramarenkov/esam/src/types"
+	"github.com/akramarenkov/esam/src/ui"
 )
 
 import (

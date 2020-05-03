@@ -28,9 +28,9 @@ import (
 )
 
 import (
-	"esam/src/auth"
-	"esam/src/data"
-	"esam/src/types"
+	"github.com/akramarenkov/esam/src/auth"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/types"
 )
 
 type UserAuth struct {

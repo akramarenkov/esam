@@ -29,7 +29,7 @@ import (
 )
 
 import (
-	"esam/src/opts"
+	"github.com/akramarenkov/esam/src/opts"
 )
 
 type userAddOpts struct {

@@ -28,10 +28,10 @@ import (
 )
 
 import (
-	"esam/src/crypt"
-	"esam/src/data"
-	"esam/src/netapi"
-	"esam/src/netmsg"
+	"github.com/akramarenkov/esam/src/crypt"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/netapi"
+	"github.com/akramarenkov/esam/src/netmsg"
 )
 
 func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, netTimeout time.Duration) error {
