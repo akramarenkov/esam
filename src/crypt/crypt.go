@@ -115,7 +115,7 @@ func Sign(data []byte, key *rsa.PrivateKey) ([]byte, error) {
 
 	hash = sha512.Sum512(data)
 
-	sing, err = rsa.SignPSS(rand.Reader, key, crypto.SHA512, hash, nil)
+	sing, err = rsa.SignPSS(rand.Reader, key, crypto.SHA512, hash[:], nil)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func Verify(data []byte, pubKey *rsa.PublicKey, sign []byte) error {
 
 	hash = sha512.Sum512(data)
 
-	err = rsa.VerifyPSS(pubKey, crypto.SHA512, hash, sign, nil)
+	err = rsa.VerifyPSS(pubKey, crypto.SHA512, hash[:], sign, nil)
 	if err != nil {
 		return err
 	}
