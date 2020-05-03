@@ -232,7 +232,7 @@ func ParseMsgHeader(jsonIn []byte, msgHeaderOut *MsgHeader) error {
 	var err error
 	var msgHeaderWrapper msgHeaderWrapper
 
-	err = json.Unmarshal(jsonIn[:], &msgHeaderWrapper)
+	err = json.Unmarshal(jsonIn, &msgHeaderWrapper)
 	if err != nil {
 		return err
 	}
@@ -251,7 +251,7 @@ func ParseReqResult(jsonIn []byte, reqResultOut *ReqResult) error {
 	var err error
 	var reqResultWrapper reqResultWrapper
 
-	err = json.Unmarshal(jsonIn[:], &reqResultWrapper)
+	err = json.Unmarshal(jsonIn, &reqResultWrapper)
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func BuildUnsupportedMsg() ([]byte, error) {
 		return nil, err
 	}
 
-	return reply[:], nil
+	return reply, nil
 }
 
 /* Unsupported message */
@@ -315,7 +315,7 @@ func BuildSimpleReq(reqType string) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 /*
@@ -363,7 +363,7 @@ func BuildSimpleRep(reqType string, reqResultIn *ReqResult) ([]byte, error) {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 /* Universal */
@@ -389,7 +389,7 @@ func BuildNotice(noticeType string) ([]byte, error) {
 		return nil, err
 	}
 
-	return notice[:], nil
+	return notice, nil
 }
 
 /* Notices */

@@ -88,8 +88,8 @@ func (cache *NodesAuth) ToFile() error {
 
 	err = nil
 	cache.mutex.RLock()
-	if len((*cache.list)[:]) > 0 {
-		err = jsonEnc.Encode((*cache.list)[:])
+	if len((*cache.list)) > 0 {
+		err = jsonEnc.Encode((*cache.list))
 	}
 	cache.mutex.RUnlock()
 	if err != nil {
@@ -103,7 +103,7 @@ func (cache *NodesAuth) Update(nodesListDB []data.NodeDB, usersListDB []data.Use
 	var err error
 	var nodesList []data.NodeAuth
 
-	nodesList, err = parallel.MakeNodeAuthList(nodesListDB[:], usersListDB[:], verifyKey, coresRatio)
+	nodesList, err = parallel.MakeNodeAuthList(nodesListDB, usersListDB, verifyKey, coresRatio)
 	if err != nil {
 		return err
 	}
@@ -124,5 +124,5 @@ func (cache *NodesAuth) RUnlock() {
 }
 
 func (cache *NodesAuth) Get() []data.NodeAuth {
-	return (*cache.list)[:]
+	return (*cache.list)
 }

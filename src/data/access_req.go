@@ -188,7 +188,7 @@ func (accessReq AccessReq) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (accessReq *AccessReq) FromString(data string) error {
@@ -211,7 +211,7 @@ func (accessReq AccessReqDB) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (accessReq *AccessReqDB) FromString(data string) error {

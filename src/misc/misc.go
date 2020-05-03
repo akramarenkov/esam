@@ -41,7 +41,7 @@ func ExtractAddr(fullAddr string) string {
 	var elementsLen int
 
 	elements = strings.Split(fullAddr, ":")
-	elementsLen = len(elements[:])
+	elementsLen = len(elements)
 
 	if elementsLen > 1 {
 		return strings.Join(elements[:elementsLen-1], "")
@@ -93,5 +93,5 @@ func LeaveAvailableGroups(groups []string) ([]string, error) {
 		}
 	}
 
-	return availableGroups[:], nil
+	return availableGroups, nil
 }

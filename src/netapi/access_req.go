@@ -72,14 +72,14 @@ func BuildReqAddAccessReq(accessReqIn *data.AccessReq, secret string) ([]byte, e
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqAddAccessReq(jsonIn []byte, accessReqOut *data.AccessReq, secret *string) error {
 	var err error
 	var reqAddAccessReq reqAddAccessReq
 
-	err = json.Unmarshal(jsonIn[:], &reqAddAccessReq)
+	err = json.Unmarshal(jsonIn, &reqAddAccessReq)
 	if err != nil {
 		return err
 	}
@@ -124,14 +124,14 @@ func BuildReqListAccessReqs(accessReqFilterIn *data.AccessReqDB) ([]byte, error)
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqListAccessReqs(jsonIn []byte, accessReqFilterOut *data.AccessReqDB) error {
 	var err error
 	var reqListAccessReqs reqListAccessReqs
 
-	err = json.Unmarshal(jsonIn[:], &reqListAccessReqs)
+	err = json.Unmarshal(jsonIn, &reqListAccessReqs)
 	if err != nil {
 		return err
 	}
@@ -166,21 +166,21 @@ func BuildRepListAccessReqs(accessReqsIn []data.AccessReqDB) ([]byte, error) {
 	repListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
 	repListAccessReqs.ReqResult.Status = ReqResultStatusSuccessful
 	repListAccessReqs.ReqResult.Reason = ReqResultReasonEmpty
-	repListAccessReqs.AccessReqs = accessReqsIn[:]
+	repListAccessReqs.AccessReqs = accessReqsIn
 
 	rep, err = json.Marshal(repListAccessReqs)
 	if err != nil {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepListAccessReqs(jsonIn []byte) ([]data.AccessReqDB, error) {
 	var err error
 	var repListAccessReqs repListAccessReqs
 
-	err = json.Unmarshal(jsonIn[:], &repListAccessReqs)
+	err = json.Unmarshal(jsonIn, &repListAccessReqs)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func ParseRepListAccessReqs(jsonIn []byte) ([]data.AccessReqDB, error) {
 		return nil, err
 	}
 
-	return repListAccessReqs.AccessReqs[:], nil
+	return repListAccessReqs.AccessReqs, nil
 }
 
 /* List */
@@ -224,14 +224,14 @@ func BuildReqDelAccessReq(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqDelAccessReq(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
 	var err error
 	var reqDelAccessReq reqDelAccessReq
 
-	err = json.Unmarshal(jsonIn[:], &reqDelAccessReq)
+	err = json.Unmarshal(jsonIn, &reqDelAccessReq)
 	if err != nil {
 		return err
 	}

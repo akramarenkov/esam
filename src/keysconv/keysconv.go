@@ -38,7 +38,7 @@ import (
 func PEMIsEncrypted(data []byte) (bool, error) {
 	var pemBlock *pem.Block
 
-	pemBlock, _ = pem.Decode(data[:])
+	pemBlock, _ = pem.Decode(data)
 	if pemBlock == nil {
 		return false, errors.New("Failed to decode PEM block")
 	}
@@ -56,7 +56,7 @@ func KeyInPEMToRSA(pemKey []byte, password string) (*rsa.PrivateKey, error) {
 	var key *rsa.PrivateKey
 	var resultPemBytes []byte
 
-	keyPemBlock, _ = pem.Decode(pemKey[:])
+	keyPemBlock, _ = pem.Decode(pemKey)
 	if keyPemBlock == nil || keyPemBlock.Type != "PRIVATE KEY" {
 		return nil, errors.New("Failed to decode PEM block as private key")
 	}
@@ -115,7 +115,7 @@ func KeyInRSAToPEM(key *rsa.PrivateKey, password string) ([]byte, error) {
 
 	keyInBytes = keyBuffer.Bytes()
 
-	return keyInBytes[:], nil
+	return keyInBytes, nil
 }
 
 func PubKeyInPEMToRSA(pemPubKey []byte) (*rsa.PublicKey, error) {
@@ -123,7 +123,7 @@ func PubKeyInPEMToRSA(pemPubKey []byte) (*rsa.PublicKey, error) {
 	var pubKeyPemBlock *pem.Block
 	var pubKey *rsa.PublicKey
 
-	pubKeyPemBlock, _ = pem.Decode(pemPubKey[:])
+	pubKeyPemBlock, _ = pem.Decode(pemPubKey)
 	if pubKeyPemBlock == nil || pubKeyPemBlock.Type != "PUBLIC KEY" {
 		return nil, errors.New("Failed to decode PEM block as public key")
 	}
@@ -166,7 +166,7 @@ func PubKeyInRSAToPEM(pubKey *rsa.PublicKey) ([]byte, error) {
 
 	pubKeyInBytes = pubKeyBuffer.Bytes()
 
-	return pubKeyInBytes[:], nil
+	return pubKeyInBytes, nil
 }
 
 func GenAndSaveKeyPair(keyPath string, pubKeyPath string, bits int, password string) error {
@@ -203,12 +203,12 @@ func GenAndSaveKeyPair(keyPath string, pubKeyPath string, bits int, password str
 		return err
 	}
 
-	_, err = keyFile.Write(keyInPem[:])
+	_, err = keyFile.Write(keyInPem)
 	if err != nil {
 		return err
 	}
 
-	_, err = pubKeyFile.Write(pubKeyInPem[:])
+	_, err = pubKeyFile.Write(pubKeyInPem)
 	if err != nil {
 		return err
 	}
@@ -233,7 +233,7 @@ func KeyIsEncrypted(keyPath string) (bool, error) {
 		return false, err
 	}
 
-	keyIsEncrypted, err = PEMIsEncrypted(keyFileContent[:])
+	keyIsEncrypted, err = PEMIsEncrypted(keyFileContent)
 	if err != nil {
 		return false, err
 	}
@@ -258,7 +258,7 @@ func LoadKeyFromFile(keyPath string, password string) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	key, err = KeyInPEMToRSA(keyFileContent[:], password)
+	key, err = KeyInPEMToRSA(keyFileContent, password)
 	if err != nil {
 		return nil, err
 	}
@@ -283,7 +283,7 @@ func LoadPubKeyFromFile(pubKeyPath string) (*rsa.PublicKey, error) {
 		return nil, err
 	}
 
-	pubKey, err = PubKeyInPEMToRSA(pubKeyFileContent[:])
+	pubKey, err = PubKeyInPEMToRSA(pubKeyFileContent)
 	if err != nil {
 		return nil, err
 	}

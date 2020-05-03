@@ -146,7 +146,7 @@ OWQFbcsNBL5V8/4TUDUskXDb+cVpUE0AmCImvplkzLWiAnA/K5scqeUGbYUa/h49
 In2I+5OpmLcNsVFVqkwcD4GF8ufRqg==
 -----END PRIVATE KEY-----`)
 
-	verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM[:])
+	verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM)
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert verify private key from PEM", err)
 		os.Exit(1)
@@ -218,7 +218,7 @@ iV8mbuJNBNMvgk0h+fEEG4sIFVgpaaS9rq6TZtriyadlot+qZ55RH4MQzCehhTs7
 2fpxajCzvK9ryUwWx9W0Wm8jl21Lmw==
 -----END PRIVATE KEY-----`)
 
-	OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM[:])
+	OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM)
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne private key from PEM", err)
 		os.Exit(1)
@@ -440,7 +440,7 @@ iyJ4RPtFs/JVJ8rRcyGAOH15isbLFCK1C+NnHe1KuL55k/i/GSP2H9hTsdmYJgqo
 dsbtUzU0g4G5a/e82/Kzkh53ajcY7A==
 -----END PRIVATE KEY-----`)
 
-	OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM[:])
+	OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM)
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo private key from PEM", err)
 		os.Exit(1)
@@ -518,7 +518,7 @@ tQuSSIYnPDlp/bgpNDiT3I2Vrzy7BEbKkbAjg9eQsxpe80FoZxNIgQ2XALOah9qE
 nucbcHW8j0PGtltMz4vgv5rbDiYxt9oI
 -----END PRIVATE KEY-----`)
 
-	SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM[:])
+	SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM)
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne private key from PEM", err)
 		os.Exit(1)
@@ -596,7 +596,7 @@ YEP9k6MnuSTG0T8xWvRmegJ1puAvjRatCg7fOlWkMBzOONB6Ld8XYy59jHDh33M1
 2UoQemzakBMQ/GI/Ym259HrAxJd+Wqk=
 -----END PRIVATE KEY-----`)
 
-	SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM[:])
+	SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM)
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo private key from PEM", err)
 		os.Exit(1)

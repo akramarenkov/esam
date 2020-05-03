@@ -664,7 +664,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
 			if err == nil {
-				_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 			}
 		}
 	}
@@ -675,7 +675,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
 			if err == nil {
-				_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 			}
 		}
 	}
@@ -686,7 +686,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 		return
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
 		return
@@ -708,7 +708,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 						var accessReqListLen uint
 						var accessReqDB data.AccessReqDB
 
-						err = netapi.ParseReqAddAccessReq(msgIn[:], &accessReq, &accessReqSecret)
+						err = netapi.ParseReqAddAccessReq(msgIn, &accessReq, &accessReqSecret)
 						if err != nil {
 							return err
 						}
@@ -775,7 +775,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 
 						sessionData = new(sessionDataType)
 
-						sessionData.NoticesNotRequiredByClient, err = netapi.ParseReqAuthStageOne(msgIn[:], &subjectESAMPubKey)
+						sessionData.NoticesNotRequiredByClient, err = netapi.ParseReqAuthStageOne(msgIn, &subjectESAMPubKey)
 						if err != nil {
 							return nil, err
 						}
@@ -802,7 +802,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 							return nil, err
 						}
 
-						sessionData.PubKey, err = keysconv.PubKeyInPEMToRSA(subjectESAMPubKey[:])
+						sessionData.PubKey, err = keysconv.PubKeyInPEMToRSA(subjectESAMPubKey)
 						if err != nil {
 							return nil, err
 						}
@@ -821,7 +821,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 							return nil, err
 						}
 
-						authQuestionEncrypted, err = crypt.Encrypt(authQuestion[:], sessionData.PubKey)
+						authQuestionEncrypted, err = crypt.Encrypt(authQuestion, sessionData.PubKey)
 						if err != nil {
 							return nil, err
 						}
@@ -831,7 +831,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 							return nil, err
 						}
 
-						_, err = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+						_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
 						if err != nil {
 							return nil, err
 						}
@@ -841,12 +841,12 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 							return nil, err
 						}
 
-						authAnswer, err = netapi.ParseReqAuthStageTwo(msgIn[:])
+						authAnswer, err = netapi.ParseReqAuthStageTwo(msgIn)
 						if err != nil {
 							return nil, err
 						}
 
-						if subtle.ConstantTimeCompare(authAnswer[:], authQuestion[:]) == 1 {
+						if subtle.ConstantTimeCompare(authAnswer, authQuestion) == 1 {
 							requireSendErrorReply = false
 
 							return sessionData, nil
@@ -974,7 +974,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
 			if err == nil {
-				_, _ = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 			}
 		}
 	}
@@ -985,7 +985,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
 			if err == nil {
-				_, _ = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 			}
 		}
 	}
@@ -998,7 +998,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 			return err
 		}
 
-		_, err = netmsg.Send(sessionData.Conn, msgOut[:], netTimeout)
+		_, err = netmsg.Send(sessionData.Conn, msgOut, netTimeout)
 		if err != nil {
 			return err
 		}
@@ -1014,7 +1014,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 			return err
 		}
 
-		_, err = netmsg.Send(sessionData.Conn, msgOut[:], netTimeout)
+		_, err = netmsg.Send(sessionData.Conn, msgOut, netTimeout)
 		if err != nil {
 			return err
 		}
@@ -1108,7 +1108,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 					}
 				}
 
-				err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 				if err != nil {
 					log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
 					continue
@@ -1141,7 +1141,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return errors.New(netapi.ReqResultReasonAccessDenied)
 									}
 
-									err = netapi.ParseReqListAccessReqs(msgIn[:], &filter)
+									err = netapi.ParseReqListAccessReqs(msgIn, &filter)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1164,19 +1164,19 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("Access request not found")
 									}
 
 									requireSendErrorReply = false
 
-									msgOut, err = netapi.BuildRepListAccessReqs(list[:])
+									msgOut, err = netapi.BuildRepListAccessReqs(list)
 									if err != nil {
 										return err
 									}
 
-									_, err = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1214,7 +1214,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return errors.New(netapi.ReqResultReasonAccessDenied)
 									}
 
-									err = netapi.ParseReqDelAccessReq(msgIn[:], &targetESAMPubKey)
+									err = netapi.ParseReqDelAccessReq(msgIn, &targetESAMPubKey)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1239,12 +1239,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("Access request not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity access requests - integrity violation")
 									}
 
@@ -1279,7 +1279,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.User
 									var list []data.UserDB
 
-									err = netapi.ParseReqAddUser(msgIn[:], &newUser)
+									err = netapi.ParseReqAddUser(msgIn, &newUser)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1314,7 +1314,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) > 0 {
+									if len(list) > 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
 										return errors.New("User already exist")
 									}
@@ -1355,7 +1355,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.User
 									var list []data.UserDB
 
-									err = netapi.ParseReqUpdateUser(msgIn[:], &targetESAMPubKey, &newUser)
+									err = netapi.ParseReqUpdateUser(msgIn, &targetESAMPubKey, &newUser)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1392,12 +1392,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("User not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
 									}
 
@@ -1449,7 +1449,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var list []data.UserDB
 									var newUserData *data.UserDB
 
-									password, passwordHash, passwordHashSign, err = netapi.ParseReqChangePassword(msgIn[:])
+									password, passwordHash, passwordHashSign, err = netapi.ParseReqChangePassword(msgIn)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1478,12 +1478,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("User not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
 									}
 
@@ -1493,7 +1493,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									}
 
 									newUserData.User.PasswordHash = passwordHash
-									newUserData.UserSign.PasswordHashSign = passwordHashSign[:]
+									newUserData.UserSign.PasswordHashSign = passwordHashSign
 
 									err = newUserData.Normalize()
 									if err != nil {
@@ -1564,7 +1564,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return errors.New(netapi.ReqResultReasonAccessDenied)
 									}
 
-									err = netapi.ParseReqListUsers(msgIn[:], &filter)
+									err = netapi.ParseReqListUsers(msgIn, &filter)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1588,19 +1588,19 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("User not found")
 									}
 
 									requireSendErrorReply = false
 
-									msgOut, err = netapi.BuildRepListUsers(list[:])
+									msgOut, err = netapi.BuildRepListUsers(list)
 									if err != nil {
 										return err
 									}
 
-									_, err = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1628,7 +1628,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.User
 									var list []data.UserDB
 
-									err = netapi.ParseReqDelUser(msgIn[:], &targetESAMPubKey)
+									err = netapi.ParseReqDelUser(msgIn, &targetESAMPubKey)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1653,12 +1653,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("User not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity user - integrity violation")
 									}
 
@@ -1705,7 +1705,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.Node
 									var list []data.NodeDB
 
-									err = netapi.ParseReqAddNode(msgIn[:], &newNode)
+									err = netapi.ParseReqAddNode(msgIn, &newNode)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1740,7 +1740,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) > 0 {
+									if len(list) > 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
 										return errors.New("Node already exist")
 									}
@@ -1781,7 +1781,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.Node
 									var list []data.NodeDB
 
-									err = netapi.ParseReqUpdateNode(msgIn[:], &targetESAMPubKey, &newNode)
+									err = netapi.ParseReqUpdateNode(msgIn, &targetESAMPubKey, &newNode)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1818,12 +1818,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("Node not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity nodes - integrity violation")
 									}
 
@@ -1878,7 +1878,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return errors.New(netapi.ReqResultReasonAccessDenied)
 									}
 
-									err = netapi.ParseReqListNodes(msgIn[:], &filter)
+									err = netapi.ParseReqListNodes(msgIn, &filter)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1902,19 +1902,19 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("Node not found")
 									}
 
 									requireSendErrorReply = false
 
-									msgOut, err = netapi.BuildRepListNodes(list[:])
+									msgOut, err = netapi.BuildRepListNodes(list)
 									if err != nil {
 										return err
 									}
 
-									_, err = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1942,7 +1942,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									var filter data.Node
 									var list []data.NodeDB
 
-									err = netapi.ParseReqDelNode(msgIn[:], &targetESAMPubKey)
+									err = netapi.ParseReqDelNode(msgIn, &targetESAMPubKey)
 									if err != nil {
 										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
 										return err
@@ -1967,12 +1967,12 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 										return err
 									}
 
-									if len(list[:]) == 0 {
+									if len(list) == 0 {
 										reasonSendErrorReply = netapi.ReqResultReasonNotFound
 										return errors.New("Node not found")
 									}
 
-									if len(list[:]) > 1 {
+									if len(list) > 1 {
 										return errors.New("Provided ESAM pub key found in multiplicity node - integrity violation")
 									}
 
@@ -2024,7 +2024,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 
 						msgOut, err = netapi.BuildUnsupportedMsg()
 						if err == nil {
-							_, _ = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+							_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 						}
 
 						continue
@@ -2046,7 +2046,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 
 								msgOut, err = netapi.BuildUnsupportedMsg()
 								if err == nil {
-									_, _ = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+									_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 								}
 
 								continue
@@ -2060,7 +2060,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 
 						msgOut, err = netapi.BuildUnsupportedMsg()
 						if err == nil {
-							_, _ = netmsg.Send(sessionData.Conn, msgOut[:], opts.NetTimeout)
+							_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
 						}
 
 						continue

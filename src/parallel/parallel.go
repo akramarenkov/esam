@@ -41,7 +41,7 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 	var stepLength int
 	var waitCheck sync.WaitGroup
 
-	usersList = make([]data.UserAuth, len(usersListDB[:]))
+	usersList = make([]data.UserAuth, len(usersListDB))
 
 	listConv := func(beginIndex int, endIndex int, wait *sync.WaitGroup) {
 		defer wait.Done()
@@ -51,7 +51,7 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 			usersList[index].TrustedData = types.False
 
 			if verifyKey != nil {
-				trustedData, err = auth.CheckUserDataAuthenticity(&usersListDB[index], usersListDB[:], verifyKey)
+				trustedData, err = auth.CheckUserDataAuthenticity(&usersListDB[index], usersListDB, verifyKey)
 				if err == nil && trustedData {
 					usersList[index].TrustedData = types.True
 				} else {
@@ -66,7 +66,7 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 		numberOfSteps = 1
 	}
 
-	stepLength = len(usersListDB[:]) / numberOfSteps
+	stepLength = len(usersListDB) / numberOfSteps
 
 	if stepLength == 0 {
 		stepLength = 1
@@ -79,12 +79,12 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 		beginIndex = stepIndex * stepLength
 
 		if stepIndex == numberOfSteps-1 {
-			endIndex = len(usersListDB[:]) - 1
+			endIndex = len(usersListDB) - 1
 		} else {
 			endIndex = (stepIndex+1)*stepLength - 1
 		}
 
-		if endIndex > len(usersListDB[:])-1 {
+		if endIndex > len(usersListDB)-1 {
 			break
 		}
 
@@ -95,7 +95,7 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 
 	waitCheck.Wait()
 
-	return usersList[:], nil
+	return usersList, nil
 }
 
 func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) ([]data.NodeAuth, error) {
@@ -108,7 +108,7 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 	var stepLength int
 	var waitCheck sync.WaitGroup
 
-	nodesList = make([]data.NodeAuth, len(nodesListDB[:]))
+	nodesList = make([]data.NodeAuth, len(nodesListDB))
 
 	listConv := func(beginIndex int, endIndex int, wait *sync.WaitGroup) {
 		defer wait.Done()
@@ -118,7 +118,7 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 			nodesList[index].TrustedData = types.False
 
 			if verifyKey != nil {
-				trustedData, err = auth.CheckNodeDataAuthenticity(&nodesListDB[index], usersListDB[:], verifyKey)
+				trustedData, err = auth.CheckNodeDataAuthenticity(&nodesListDB[index], usersListDB, verifyKey)
 				if err == nil && trustedData {
 					nodesList[index].TrustedData = types.True
 				}
@@ -131,7 +131,7 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 		numberOfSteps = 1
 	}
 
-	stepLength = len(nodesListDB[:]) / numberOfSteps
+	stepLength = len(nodesListDB) / numberOfSteps
 
 	if stepLength == 0 {
 		stepLength = 1
@@ -144,12 +144,12 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 		beginIndex = stepIndex * stepLength
 
 		if stepIndex == numberOfSteps-1 {
-			endIndex = len(nodesListDB[:]) - 1
+			endIndex = len(nodesListDB) - 1
 		} else {
 			endIndex = (stepIndex+1)*stepLength - 1
 		}
 
-		if endIndex > len(nodesListDB[:])-1 {
+		if endIndex > len(nodesListDB)-1 {
 			break
 		}
 
@@ -160,5 +160,5 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 
 	waitCheck.Wait()
 
-	return nodesList[:], nil
+	return nodesList, nil
 }

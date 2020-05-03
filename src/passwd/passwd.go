@@ -138,7 +138,7 @@ func CheckDifficulty(password string, diffOpt *DifficultyOpt) error {
 	errorsStack = make([]string, 0)
 
 	passwordAsRunes = []rune(password)
-	diffStat.Length = len(passwordAsRunes[:])
+	diffStat.Length = len(passwordAsRunes)
 
 	for _, char := range passwordAsRunes {
 		if !identicalyMap[char] {
@@ -220,7 +220,7 @@ func CheckDifficulty(password string, diffOpt *DifficultyOpt) error {
 	if diffOpt.ForbidSequences > 0 {
 		numberOfChecks++
 
-		if findSequences(passwordAsRunes[:], diffOpt.ForbidSequences) == nil {
+		if findSequences(passwordAsRunes, diffOpt.ForbidSequences) == nil {
 			numberOfSuccessfulChecks++
 		} else {
 			errorsStack = append(errorsStack, "Password contains typical sequences")

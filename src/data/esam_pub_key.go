@@ -46,7 +46,7 @@ func (key *ESAMPubKey) Copy() (*ESAMPubKey, error) {
 		return nil, errors.New("Source key pointer can't be nil")
 	}
 
-	keyOut = make(ESAMPubKey, len((*key)[:]))
+	keyOut = make(ESAMPubKey, len((*key)))
 	copy(keyOut, (*key))
 
 	return &keyOut, nil
@@ -61,11 +61,11 @@ func (key *ESAMPubKey) Normalize(toleratesEmptyFields bool) error {
 		return errors.New("Key pointer can't be nil")
 	}
 
-	if toleratesEmptyFields && len((*key)[:]) == 0 {
+	if toleratesEmptyFields && len((*key)) == 0 {
 		return nil
 	}
 
-	keyInRSA, err = keysconv.PubKeyInPEMToRSA((*key)[:])
+	keyInRSA, err = keysconv.PubKeyInPEMToRSA((*key))
 	if err != nil {
 		return errors.New("Key format is incorrect")
 	}
@@ -75,7 +75,7 @@ func (key *ESAMPubKey) Normalize(toleratesEmptyFields bool) error {
 		return err
 	}
 
-	(*key) = keyNormalized[:]
+	(*key) = keyNormalized
 
 	return nil
 }
@@ -87,11 +87,11 @@ func (key *ESAMPubKey) Test(toleratesEmptyFields bool) error {
 		return errors.New("Key pointer can't be nil")
 	}
 
-	if toleratesEmptyFields && len((*key)[:]) == 0 {
+	if toleratesEmptyFields && len((*key)) == 0 {
 		return nil
 	}
 
-	_, err = keysconv.PubKeyInPEMToRSA((*key)[:])
+	_, err = keysconv.PubKeyInPEMToRSA((*key))
 	if err != nil {
 		return errors.New("Key format is incorrect")
 	}
@@ -108,7 +108,7 @@ func (key *ESAMPubKey) Equal(keyTwo *ESAMPubKey) bool {
 		return false
 	}
 
-	return bytes.Equal((*key)[:], (*keyTwo)[:])
+	return bytes.Equal((*key), (*keyTwo))
 }
 
 func (key *ESAMPubKey) EqualConstantTime(keyTwo *ESAMPubKey) bool {
@@ -120,7 +120,7 @@ func (key *ESAMPubKey) EqualConstantTime(keyTwo *ESAMPubKey) bool {
 		return false
 	}
 
-	if subtle.ConstantTimeCompare((*key)[:], (*keyTwo)[:]) == 1 {
+	if subtle.ConstantTimeCompare((*key), (*keyTwo)) == 1 {
 		return true
 	} else {
 		return false
@@ -134,11 +134,11 @@ func (key *ESAMPubKey) Len() int {
 		return -1
 	}
 
-	return len((*key)[:])
+	return len((*key))
 }
 
 func (key ESAMPubKey) MarshalYAML() (interface{}, error) {
-	return string(key[:]), nil
+	return string(key), nil
 }
 
 func (key *ESAMPubKey) UnmarshalYAML(value *yaml.Node) error {

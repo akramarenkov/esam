@@ -110,7 +110,7 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 			return errors.New("Sign subject field can't be changed")
 		}
 
-		structSignRValue.FieldByName(SignSubjectFieldName).Set(reflect.ValueOf(signerESAMPubKey[:]))
+		structSignRValue.FieldByName(SignSubjectFieldName).Set(reflect.ValueOf(signerESAMPubKey))
 	}
 
 	if len(selfSignedFields) > 0 {
@@ -184,7 +184,7 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 				return errors.New("Failed to assertion " + ESAMPubKeyFieldName + " field")
 			}
 
-			fieldData = esamPubKeyFieldData[:]
+			fieldData = esamPubKeyFieldData
 		} else {
 			switch structDataFieldRValue.Kind() {
 			case reflect.String:
@@ -211,7 +211,7 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 			}
 
 			fieldSignBase64 := make([]byte, base64.StdEncoding.EncodedLen(len(fieldSign)))
-			base64.StdEncoding.Encode(fieldSignBase64, fieldSign[:])
+			base64.StdEncoding.Encode(fieldSignBase64, fieldSign)
 
 			structSignFieldRValue.Set(reflect.ValueOf(fieldSignBase64))
 		} else {
@@ -282,7 +282,7 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 				return errors.New("Failed to assertion " + ESAMPubKeyFieldName + " field")
 			}
 
-			esamPubKeyInRSA, err = keysconv.PubKeyInPEMToRSA(esamPubKeyFieldData[:])
+			esamPubKeyInRSA, err = keysconv.PubKeyInPEMToRSA(esamPubKeyFieldData)
 			if err != nil {
 				return err
 			}
@@ -301,7 +301,7 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 				return errors.New("Failed to assertion sign subject field")
 			}
 
-			signSubjectPubKeyInRSA, err = keysconv.PubKeyInPEMToRSA(signSubjectFieldData[:])
+			signSubjectPubKeyInRSA, err = keysconv.PubKeyInPEMToRSA(signSubjectFieldData)
 			if err != nil {
 				return err
 			}
@@ -350,7 +350,7 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 				return errors.New("Failed to assertion " + ESAMPubKeyFieldName + " field")
 			}
 
-			fieldData = esamPubKeyFieldData[:]
+			fieldData = esamPubKeyFieldData
 		} else {
 			switch structDataFieldRValue.Kind() {
 			case reflect.String:
@@ -391,9 +391,9 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 				return errors.New("Failed to assertion sign field")
 			}
 
-			fieldSign := make([]byte, base64.StdEncoding.DecodedLen(len(fieldSignBase64[:])))
+			fieldSign := make([]byte, base64.StdEncoding.DecodedLen(len(fieldSignBase64)))
 
-			fieldSignLen, err := base64.StdEncoding.Decode(fieldSign, fieldSignBase64[:])
+			fieldSignLen, err := base64.StdEncoding.Decode(fieldSign, fieldSignBase64)
 			if err != nil {
 				return err
 			}

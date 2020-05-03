@@ -514,7 +514,7 @@ func (user User) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (user *User) FromString(data string) error {
@@ -537,7 +537,7 @@ func (user UserAuth) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (user *UserAuth) FromString(data string) error {

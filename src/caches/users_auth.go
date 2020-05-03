@@ -88,8 +88,8 @@ func (cache *UsersAuth) ToFile() error {
 
 	err = nil
 	cache.mutex.RLock()
-	if len((*cache.list)[:]) > 0 {
-		err = jsonEnc.Encode((*cache.list)[:])
+	if len((*cache.list)) > 0 {
+		err = jsonEnc.Encode((*cache.list))
 	}
 	cache.mutex.RUnlock()
 	if err != nil {
@@ -103,7 +103,7 @@ func (cache *UsersAuth) Update(usersListDB []data.UserDB, verifyKey *data.ESAMPu
 	var err error
 	var usersList []data.UserAuth
 
-	usersList, err = parallel.MakeUserAuthList(usersListDB[:], verifyKey, coresRatio)
+	usersList, err = parallel.MakeUserAuthList(usersListDB, verifyKey, coresRatio)
 	if err != nil {
 		return err
 	}
@@ -124,5 +124,5 @@ func (cache *UsersAuth) RUnlock() {
 }
 
 func (cache *UsersAuth) Get() []data.UserAuth {
-	return (*cache.list)[:]
+	return (*cache.list)
 }

@@ -756,7 +756,7 @@ func udsAskPassword(udsPath string) (string, error) {
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
 			if err == nil {
-				_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 			}
 		}
 
@@ -765,7 +765,7 @@ func udsAskPassword(udsPath string) (string, error) {
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
 			if err == nil {
-				_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 			}
 		}
 
@@ -791,7 +791,7 @@ func udsAskPassword(udsPath string) (string, error) {
 						return "", err
 					}
 
-					err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+					err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 					if err != nil {
 						return "", err
 					}
@@ -802,7 +802,7 @@ func udsAskPassword(udsPath string) (string, error) {
 							switch msgInHeader.SubType {
 							case netapi.ReqTypePassKeyPassword:
 								{
-									password, err = netapi.ParseReqPassKeyPassword(msgIn[:])
+									password, err = netapi.ParseReqPassKeyPassword(msgIn)
 									if err != nil {
 										sendErrorReply(netapi.ReqResultReasonInvalidInputData)
 										return "", err
@@ -913,7 +913,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
 			if err == nil {
-				_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+				_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 			}
 		}
 	}
@@ -945,7 +945,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 					}
 				}
 
-				err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 				if err != nil {
 					log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
 					continue
@@ -964,7 +964,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 									var nodesList []data.NodeAuth
 									var fullMatch bool
 
-									err = netapi.ParseReqFindInNodesCache(msgIn[:], &nodeFilter, &fullMatch)
+									err = netapi.ParseReqFindInNodesCache(msgIn, &nodeFilter, &fullMatch)
 									if err != nil {
 										return err
 									}
@@ -972,9 +972,9 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 									nodesCache.RLock()
 									nodesList = nodesCache.Get()
 
-									nodesList, _ = filterNodeAuthList(nodesList[:], &nodeFilter, fullMatch)
+									nodesList, _ = filterNodeAuthList(nodesList, &nodeFilter, fullMatch)
 
-									msgOut, err = netapi.BuildRepFindInNodesCache(nodesList[:])
+									msgOut, err = netapi.BuildRepFindInNodesCache(nodesList)
 									nodesCache.RUnlock()
 
 									if err != nil {
@@ -983,7 +983,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 									requireSendErrorReply = false
 
-									_, err = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1013,7 +1013,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 									requireSendErrorReply = false
 
-									_, err = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1045,7 +1045,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 									requireSendErrorReply = false
 
-									_, err = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
 									if err != nil {
 										return err
 									}
@@ -1079,7 +1079,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 						msgOut, err = netapi.BuildUnsupportedMsg()
 						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 						}
 
 						continue
@@ -1091,7 +1091,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 						msgOut, err = netapi.BuildUnsupportedMsg()
 						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 						}
 
 						continue
@@ -1103,7 +1103,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 
 						msgOut, err = netapi.BuildUnsupportedMsg()
 						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut[:], opts.NetTimeout)
+							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 						}
 
 						continue
@@ -1187,7 +1187,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 							return err
 						}
 
-						_, err = netmsg.Send(dirConn, msgOut[:], netTimeout)
+						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
 						if err != nil {
 							return err
 						}
@@ -1204,7 +1204,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 							return err
 						}
 
-						_, err = netmsg.Send(dirConn, msgOut[:], netTimeout)
+						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
 						if err != nil {
 							return err
 						}
@@ -1220,7 +1220,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 							return err
 						}
 
-						_, err = netmsg.Send(dirConn, msgOut[:], netTimeout)
+						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
 						if err != nil {
 							return err
 						}
@@ -1229,12 +1229,12 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 					}
 
 					updateNodesCache := func() {
-						if len(nodesListDB[:]) > 0 && len(usersListDB[:]) > 0 {
+						if len(nodesListDB) > 0 && len(usersListDB) > 0 {
 							log.Println("Update nodes cache")
 
 							updateNodesCacheTimer = time.After(opts.UpdateNodesCachePeriod)
 
-							err = nodesCache.Update(nodesListDB[:], usersListDB[:], &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+							err = nodesCache.Update(nodesListDB, usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
 							if err != nil {
 								log.WithFields(log.Fields{"details": err}).Errorln("Failed to update nodes cache")
 							} else {
@@ -1315,7 +1315,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 								}
 							}
 
-							err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 							if err != nil {
 								log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
 								break authLoop
@@ -1329,7 +1329,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 									switch msgInHeader.SubType {
 									case netapi.ReqTypeListUsers:
 										{
-											usersListDB, err = netapi.ParseRepListUsers(msgIn[:])
+											usersListDB, err = netapi.ParseRepListUsers(msgIn)
 											if err != nil {
 												break authLoop
 											}
@@ -1338,7 +1338,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 
 											log.Println("Update auth user cache")
 
-											err = authUserCache.Update(usersListDB[:], &loginContext.ESAMPubKey, &loginContext.VerifyKey)
+											err = authUserCache.Update(usersListDB, &loginContext.ESAMPubKey, &loginContext.VerifyKey)
 											if err != nil {
 												log.WithFields(log.Fields{"details": err}).Errorln("Failed to update auth user data")
 											} else {
@@ -1356,7 +1356,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 
 									case netapi.ReqTypeListNodes:
 										{
-											nodesListDB, err = netapi.ParseRepListNodes(msgIn[:])
+											nodesListDB, err = netapi.ParseRepListNodes(msgIn)
 											if err != nil {
 												break authLoop
 											}
@@ -1467,7 +1467,7 @@ func sshHandler(c *cli.Context) error {
 		return err
 	}
 
-	if len(nodesList[:]) == 0 {
+	if len(nodesList) == 0 {
 		nodesList, err = requests.FindInNodesCache(clientConn, &nodeFilter, false, opts.NetTimeout)
 		if err != nil {
 			ui.PrintError("Failed to get nodes list", err)
@@ -1475,18 +1475,18 @@ func sshHandler(c *cli.Context) error {
 		}
 	}
 
-	if len(nodesList[:]) == 0 {
+	if len(nodesList) == 0 {
 		err = errors.New("Nodes list is empty")
 		ui.PrintError("Failed to get nodes list", err)
 		return err
 	}
 
-	if len(nodesList[:]) == 1 {
+	if len(nodesList) == 1 {
 		selectedNode = nodesList[0]
 	}
 
-	if len(nodesList[:]) > 1 {
-		err = ui.Select("Please select node:", nodesList[:], &selectedNode, opts.UIPageSize)
+	if len(nodesList) > 1 {
+		err = ui.Select("Please select node:", nodesList, &selectedNode, opts.UIPageSize)
 		if err != nil {
 			ui.PrintError("Failed to select node", err)
 			return err
@@ -1546,20 +1546,20 @@ func listAccessReqHandler(c *cli.Context) error {
 	}
 
 	if c.Bool("json") {
-		out, err = json.MarshalIndent(accessReqsList[:], "", " ")
+		out, err = json.MarshalIndent(accessReqsList, "", " ")
 		if err != nil {
 			ui.PrintError("Failed to marshal out to json", err)
 			return err
 		}
 	} else {
-		out, err = yaml.Marshal(accessReqsList[:])
+		out, err = yaml.Marshal(accessReqsList)
 		if err != nil {
 			ui.PrintError("Failed to marshal out to yaml", err)
 			return err
 		}
 	}
 
-	fmt.Printf("%v", string(out[:]))
+	fmt.Printf("%v", string(out))
 
 	return nil
 }
@@ -1591,13 +1591,13 @@ func delAccessReqHandler(c *cli.Context) error {
 	}
 
 	if !c.Bool("all") {
-		if len(foundAccessReqs[:]) == 1 {
+		if len(foundAccessReqs) == 1 {
 			selectedAccessReq = foundAccessReqs[0]
 			fmt.Printf("%v\n", selectedAccessReq)
 		}
 
-		if len(foundAccessReqs[:]) > 1 {
-			err = ui.Select("Please select access request:", foundAccessReqs[:], &selectedAccessReq, opts.UIPageSize)
+		if len(foundAccessReqs) > 1 {
+			err = ui.Select("Please select access request:", foundAccessReqs, &selectedAccessReq, opts.UIPageSize)
 			if err != nil {
 				ui.PrintError("Failed to select access request", err)
 				return err
@@ -1624,14 +1624,14 @@ func delAccessReqHandler(c *cli.Context) error {
 			}
 		}
 	} else {
-		delAllAccessReq, err := ui.AskYesNo("Delete all access requests? (" + strconv.FormatInt(int64(len(foundAccessReqs[:])), 10) + ")")
+		delAllAccessReq, err := ui.AskYesNo("Delete all access requests? (" + strconv.FormatInt(int64(len(foundAccessReqs)), 10) + ")")
 		if err != nil {
 			ui.PrintError("Failed to read answer", err)
 			return err
 		}
 
 		if delAllAccessReq {
-			for index := range foundAccessReqs[:] {
+			for index := range foundAccessReqs {
 				err = requests.DelAccessReq(dirConn, &foundAccessReqs[index].ESAMPubKey, opts.NetTimeout)
 				if err != nil {
 					ui.PrintError("Failed to delete access request", err)
@@ -1679,7 +1679,7 @@ func addUserHandler(c *cli.Context) error {
 		}*/
 
 		if len(accessReqsList) > 0 {
-			err = ui.Select("Please select access request:", accessReqsList[:], &accessReqSelected, opts.UIPageSize)
+			err = ui.Select("Please select access request:", accessReqsList, &accessReqSelected, opts.UIPageSize)
 			if err != nil {
 				ui.PrintError("Failed to select list of access requests", err)
 				return err
@@ -1779,12 +1779,12 @@ func updateUserHandler(c *cli.Context) error {
 		return err
 	}
 
-	if len(foundUsers[:]) == 1 {
+	if len(foundUsers) == 1 {
 		selectedUser = foundUsers[0]
 	}
 
-	if len(foundUsers[:]) > 1 {
-		err = ui.Select("Please select user:", foundUsers[:], &selectedUser, opts.UIPageSize)
+	if len(foundUsers) > 1 {
+		err = ui.Select("Please select user:", foundUsers, &selectedUser, opts.UIPageSize)
 		if err != nil {
 			ui.PrintError("Failed to select user", err)
 			return err
@@ -1986,9 +1986,9 @@ func listUsersHandler(c *cli.Context) error {
 	}
 
 	if loginContext != nil {
-		usersList, err = parallel.MakeUserAuthList(usersListDB[:], &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+		usersList, err = parallel.MakeUserAuthList(usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
 	} else {
-		usersList, err = parallel.MakeUserAuthList(usersListDB[:], nil, opts.CPUUtilizationFactor)
+		usersList, err = parallel.MakeUserAuthList(usersListDB, nil, opts.CPUUtilizationFactor)
 	}
 	if err != nil {
 		ui.PrintError("Failed to process users auth list", err)
@@ -1996,20 +1996,20 @@ func listUsersHandler(c *cli.Context) error {
 	}
 
 	if c.Bool("json") {
-		out, err = json.MarshalIndent(usersList[:], "", " ")
+		out, err = json.MarshalIndent(usersList, "", " ")
 		if err != nil {
 			ui.PrintError("Failed to marshal out to json", err)
 			return err
 		}
 	} else {
-		out, err = yaml.Marshal(usersList[:])
+		out, err = yaml.Marshal(usersList)
 		if err != nil {
 			ui.PrintError("Failed to marshal out to yaml", err)
 			return err
 		}
 	}
 
-	fmt.Printf("%v", string(out[:]))
+	fmt.Printf("%v", string(out))
 
 	return nil
 }
@@ -2037,13 +2037,13 @@ func delUserHandler(c *cli.Context) error {
 		return err
 	}
 
-	if len(foundUsers[:]) == 1 {
+	if len(foundUsers) == 1 {
 		selectedUser = foundUsers[0]
 		fmt.Printf("%v\n", selectedUser)
 	}
 
-	if len(foundUsers[:]) > 1 {
-		err = ui.Select("Please select user:", foundUsers[:], &selectedUser, opts.UIPageSize)
+	if len(foundUsers) > 1 {
+		err = ui.Select("Please select user:", foundUsers, &selectedUser, opts.UIPageSize)
 		if err != nil {
 			ui.PrintError("Failed to select user", err)
 			return err
@@ -2105,7 +2105,7 @@ func addNodeHandler(c *cli.Context) error {
 		}*/
 
 		if len(accessReqsList) > 0 {
-			err = ui.Select("Please select access request:", accessReqsList[:], &accessReqSelected, opts.UIPageSize)
+			err = ui.Select("Please select access request:", accessReqsList, &accessReqSelected, opts.UIPageSize)
 			if err != nil {
 				ui.PrintError("Failed to select list of access requests", err)
 				return err
@@ -2182,12 +2182,12 @@ func updateNodeHandler(c *cli.Context) error {
 		return err
 	}
 
-	if len(foundNodes[:]) == 1 {
+	if len(foundNodes) == 1 {
 		selectedNode = foundNodes[0]
 	}
 
-	if len(foundNodes[:]) > 1 {
-		err = ui.Select("Please select node:", foundNodes[:], &selectedNode, opts.UIPageSize)
+	if len(foundNodes) > 1 {
+		err = ui.Select("Please select node:", foundNodes, &selectedNode, opts.UIPageSize)
 		if err != nil {
 			ui.PrintError("Failed to select node", err)
 			return err
@@ -2296,16 +2296,16 @@ func listNodesHandler(c *cli.Context) error {
 		}
 
 		if loginContext != nil {
-			nodesList, err = parallel.MakeNodeAuthList(nodesListDB[:], usersListDB[:], &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+			nodesList, err = parallel.MakeNodeAuthList(nodesListDB, usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
 		} else {
-			nodesList, err = parallel.MakeNodeAuthList(nodesListDB[:], usersListDB[:], nil, opts.CPUUtilizationFactor)
+			nodesList, err = parallel.MakeNodeAuthList(nodesListDB, usersListDB, nil, opts.CPUUtilizationFactor)
 		}
 		if err != nil {
 			ui.PrintError("Failed to get nodes auth list", err)
 			return err
 		}
 
-		nodesList, _ = filterNodeAuthList(nodesList[:], &nodeFilterAuth, false)
+		nodesList, _ = filterNodeAuthList(nodesList, &nodeFilterAuth, false)
 	} else {
 		clientConn, err = net.DialTimeout("unix", os.ExpandEnv(c.String("uds-path")), opts.NetTimeout)
 		if err != nil {
@@ -2322,26 +2322,26 @@ func listNodesHandler(c *cli.Context) error {
 	}
 
 	if c.Bool("nullify-esam-pub-key") {
-		for index := range nodesList[:] {
+		for index := range nodesList {
 			nodesList[index].ESAMPubKey = []byte{}
 		}
 	}
 
 	if c.Bool("json") {
-		out, err = json.MarshalIndent(nodesList[:], "", " ")
+		out, err = json.MarshalIndent(nodesList, "", " ")
 		if err != nil {
 			ui.PrintError("Failed to marshal out to json", err)
 			return err
 		}
 	} else {
-		out, err = yaml.Marshal(nodesList[:])
+		out, err = yaml.Marshal(nodesList)
 		if err != nil {
 			ui.PrintError("Failed to marshal out to yaml", err)
 			return err
 		}
 	}
 
-	fmt.Printf("%v", string(out[:]))
+	fmt.Printf("%v", string(out))
 
 	return nil
 }
@@ -2369,13 +2369,13 @@ func delNodeHandler(c *cli.Context) error {
 		return err
 	}
 
-	if len(foundNodes[:]) == 1 {
+	if len(foundNodes) == 1 {
 		selectedNode = foundNodes[0]
 		fmt.Printf("%v\n", selectedNode)
 	}
 
-	if len(foundNodes[:]) > 1 {
-		err = ui.Select("Please select node:", foundNodes[:], &selectedNode, opts.UIPageSize)
+	if len(foundNodes) > 1 {
+		err = ui.Select("Please select node:", foundNodes, &selectedNode, opts.UIPageSize)
 		if err != nil {
 			ui.PrintError("Failed to select node", err)
 			return err
@@ -2535,11 +2535,11 @@ func filterNodeAuthList(nodesListIn []data.NodeAuth, nodeFilter *data.NodeAuth, 
 	var nodesList []data.NodeAuth
 	var nodesListTmp []data.NodeAuth
 
-	nodesList = nodesListIn[:]
+	nodesList = nodesListIn
 
 	if nodeFilter.Name != "" {
 		nodesListTmp = make([]data.NodeAuth, 0)
-		for index := range nodesList[:] {
+		for index := range nodesList {
 			if fullMatch {
 				if nodesList[index].Name == nodeFilter.Name {
 					nodesListTmp = append(nodesListTmp, nodesList[index])
@@ -2550,18 +2550,18 @@ func filterNodeAuthList(nodesListIn []data.NodeAuth, nodeFilter *data.NodeAuth, 
 				}
 			}
 		}
-		nodesList = nodesListTmp[:]
+		nodesList = nodesListTmp
 	}
 
 	if nodeFilter.TrustedData != "" {
 		nodesListTmp = make([]data.NodeAuth, 0)
-		for index := range nodesList[:] {
+		for index := range nodesList {
 			if nodesList[index].TrustedData == nodeFilter.TrustedData {
 				nodesListTmp = append(nodesListTmp, nodesList[index])
 			}
 		}
-		nodesList = nodesListTmp[:]
+		nodesList = nodesListTmp
 	}
 
-	return nodesList[:], nil
+	return nodesList, nil
 }

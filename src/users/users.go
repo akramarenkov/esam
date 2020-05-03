@@ -77,14 +77,14 @@ func ListNames() ([]string, error) {
 		}
 
 		userFields = strings.Split(userItem, userFieldsDelimiter)
-		if len(userFields[:]) > 0 {
+		if len(userFields) > 0 {
 			if userFields[0] != "" {
 				list = append(list, userFields[0])
 			}
 		}
 	}
 
-	return list[:], nil
+	return list, nil
 }
 
 func ValidateName(name string) error {
@@ -92,18 +92,18 @@ func ValidateName(name string) error {
 
 	nameAsRunes = []rune(name)
 
-	if len(nameAsRunes[:]) < 1 {
+	if len(nameAsRunes) < 1 {
 		return errors.New("User name can't be empty")
 	}
 
-	if len(nameAsRunes[:]) > 32 {
+	if len(nameAsRunes) > 32 {
 		return errors.New("User name can't be longer than 32 characters")
 	}
 
 	for _, char := range nameAsRunes {
 		var charIsValid bool
 
-		for _, validChar := range validUserNameCharacters[:] {
+		for _, validChar := range validUserNameCharacters {
 			if char == validChar {
 				charIsValid = true
 				break

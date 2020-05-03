@@ -67,7 +67,7 @@ func (key *AuthorizedKey) FromBlock(block []byte) ([]byte, error) {
 	var keyTmp AuthorizedKey
 	var restOfBlock []byte
 
-	sshKey, keyTmp.Comment, keyTmp.Options, restOfBlock, err = ssh.ParseAuthorizedKey(block[:])
+	sshKey, keyTmp.Comment, keyTmp.Options, restOfBlock, err = ssh.ParseAuthorizedKey(block)
 	if err != nil {
 		return nil, err
 	}
@@ -183,19 +183,19 @@ func AuthorizedKeysFromFile(file *os.File) ([]AuthorizedKey, error) {
 		return nil, err
 	}
 
-	keysBlock = fileContent[:]
+	keysBlock = fileContent
 	for len(keysBlock) > 0 {
 		var key AuthorizedKey
 		var restOfBlock []byte
 
-		restOfBlock, err = key.FromBlock(keysBlock[:])
+		restOfBlock, err = key.FromBlock(keysBlock)
 		if err != nil {
 			return nil, err
 		}
 
 		keys = append(keys, key)
 
-		keysBlock = restOfBlock[:]
+		keysBlock = restOfBlock
 	}
 
 	return keys, nil
@@ -205,7 +205,7 @@ func AuthorizedKeysToFile(file *os.File, keys []AuthorizedKey) error {
 	var err error
 
 	for index := range keys {
-		_, err = file.Write([]byte(keys[index].String() + "\n")[:])
+		_, err = file.Write([]byte(keys[index].String() + "\n"))
 		if err != nil {
 			return err
 		}

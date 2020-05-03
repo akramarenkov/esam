@@ -88,14 +88,14 @@ func BuildReqAddNode(nodeIn *data.NodeDB) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqAddNode(jsonIn []byte, nodeOut *data.NodeDB) error {
 	var err error
 	var reqAddNode reqAddNode
 
-	err = json.Unmarshal(jsonIn[:], &reqAddNode)
+	err = json.Unmarshal(jsonIn, &reqAddNode)
 	if err != nil {
 		return err
 	}
@@ -140,14 +140,14 @@ func BuildReqUpdateNode(esamPubKeyIn *data.ESAMPubKey, nodeIn *data.NodeDB) ([]b
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqUpdateNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, nodeOut *data.NodeDB) error {
 	var err error
 	var reqUpdateNode reqUpdateNode
 
-	err = json.Unmarshal(jsonIn[:], &reqUpdateNode)
+	err = json.Unmarshal(jsonIn, &reqUpdateNode)
 	if err != nil {
 		return err
 	}
@@ -192,14 +192,14 @@ func BuildReqListNodes(nodeFilterIn *data.Node) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqListNodes(jsonIn []byte, nodeFilterOut *data.Node) error {
 	var err error
 	var reqListNodes reqListNodes
 
-	err = json.Unmarshal(jsonIn[:], &reqListNodes)
+	err = json.Unmarshal(jsonIn, &reqListNodes)
 	if err != nil {
 		return err
 	}
@@ -234,21 +234,21 @@ func BuildRepListNodes(nodesIn []data.NodeDB) ([]byte, error) {
 	repListNodes.MsgHeader.SubType = ReqTypeListNodes
 	repListNodes.ReqResult.Status = ReqResultStatusSuccessful
 	repListNodes.ReqResult.Reason = ReqResultReasonEmpty
-	repListNodes.Nodes = nodesIn[:]
+	repListNodes.Nodes = nodesIn
 
 	rep, err = json.Marshal(repListNodes)
 	if err != nil {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepListNodes(jsonIn []byte) ([]data.NodeDB, error) {
 	var err error
 	var repListNodes repListNodes
 
-	err = json.Unmarshal(jsonIn[:], &repListNodes)
+	err = json.Unmarshal(jsonIn, &repListNodes)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func ParseRepListNodes(jsonIn []byte) ([]data.NodeDB, error) {
 		return nil, err
 	}
 
-	return repListNodes.Nodes[:], nil
+	return repListNodes.Nodes, nil
 }
 
 /* List */
@@ -295,14 +295,14 @@ func BuildReqFindInNodesCache(nodeFilterIn *data.NodeAuth, fullMatch bool) ([]by
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqFindInNodesCache(jsonIn []byte, nodeFilterOut *data.NodeAuth, fullMatchOut *bool) error {
 	var err error
 	var reqFindInNodesCache reqFindInNodesCache
 
-	err = json.Unmarshal(jsonIn[:], &reqFindInNodesCache)
+	err = json.Unmarshal(jsonIn, &reqFindInNodesCache)
 	if err != nil {
 		return err
 	}
@@ -341,21 +341,21 @@ func BuildRepFindInNodesCache(nodesIn []data.NodeAuth) ([]byte, error) {
 	repFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
 	repFindInNodesCache.ReqResult.Status = ReqResultStatusSuccessful
 	repFindInNodesCache.ReqResult.Reason = ReqResultReasonEmpty
-	repFindInNodesCache.Nodes = nodesIn[:]
+	repFindInNodesCache.Nodes = nodesIn
 
 	rep, err = json.Marshal(repFindInNodesCache)
 	if err != nil {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepFindInNodesCache(jsonIn []byte) ([]data.NodeAuth, error) {
 	var err error
 	var repFindInNodesCache repFindInNodesCache
 
-	err = json.Unmarshal(jsonIn[:], &repFindInNodesCache)
+	err = json.Unmarshal(jsonIn, &repFindInNodesCache)
 	if err != nil {
 		return nil, err
 	}
@@ -373,7 +373,7 @@ func ParseRepFindInNodesCache(jsonIn []byte) ([]data.NodeAuth, error) {
 		return nil, err
 	}
 
-	return repFindInNodesCache.Nodes[:], nil
+	return repFindInNodesCache.Nodes, nil
 }
 
 /* Find in nodes cache */
@@ -399,14 +399,14 @@ func BuildReqDelNode(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqDelNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
 	var err error
 	var reqDelNode reqDelNode
 
-	err = json.Unmarshal(jsonIn[:], &reqDelNode)
+	err = json.Unmarshal(jsonIn, &reqDelNode)
 	if err != nil {
 		return err
 	}

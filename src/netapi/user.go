@@ -96,14 +96,14 @@ func BuildReqAddUser(userIn *data.UserDB) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqAddUser(jsonIn []byte, userOut *data.UserDB) error {
 	var err error
 	var reqAddUser reqAddUser
 
-	err = json.Unmarshal(jsonIn[:], &reqAddUser)
+	err = json.Unmarshal(jsonIn, &reqAddUser)
 	if err != nil {
 		return err
 	}
@@ -148,14 +148,14 @@ func BuildReqUpdateUser(esamPubKeyIn *data.ESAMPubKey, userIn *data.UserDB) ([]b
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqUpdateUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, userOut *data.UserDB) error {
 	var err error
 	var reqUpdateUser reqUpdateUser
 
-	err = json.Unmarshal(jsonIn[:], &reqUpdateUser)
+	err = json.Unmarshal(jsonIn, &reqUpdateUser)
 	if err != nil {
 		return err
 	}
@@ -196,21 +196,21 @@ func BuildReqChangePassword(password string, passwordHash string, passwordHashSi
 	reqChangePassword.MsgHeader.SubType = ReqTypeChangePassword
 	reqChangePassword.Password = password
 	reqChangePassword.PasswordHash = passwordHash
-	reqChangePassword.PasswordHashSign = passwordHashSign[:]
+	reqChangePassword.PasswordHashSign = passwordHashSign
 
 	req, err = json.Marshal(reqChangePassword)
 	if err != nil {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqChangePassword(jsonIn []byte) (string, string, []byte, error) {
 	var err error
 	var reqChangePassword reqChangePassword
 
-	err = json.Unmarshal(jsonIn[:], &reqChangePassword)
+	err = json.Unmarshal(jsonIn, &reqChangePassword)
 	if err != nil {
 		return "", "", nil, err
 	}
@@ -223,7 +223,7 @@ func ParseReqChangePassword(jsonIn []byte) (string, string, []byte, error) {
 		return "", "", nil, errors.New("Unexpected request type")
 	}
 
-	return reqChangePassword.Password, reqChangePassword.PasswordHash, reqChangePassword.PasswordHashSign[:], nil
+	return reqChangePassword.Password, reqChangePassword.PasswordHash, reqChangePassword.PasswordHashSign, nil
 }
 
 /* ChangePassword */
@@ -250,14 +250,14 @@ func BuildReqListUsers(userFilterIn *data.User) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqListUsers(jsonIn []byte, userFilterOut *data.User) error {
 	var err error
 	var reqListUsers reqListUsers
 
-	err = json.Unmarshal(jsonIn[:], &reqListUsers)
+	err = json.Unmarshal(jsonIn, &reqListUsers)
 	if err != nil {
 		return err
 	}
@@ -292,21 +292,21 @@ func BuildRepListUsers(usersIn []data.UserDB) ([]byte, error) {
 	repListUsers.MsgHeader.SubType = ReqTypeListUsers
 	repListUsers.ReqResult.Status = ReqResultStatusSuccessful
 	repListUsers.ReqResult.Reason = ReqResultReasonEmpty
-	repListUsers.Users = usersIn[:]
+	repListUsers.Users = usersIn
 
 	rep, err = json.Marshal(repListUsers)
 	if err != nil {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepListUsers(jsonIn []byte) ([]data.UserDB, error) {
 	var err error
 	var repListUsers repListUsers
 
-	err = json.Unmarshal(jsonIn[:], &repListUsers)
+	err = json.Unmarshal(jsonIn, &repListUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func ParseRepListUsers(jsonIn []byte) ([]data.UserDB, error) {
 		return nil, err
 	}
 
-	return repListUsers.Users[:], nil
+	return repListUsers.Users, nil
 }
 
 /* List */
@@ -355,14 +355,14 @@ func BuildRepGetAuthUserData(userIn *data.UserAuth) ([]byte, error) {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepGetAuthUserData(jsonIn []byte, userOut *data.UserAuth) error {
 	var err error
 	var repGetAuthUserData repGetAuthUserData
 
-	err = json.Unmarshal(jsonIn[:], &repGetAuthUserData)
+	err = json.Unmarshal(jsonIn, &repGetAuthUserData)
 	if err != nil {
 		return err
 	}
@@ -408,14 +408,14 @@ func BuildReqDelUser(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqDelUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
 	var err error
 	var reqDelUser reqDelUser
 
-	err = json.Unmarshal(jsonIn[:], &reqDelUser)
+	err = json.Unmarshal(jsonIn, &reqDelUser)
 	if err != nil {
 		return err
 	}

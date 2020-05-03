@@ -164,7 +164,7 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 		os.Exit(1)
 	}
 
-	fmt.Printf("%v\n", accessReqs[:])
+	fmt.Printf("%v\n", accessReqs)
 
 	accessReqFilter = data.AccessReqDB{
 		data.AccessReq{
@@ -186,7 +186,7 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 		os.Exit(1)
 	}
 
-	fmt.Printf("%v\n", accessReqs[:])
+	fmt.Printf("%v\n", accessReqs)
 
 	accessReqFilter = data.AccessReqDB{
 		data.AccessReq{
@@ -221,7 +221,7 @@ f8+H9tvQ3n7mgb6nHERBNPUCAwEAAQ==
 		os.Exit(1)
 	}
 
-	fmt.Printf("%v\n", accessReqs[:])
+	fmt.Printf("%v\n", accessReqs)
 
 	for _, accessReq := range accessReqs {
 		err = db.DelAccessReq(accessReq.ESAMPubKey)

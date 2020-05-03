@@ -47,7 +47,7 @@ func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, ne
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, ne
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, ne
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -133,22 +133,22 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 
 					case netapi.ReqResultStatusSuccessful:
 						{
-							authQuestionEncrypted, err = netapi.ParseRepAuthStageOne(msgIn[:])
+							authQuestionEncrypted, err = netapi.ParseRepAuthStageOne(msgIn)
 							if err != nil {
 								return err
 							}
 
-							authQuestion, err = crypt.Decrypt(authQuestionEncrypted[:], key)
+							authQuestion, err = crypt.Decrypt(authQuestionEncrypted, key)
 							if err != nil {
 								return err
 							}
 
-							msgOut, err = netapi.BuildReqAuthStageTwo(authQuestion[:])
+							msgOut, err = netapi.BuildReqAuthStageTwo(authQuestion)
 							if err != nil {
 								return err
 							}
 
-							_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+							_, err = netmsg.Send(conn, msgOut, netTimeout)
 							if err != nil {
 								return err
 							}
@@ -158,7 +158,7 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 								return err
 							}
 
-							err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 							if err != nil {
 								return err
 							}
@@ -169,7 +169,7 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 									switch msgInHeader.SubType {
 									case netapi.ReqTypeAuth:
 										{
-											err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+											err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 											if err != nil {
 												return err
 											}
@@ -243,7 +243,7 @@ func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeo
 		return nil, err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeo
 		return nil, err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeo
 		return nil, errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return nil, err
 	}
@@ -275,12 +275,12 @@ func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeo
 		return nil, errors.New(msgInReqResult.Reason)
 	}
 
-	accessReqOut, err = netapi.ParseRepListAccessReqs(msgIn[:])
+	accessReqOut, err = netapi.ParseRepListAccessReqs(msgIn)
 	if err != nil {
 		return nil, err
 	}
 
-	return accessReqOut[:], nil
+	return accessReqOut, nil
 }
 
 func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duration) error {
@@ -296,7 +296,7 @@ func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Du
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Du
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -319,7 +319,7 @@ func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Du
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -344,7 +344,7 @@ func AddUser(conn net.Conn, userIn *data.UserDB, netTimeout time.Duration) error
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -354,7 +354,7 @@ func AddUser(conn net.Conn, userIn *data.UserDB, netTimeout time.Duration) error
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -367,7 +367,7 @@ func AddUser(conn net.Conn, userIn *data.UserDB, netTimeout time.Duration) error
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -392,7 +392,7 @@ func UpdateUser(conn net.Conn, esamPubKey *data.ESAMPubKey, userIn *data.UserDB,
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -402,7 +402,7 @@ func UpdateUser(conn net.Conn, esamPubKey *data.ESAMPubKey, userIn *data.UserDB,
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -415,7 +415,7 @@ func UpdateUser(conn net.Conn, esamPubKey *data.ESAMPubKey, userIn *data.UserDB,
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -440,7 +440,7 @@ func ChangePassword(conn net.Conn, password string, passwordHash string, passwor
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -450,7 +450,7 @@ func ChangePassword(conn net.Conn, password string, passwordHash string, passwor
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -463,7 +463,7 @@ func ChangePassword(conn net.Conn, password string, passwordHash string, passwor
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -494,7 +494,7 @@ func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration)
 		return nil, err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +504,7 @@ func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration)
 		return nil, err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration)
 		return nil, errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return nil, err
 	}
@@ -526,12 +526,12 @@ func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration)
 		return nil, errors.New(msgInReqResult.Reason)
 	}
 
-	usersOut, err = netapi.ParseRepListUsers(msgIn[:])
+	usersOut, err = netapi.ParseRepListUsers(msgIn)
 	if err != nil {
 		return nil, err
 	}
 
-	return usersOut[:], nil
+	return usersOut, nil
 }
 
 func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Duration) error {
@@ -549,7 +549,7 @@ func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Dura
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -559,7 +559,7 @@ func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Dura
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -572,7 +572,7 @@ func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Dura
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -581,7 +581,7 @@ func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Dura
 		return errors.New(msgInReqResult.Reason)
 	}
 
-	err = netapi.ParseRepGetAuthUserData(msgIn[:], &userTmp)
+	err = netapi.ParseRepGetAuthUserData(msgIn, &userTmp)
 	if err != nil {
 		return err
 	}
@@ -604,7 +604,7 @@ func DelUser(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -614,7 +614,7 @@ func DelUser(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -627,7 +627,7 @@ func DelUser(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -652,7 +652,7 @@ func AddNode(conn net.Conn, nodeIn *data.NodeDB, netTimeout time.Duration) error
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -662,7 +662,7 @@ func AddNode(conn net.Conn, nodeIn *data.NodeDB, netTimeout time.Duration) error
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -675,7 +675,7 @@ func AddNode(conn net.Conn, nodeIn *data.NodeDB, netTimeout time.Duration) error
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -700,7 +700,7 @@ func UpdateNode(conn net.Conn, esamPubKey *data.ESAMPubKey, nodeIn *data.NodeDB,
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -710,7 +710,7 @@ func UpdateNode(conn net.Conn, esamPubKey *data.ESAMPubKey, nodeIn *data.NodeDB,
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -723,7 +723,7 @@ func UpdateNode(conn net.Conn, esamPubKey *data.ESAMPubKey, nodeIn *data.NodeDB,
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -754,7 +754,7 @@ func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration)
 		return nil, err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -764,7 +764,7 @@ func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration)
 		return nil, err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -777,7 +777,7 @@ func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration)
 		return nil, errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return nil, err
 	}
@@ -786,12 +786,12 @@ func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration)
 		return nil, errors.New(msgInReqResult.Reason)
 	}
 
-	nodesOut, err = netapi.ParseRepListNodes(msgIn[:])
+	nodesOut, err = netapi.ParseRepListNodes(msgIn)
 	if err != nil {
 		return nil, err
 	}
 
-	return nodesOut[:], nil
+	return nodesOut, nil
 }
 
 func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool, netTimeout time.Duration) ([]data.NodeAuth, error) {
@@ -813,7 +813,7 @@ func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool
 		return nil, err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -823,7 +823,7 @@ func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool
 		return nil, err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -836,7 +836,7 @@ func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool
 		return nil, errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return nil, err
 	}
@@ -845,12 +845,12 @@ func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool
 		return nil, errors.New(msgInReqResult.Reason)
 	}
 
-	nodesOut, err = netapi.ParseRepFindInNodesCache(msgIn[:])
+	nodesOut, err = netapi.ParseRepFindInNodesCache(msgIn)
 	if err != nil {
 		return nil, err
 	}
 
-	return nodesOut[:], nil
+	return nodesOut, nil
 }
 
 func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duration) error {
@@ -866,7 +866,7 @@ func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -876,7 +876,7 @@ func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -889,7 +889,7 @@ func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -916,7 +916,7 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -926,7 +926,7 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -939,7 +939,7 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}
@@ -948,7 +948,7 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
 		return errors.New(msgInReqResult.Reason)
 	}
 
-	err = netapi.ParseRepGetDirConnSettings(msgIn[:], &dirConnSettingsTmp)
+	err = netapi.ParseRepGetDirConnSettings(msgIn, &dirConnSettingsTmp)
 	if err != nil {
 		return err
 	}
@@ -971,7 +971,7 @@ func PassKeyPassword(conn net.Conn, password string, netTimeout time.Duration) e
 		return err
 	}
 
-	_, err = netmsg.Send(conn, msgOut[:], netTimeout)
+	_, err = netmsg.Send(conn, msgOut, netTimeout)
 	if err != nil {
 		return err
 	}
@@ -981,7 +981,7 @@ func PassKeyPassword(conn net.Conn, password string, netTimeout time.Duration) e
 		return err
 	}
 
-	err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+	err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 	if err != nil {
 		return err
 	}
@@ -994,7 +994,7 @@ func PassKeyPassword(conn net.Conn, password string, netTimeout time.Duration) e
 		return errors.New("Request type does not match expected")
 	}
 
-	err = netapi.ParseReqResult(msgIn[:], &msgInReqResult)
+	err = netapi.ParseReqResult(msgIn, &msgInReqResult)
 	if err != nil {
 		return err
 	}

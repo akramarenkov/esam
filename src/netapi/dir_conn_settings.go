@@ -59,14 +59,14 @@ func BuildRepGetDirConnSettings(dirConnSettingsIn *data.DirConnSettings) ([]byte
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepGetDirConnSettings(jsonIn []byte, dirConnSettingsOut *data.DirConnSettings) error {
 	var err error
 	var repGetDirConnSettings repGetDirConnSettings
 
-	err = json.Unmarshal(jsonIn[:], &repGetDirConnSettings)
+	err = json.Unmarshal(jsonIn, &repGetDirConnSettings)
 	if err != nil {
 		return err
 	}

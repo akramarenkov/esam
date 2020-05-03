@@ -86,7 +86,7 @@ func Recv(conn net.Conn, timeout time.Duration) ([]byte, error) {
 		return nil, err
 	}
 
-	return msg[:], nil
+	return msg, nil
 }
 
 func Send(conn net.Conn, msg []byte, timeout time.Duration) (int, error) {

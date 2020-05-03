@@ -51,14 +51,14 @@ func BuildReqPassKeyPassword(password string) ([]byte, error) {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqPassKeyPassword(jsonIn []byte) (string, error) {
 	var err error
 	var reqPassKeyPassword reqPassKeyPassword
 
-	err = json.Unmarshal(jsonIn[:], &reqPassKeyPassword)
+	err = json.Unmarshal(jsonIn, &reqPassKeyPassword)
 	if err != nil {
 		return "", err
 	}

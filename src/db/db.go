@@ -286,7 +286,7 @@ func (desc *Desc) ListAccessReqs(filter *data.AccessReqDB) ([]data.AccessReqDB, 
 		access_reqs = append(access_reqs, access_req)
 	}
 
-	return access_reqs[:], nil
+	return access_reqs, nil
 }
 
 func (desc *Desc) DelAccessReq(esamPubKey data.ESAMPubKey) error {
@@ -390,7 +390,7 @@ func (desc *Desc) ListUsers(filter *data.User) ([]data.UserDB, error) {
 		users = append(users, user)
 	}
 
-	return users[:], nil
+	return users, nil
 }
 
 func (desc *Desc) DelUser(esamPubKey data.ESAMPubKey) error {
@@ -494,7 +494,7 @@ func (desc *Desc) ListNodes(filter *data.Node) ([]data.NodeDB, error) {
 		nodes = append(nodes, node)
 	}
 
-	return nodes[:], nil
+	return nodes, nil
 }
 
 func (desc *Desc) DelNode(esamPubKey data.ESAMPubKey) error {

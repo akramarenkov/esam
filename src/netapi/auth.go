@@ -77,7 +77,7 @@ func BuildReqAuthStageOne(esamPubKeyIn *data.ESAMPubKey, noticesNotRequired bool
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqAuthStageOne(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (bool, error) {
@@ -88,7 +88,7 @@ func ParseReqAuthStageOne(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (bool, 
 		return false, errors.New("ESAM pub key variable is not defined")
 	}
 
-	err = json.Unmarshal(jsonIn[:], &reqAuthStageOne)
+	err = json.Unmarshal(jsonIn, &reqAuthStageOne)
 	if err != nil {
 		return false, err
 	}
@@ -115,21 +115,21 @@ func BuildRepAuthStageOne(questionIn []byte) ([]byte, error) {
 	repAuthStageOne.MsgHeader.SubType = ReqTypeAuth
 	repAuthStageOne.ReqResult.Status = ReqResultStatusSuccessful
 	repAuthStageOne.ReqResult.Reason = ReqResultReasonEmpty
-	repAuthStageOne.Question = questionIn[:]
+	repAuthStageOne.Question = questionIn
 
 	rep, err = json.Marshal(repAuthStageOne)
 	if err != nil {
 		return nil, err
 	}
 
-	return rep[:], nil
+	return rep, nil
 }
 
 func ParseRepAuthStageOne(jsonIn []byte) ([]byte, error) {
 	var err error
 	var repAuthStageOne repAuthStageOne
 
-	err = json.Unmarshal(jsonIn[:], &repAuthStageOne)
+	err = json.Unmarshal(jsonIn, &repAuthStageOne)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func ParseRepAuthStageOne(jsonIn []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return repAuthStageOne.Question[:], nil
+	return repAuthStageOne.Question, nil
 }
 
 func BuildReqAuthStageTwo(answerIn []byte) ([]byte, error) {
@@ -155,27 +155,27 @@ func BuildReqAuthStageTwo(answerIn []byte) ([]byte, error) {
 	var req []byte
 	var reqAuthStageTwo reqAuthStageTwo
 
-	if len(answerIn[:]) == 0 {
+	if len(answerIn) == 0 {
 		return nil, errors.New("Answer is not defined")
 	}
 
 	reqAuthStageTwo.MsgHeader.Type = MsgTypeRequest
 	reqAuthStageTwo.MsgHeader.SubType = ReqTypeAuth
-	reqAuthStageTwo.Answer = answerIn[:]
+	reqAuthStageTwo.Answer = answerIn
 
 	req, err = json.Marshal(reqAuthStageTwo)
 	if err != nil {
 		return nil, err
 	}
 
-	return req[:], nil
+	return req, nil
 }
 
 func ParseReqAuthStageTwo(jsonIn []byte) ([]byte, error) {
 	var err error
 	var reqAuthStageTwo reqAuthStageTwo
 
-	err = json.Unmarshal(jsonIn[:], &reqAuthStageTwo)
+	err = json.Unmarshal(jsonIn, &reqAuthStageTwo)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func ParseReqAuthStageTwo(jsonIn []byte) ([]byte, error) {
 		return nil, errors.New("Unexpected request type")
 	}
 
-	return reqAuthStageTwo.Answer[:], nil
+	return reqAuthStageTwo.Answer, nil
 }
 
 /* For build and parse reply in stage two use BuildSimpleRep and ParseReqResult functions */

@@ -60,7 +60,7 @@ func revertRunes(runes []rune) []rune {
 	var out []rune
 	var runesLen int
 
-	runesLen = len(runes[:])
+	runesLen = len(runes)
 
 	out = make([]rune, runesLen)
 
@@ -68,7 +68,7 @@ func revertRunes(runes []rune) []rune {
 		out[runesLen-index-1] = runes[index]
 	}
 
-	return out[:]
+	return out
 }
 
 func findSequences(password []rune, sequencesMinLength int) error {
@@ -76,7 +76,7 @@ func findSequences(password []rune, sequencesMinLength int) error {
 	var subString string
 	var subStringReverse string
 
-	passwordLen = len(password[:])
+	passwordLen = len(password)
 
 	for i := range password {
 		if (i + sequencesMinLength) > passwordLen {

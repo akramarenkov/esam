@@ -328,7 +328,7 @@ func (node Node) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (node *Node) FromString(data string) error {
@@ -351,7 +351,7 @@ func (node NodeAuth) String() string {
 		return ""
 	}
 
-	return string(out[:])
+	return string(out)
 }
 
 func (node *NodeAuth) FromString(data string) error {

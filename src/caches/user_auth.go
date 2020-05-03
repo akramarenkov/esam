@@ -108,7 +108,7 @@ func (cache *UserAuth) Update(usersListDB []data.UserDB, userESAMPubKey *data.ES
 	var targetUserIndex int
 	var trustedData bool
 
-	for index := range usersListDB[:] {
+	for index := range usersListDB {
 		if userESAMPubKey.Equal(&usersListDB[index].User.ESAMPubKey) {
 			targetUserIndex = index
 			keyMatchesNumber++
@@ -123,7 +123,7 @@ func (cache *UserAuth) Update(usersListDB []data.UserDB, userESAMPubKey *data.ES
 		return errors.New("Multiplicity users found")
 	}
 
-	trustedData, err = auth.CheckUserDataAuthenticity(&usersListDB[targetUserIndex], usersListDB[:], verifyKey)
+	trustedData, err = auth.CheckUserDataAuthenticity(&usersListDB[targetUserIndex], usersListDB, verifyKey)
 	cache.mutex.Lock()
 	if err == nil && trustedData == true {
 		cache.user.TrustedData = types.True

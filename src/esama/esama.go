@@ -342,7 +342,7 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 							return err
 						}
 
-						_, err = netmsg.Send(dirConn, msgOut[:], netTimeout)
+						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
 						if err != nil {
 							return err
 						}
@@ -358,7 +358,7 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 							return err
 						}
 
-						_, err = netmsg.Send(dirConn, msgOut[:], netTimeout)
+						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
 						if err != nil {
 							return err
 						}
@@ -367,12 +367,12 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 					}
 
 					updateUsersCache := func() {
-						if len(usersListDB[:]) > 0 {
+						if len(usersListDB) > 0 {
 							log.Println("Update users cache")
 
 							updateUsersCacheTimer = time.After(opts.UpdateUsersListPeriod)
 
-							err = usersCache.Update(usersListDB[:], &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+							err = usersCache.Update(usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
 							if err != nil {
 								log.WithFields(log.Fields{"details": err}).Errorln("Failed to update users cache")
 							} else {
@@ -445,7 +445,7 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 								}
 							}
 
-							err = netapi.ParseMsgHeader(msgIn[:], &msgInHeader)
+							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
 							if err != nil {
 								log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
 								break authLoop
@@ -459,7 +459,7 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 									switch msgInHeader.SubType {
 									case netapi.ReqTypeListUsers:
 										{
-											usersListDB, err = netapi.ParseRepListUsers(msgIn[:])
+											usersListDB, err = netapi.ParseRepListUsers(msgIn)
 											if err != nil {
 												break authLoop
 											}
@@ -552,7 +552,7 @@ func usersSetupLoop(ctx context.Context, globData *globDataType, usersCache *cac
 				copy(usersList, usersCache.Get())
 				usersCache.RUnlock()
 
-				err = usersSetup(usersList[:])
+				err = usersSetup(usersList)
 				if err != nil {
 					log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
 				}
@@ -567,7 +567,7 @@ func usersSetupLoop(ctx context.Context, globData *globDataType, usersCache *cac
 				copy(usersList, usersCache.Get())
 				usersCache.RUnlock()
 
-				err = usersSetup(usersList[:])
+				err = usersSetup(usersList)
 				if err != nil {
 					log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
 				}
@@ -592,7 +592,7 @@ func usersSetup(usersList []data.UserAuth) error {
 
 	log.Printf("Setup group %v successfully", opts.UsersGroup)
 
-	for index := range usersList[:] {
+	for index := range usersList {
 		log.Printf("Processing user: %v", usersList[index].Name)
 
 		processUser := func() error {
@@ -706,7 +706,7 @@ func cleanHandler(c *cli.Context) error {
 
 	targetUserNames = make([]string, 0)
 
-	for _, userName := range userNames[:] {
+	for _, userName := range userNames {
 		var targetUser *user.User
 
 		targetUser, err = user.Lookup(userName)
@@ -720,7 +720,7 @@ func cleanHandler(c *cli.Context) error {
 		}
 	}
 
-	if len(targetUserNames[:]) == 0 {
+	if len(targetUserNames) == 0 {
 		ui.PrintInfo("Target users list is empty")
 		return nil
 	}
@@ -729,14 +729,14 @@ func cleanHandler(c *cli.Context) error {
 		TargetUserNames []string `yaml:"Target users"`
 	}
 
-	targetUserNamesWrapper := targetUserNamesWrap{TargetUserNames: targetUserNames[:]}
+	targetUserNamesWrapper := targetUserNamesWrap{TargetUserNames: targetUserNames}
 
 	targetUserNamesInYAML, err = yaml.Marshal(targetUserNamesWrapper)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%v", string(targetUserNamesInYAML[:]))
+	fmt.Printf("%v", string(targetUserNamesInYAML))
 
 	deleteConfirm, err = ui.AskYesNo("Delete all target users?")
 	if err != nil {
@@ -745,7 +745,7 @@ func cleanHandler(c *cli.Context) error {
 	}
 
 	if deleteConfirm {
-		for _, targetUserName := range targetUserNames[:] {
+		for _, targetUserName := range targetUserNames {
 			ui.PrintInfo("Delete user: %v", targetUserName)
 
 			err = setup.UserAbsent(targetUserName, &setup.UserAbsentOpts{Force: true, Remove: true})

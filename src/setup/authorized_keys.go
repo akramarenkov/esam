@@ -94,7 +94,7 @@ func AuthorizedKeyPresent(userName string, authKeyIn *types.AuthorizedKey, exclu
 
 		authKeysTmp = append(authKeysTmp, (*authKey))
 
-		authKeys = authKeysTmp[:]
+		authKeys = authKeysTmp
 	}
 
 	err = authKeysFile.Truncate(0)
@@ -107,7 +107,7 @@ func AuthorizedKeyPresent(userName string, authKeyIn *types.AuthorizedKey, exclu
 		return err
 	}
 
-	err = types.AuthorizedKeysToFile(authKeysFile, authKeys[:])
+	err = types.AuthorizedKeysToFile(authKeysFile, authKeys)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ func AuthorizedKeyAbsent(userName string, authKeyIn *types.AuthorizedKey, all bo
 			}
 		}
 
-		authKeys = authKeysTmp[:]
+		authKeys = authKeysTmp
 	}
 
 	err = authKeysFile.Truncate(0)
@@ -188,7 +188,7 @@ func AuthorizedKeyAbsent(userName string, authKeyIn *types.AuthorizedKey, all bo
 	}
 
 	if !all {
-		err = types.AuthorizedKeysToFile(authKeysFile, authKeys[:])
+		err = types.AuthorizedKeysToFile(authKeysFile, authKeys)
 		if err != nil {
 			return err
 		}
