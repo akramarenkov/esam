@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-go fmt ./...
+go fmt './...'
 
-grep --recursive --null-data --perl-regexp --only-matching "var[ \t]+[^\n]*\n(([ \t]*\n)*[ \t]*var[ \t]+[^\n]*\n)+" "./"
+gofmt -s -w -l -r 'a[:] -> a' '.'
 
-grep --recursive --null-data --perl-regexp --only-matching "case[ \t]+[^:]+[ \t]*:[ \t]*\n*[ \t]*{" "./"
+grep --recursive --null-data --perl-regexp --only-matching 'var[ \t]+[^\n]*\n(([ \t]*\n)*[ \t]*var[ \t]+[^\n]*\n)+' '.'
+
+grep --recursive --null-data --perl-regexp --only-matching 'case[ \t]+[^:]+[ \t]*:[ \t]*\n*[ \t]*{' '.'
