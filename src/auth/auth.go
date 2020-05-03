@@ -136,14 +136,16 @@ var (
 )
 
 func IdentifySubject(subjectESAMPubKey *data.ESAMPubKey, db *db.Desc) (*Context, error) {
-	var err error
+	var (
+		err error
 
-	var authContext *Context
+		authContext *Context
 
-	var nodeFilter data.Node
-	var nodesDBList []data.NodeDB
-	var userFilter data.User
-	var usersDBList []data.UserDB
+		nodeFilter  data.Node
+		nodesDBList []data.NodeDB
+		userFilter  data.User
+		usersDBList []data.UserDB
+	)
 
 	if subjectESAMPubKey == nil {
 		return nil, errors.New("ESAM pub key can't be nil")
@@ -262,8 +264,10 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 
 	case netapi.ReqTypeAddUser:
 		{
-			var newObjectUser data.UserDB
-			var castOk bool
+			var (
+				newObjectUser data.UserDB
+				castOk        bool
+			)
 
 			if authContext == nil {
 				return false, errors.New("Auth context can't be nil")
@@ -283,9 +287,11 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 
 	case netapi.ReqTypeUpdateUser:
 		{
-			var newObjectUser data.UserDB
-			var oldObjectUser data.UserDB
-			var subjectUser data.User
+			var (
+				newObjectUser data.UserDB
+				oldObjectUser data.UserDB
+				subjectUser   data.User
+			)
 
 			var castOk bool
 
@@ -332,11 +338,13 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 
 	case netapi.ReqTypeChangePassword:
 		{
-			var newObjectUser data.UserDB
-			var oldObjectUser data.UserDB
-			var subjectUser data.User
+			var (
+				newObjectUser data.UserDB
+				oldObjectUser data.UserDB
+				subjectUser   data.User
 
-			var castOk bool
+				castOk bool
+			)
 
 			if authContext == nil {
 				return false, errors.New("Auth context can't be nil")
@@ -404,8 +412,10 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 
 	case netapi.ReqTypeDelUser:
 		{
-			var oldObjectUser data.UserDB
-			var castOk bool
+			var (
+				oldObjectUser data.UserDB
+				castOk        bool
+			)
 
 			if authContext == nil {
 				return false, errors.New("Auth context can't be nil")
@@ -487,8 +497,10 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 }
 
 func CheckUserDataAuthenticity(user *data.UserDB, usersList []data.UserDB, verifyKey *data.ESAMPubKey) (bool, error) {
-	var err error
-	var userTmp *data.UserDB
+	var (
+		err     error
+		userTmp *data.UserDB
+	)
 
 	if user == nil {
 		return false, errors.New("User data can't be nil")
@@ -543,9 +555,11 @@ func CheckUserDataAuthenticity(user *data.UserDB, usersList []data.UserDB, verif
 }
 
 func CheckNodeDataAuthenticity(node *data.NodeDB, usersList []data.UserDB, verifyKey *data.ESAMPubKey) (bool, error) {
-	var err error
-	var signer *data.UserDB
-	var canTrustSigner bool
+	var (
+		err            error
+		signer         *data.UserDB
+		canTrustSigner bool
+	)
 
 	if node == nil {
 		return false, errors.New("Node data can't be nil")

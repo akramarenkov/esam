@@ -109,13 +109,15 @@ func (qb *QB) Begin(baseQuery string, tagKey string) error {
 }
 
 func (qb *QB) WhereAndFromStruct(structIn interface{}) error {
-	var err error
-	var structInReflectValue reflect.Value
-	var fieldReflectValue reflect.Value
-	var field reflect.StructField
-	var fieldIsFull bool
-	var fieldTag string
-	var bindVar string
+	var (
+		err                  error
+		structInReflectValue reflect.Value
+		fieldReflectValue    reflect.Value
+		field                reflect.StructField
+		fieldIsFull          bool
+		fieldTag             string
+		bindVar              string
+	)
 
 	if qb == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -209,12 +211,14 @@ func (qb *QB) WhereAndFromStruct(structIn interface{}) error {
 }
 
 func (qb *QB) ValuesFromStruct(structIn interface{}) error {
-	var err error
-	var structInReflectValue reflect.Value
-	var fieldReflectValue reflect.Value
-	var field reflect.StructField
-	var fieldTag string
-	var bindVar string
+	var (
+		err                  error
+		structInReflectValue reflect.Value
+		fieldReflectValue    reflect.Value
+		field                reflect.StructField
+		fieldTag             string
+		bindVar              string
+	)
 
 	if qb == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -297,14 +301,16 @@ func (qb *QB) ValuesFromStruct(structIn interface{}) error {
 }
 
 func (qb *QB) SetWhereFromStruct(structIn interface{}, whereStruct interface{}, setEmpty bool) error {
-	var err error
-	var structInReflectValue reflect.Value
-	var fieldReflectValue reflect.Value
-	var field reflect.StructField
-	var fieldIsFull bool
-	var fieldTag string
-	var bindVar string
-	var qbWhere QB
+	var (
+		err                  error
+		structInReflectValue reflect.Value
+		fieldReflectValue    reflect.Value
+		field                reflect.StructField
+		fieldIsFull          bool
+		fieldTag             string
+		bindVar              string
+		qbWhere              QB
+	)
 
 	if qb == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -419,12 +425,14 @@ func (qb *QB) SetWhereFromStruct(structIn interface{}, whereStruct interface{}, 
 }
 
 func (qb *QB) ColumnsListFromStruct(structIn interface{}, typeTagKey string) error {
-	var err error
-	var structInReflectValue reflect.Value
-	var fieldReflectValue reflect.Value
-	var field reflect.StructField
-	var fieldTag string
-	var fieldTypeTag string
+	var (
+		err                  error
+		structInReflectValue reflect.Value
+		fieldReflectValue    reflect.Value
+		field                reflect.StructField
+		fieldTag             string
+		fieldTypeTag         string
+	)
 
 	if qb == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -504,12 +512,14 @@ func (qb *QB) ColumnsListFromStruct(structIn interface{}, typeTagKey string) err
 }
 
 func (qb *QB) SelectListFromStruct(structIn interface{}, selectEmpty bool) error {
-	var err error
-	var structInReflectValue reflect.Value
-	var fieldReflectValue reflect.Value
-	var field reflect.StructField
-	var fieldIsFull bool
-	var fieldTag string
+	var (
+		err                  error
+		structInReflectValue reflect.Value
+		fieldReflectValue    reflect.Value
+		field                reflect.StructField
+		fieldIsFull          bool
+		fieldTag             string
+	)
 
 	if qb == nil {
 		return errors.New("Struct pointer can't be nil")

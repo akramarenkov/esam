@@ -40,8 +40,10 @@ const (
 )
 
 func Test(t *testing.T) {
-	var err error
-	var db Desc
+	var (
+		err error
+		db  Desc
+	)
 
 	os.Remove(dbFile)
 
@@ -246,9 +248,11 @@ f8+H9tvQ3n7mgb6nHERBNPUCAwEAAQ==
 
 	/* User */
 
-	var userFilter data.User
-	var users []data.UserDB
-	var newUser data.UserDB
+	var (
+		userFilter data.User
+		users      []data.UserDB
+		newUser    data.UserDB
+	)
 
 	newUser = data.UserDB{
 		data.User{
@@ -499,9 +503,11 @@ f8+H9tvQ3n7mgb6nHERBNPUCAwEAAQ==
 
 	/* Node */
 
-	var nodeFilter data.Node
-	var nodes []data.NodeDB
-	var newNode data.NodeDB
+	var (
+		nodeFilter data.Node
+		nodes      []data.NodeDB
+		newNode    data.NodeDB
+	)
 
 	newNode = data.NodeDB{
 		data.Node{

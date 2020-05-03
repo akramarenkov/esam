@@ -43,55 +43,57 @@ const (
 )
 
 func Test(t *testing.T) {
-	var err error
+	var (
+		err error
 
-	var verifyKeyPrivatePEM []byte
-	var verifyKeyPrivate *rsa.PrivateKey
-	var verifyKeyESAMPubKey data.ESAMPubKey
+		verifyKeyPrivatePEM []byte
+		verifyKeyPrivate    *rsa.PrivateKey
+		verifyKeyESAMPubKey data.ESAMPubKey
 
-	var OwnerOne data.UserDB
-	var OwnerOneFilter data.User
-	var OwnerOnePrivateKeyPEM []byte
-	var OwnerOnePrivateKey *rsa.PrivateKey
-	var OwnerOneESAMPubKey data.ESAMPubKey
+		OwnerOne              data.UserDB
+		OwnerOneFilter        data.User
+		OwnerOnePrivateKeyPEM []byte
+		OwnerOnePrivateKey    *rsa.PrivateKey
+		OwnerOneESAMPubKey    data.ESAMPubKey
 
-	var OwnerTwo data.UserDB
-	//var OwnerTwoFilter data.User
-	var OwnerTwoPrivateKeyPEM []byte
-	var OwnerTwoPrivateKey *rsa.PrivateKey
-	var OwnerTwoESAMPubKey data.ESAMPubKey
+		OwnerTwo data.UserDB
+		// OwnerTwoFilter data.User
+		OwnerTwoPrivateKeyPEM []byte
+		OwnerTwoPrivateKey    *rsa.PrivateKey
+		OwnerTwoESAMPubKey    data.ESAMPubKey
 
-	var SecAdminOne data.UserDB
-	var SecAdminOnePrivateKeyPEM []byte
-	var SecAdminOnePrivateKey *rsa.PrivateKey
-	var SecAdminOneESAMPubKey data.ESAMPubKey
+		SecAdminOne              data.UserDB
+		SecAdminOnePrivateKeyPEM []byte
+		SecAdminOnePrivateKey    *rsa.PrivateKey
+		SecAdminOneESAMPubKey    data.ESAMPubKey
 
-	var SecAdminTwo data.UserDB
-	var SecAdminTwoPrivateKeyPEM []byte
-	var SecAdminTwoPrivateKey *rsa.PrivateKey
-	var SecAdminTwoESAMPubKey data.ESAMPubKey
+		SecAdminTwo              data.UserDB
+		SecAdminTwoPrivateKeyPEM []byte
+		SecAdminTwoPrivateKey    *rsa.PrivateKey
+		SecAdminTwoESAMPubKey    data.ESAMPubKey
 
-	var EngineerOne data.UserDB
-	var EngineerTwo data.UserDB
+		EngineerOne data.UserDB
+		EngineerTwo data.UserDB
 
-	var db db.Desc
+		db db.Desc
 
-	var udsAuthContext *Context
-	var ownerOneAuthContext *Context
-	var ownerTwoAuthContext *Context
-	var secAdminOneAuthContext *Context
-	var secAdminTwoAuthContext *Context
-	var engineerOneAuthContext *Context
-	var engineerTwoAuthContext *Context
+		udsAuthContext         *Context
+		ownerOneAuthContext    *Context
+		ownerTwoAuthContext    *Context
+		secAdminOneAuthContext *Context
+		secAdminTwoAuthContext *Context
+		engineerOneAuthContext *Context
+		engineerTwoAuthContext *Context
 
-	var userFilter data.User
-	var usersList []data.UserDB
+		userFilter data.User
+		usersList  []data.UserDB
 
-	var NodeOne data.NodeDB
-	var NodeTwo data.NodeDB
+		NodeOne data.NodeDB
+		NodeTwo data.NodeDB
 
-	var checkAccessRightsResult bool
-	var dataTrusted bool
+		checkAccessRightsResult bool
+		dataTrusted             bool
+	)
 
 	verifyKeyPrivatePEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQCpX56lEshft1J8

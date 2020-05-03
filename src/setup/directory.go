@@ -28,11 +28,13 @@ import (
 )
 
 func DirPresent(path string, mode os.FileMode, uid, gid string) error {
-	var err error
-	var fileInfo os.FileInfo
-	var uidAsInt, gidAsInt uint64
-	var fileStat *syscall.Stat_t
-	var castOk bool
+	var (
+		err                error
+		fileInfo           os.FileInfo
+		uidAsInt, gidAsInt uint64
+		fileStat           *syscall.Stat_t
+		castOk             bool
+	)
 
 	if !mode.IsDir() {
 		return errors.New("Mode describes not a directory")
@@ -85,8 +87,10 @@ func DirPresent(path string, mode os.FileMode, uid, gid string) error {
 }
 
 func DirAbsent(path string) error {
-	var err error
-	var fileInfo os.FileInfo
+	var (
+		err      error
+		fileInfo os.FileInfo
+	)
 
 	fileInfo, err = os.Stat(path)
 	if err != nil {

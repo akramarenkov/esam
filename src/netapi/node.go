@@ -75,9 +75,11 @@ type reqAddNode struct {
 }
 
 func BuildReqAddNode(nodeIn *data.NodeDB) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqAddNode reqAddNode
+	var (
+		err        error
+		req        []byte
+		reqAddNode reqAddNode
+	)
 
 	reqAddNode.MsgHeader.Type = MsgTypeRequest
 	reqAddNode.MsgHeader.SubType = ReqTypeAddNode
@@ -92,8 +94,10 @@ func BuildReqAddNode(nodeIn *data.NodeDB) ([]byte, error) {
 }
 
 func ParseReqAddNode(jsonIn []byte, nodeOut *data.NodeDB) error {
-	var err error
-	var reqAddNode reqAddNode
+	var (
+		err        error
+		reqAddNode reqAddNode
+	)
 
 	err = json.Unmarshal(jsonIn, &reqAddNode)
 	if err != nil {
@@ -126,9 +130,11 @@ type reqUpdateNode struct {
 }
 
 func BuildReqUpdateNode(esamPubKeyIn *data.ESAMPubKey, nodeIn *data.NodeDB) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqUpdateNode reqUpdateNode
+	var (
+		err           error
+		req           []byte
+		reqUpdateNode reqUpdateNode
+	)
 
 	reqUpdateNode.MsgHeader.Type = MsgTypeRequest
 	reqUpdateNode.MsgHeader.SubType = ReqTypeUpdateNode
@@ -144,8 +150,10 @@ func BuildReqUpdateNode(esamPubKeyIn *data.ESAMPubKey, nodeIn *data.NodeDB) ([]b
 }
 
 func ParseReqUpdateNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, nodeOut *data.NodeDB) error {
-	var err error
-	var reqUpdateNode reqUpdateNode
+	var (
+		err           error
+		reqUpdateNode reqUpdateNode
+	)
 
 	err = json.Unmarshal(jsonIn, &reqUpdateNode)
 	if err != nil {
@@ -179,9 +187,11 @@ type reqListNodes struct {
 }
 
 func BuildReqListNodes(nodeFilterIn *data.Node) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqListNodes reqListNodes
+	var (
+		err          error
+		req          []byte
+		reqListNodes reqListNodes
+	)
 
 	reqListNodes.MsgHeader.Type = MsgTypeRequest
 	reqListNodes.MsgHeader.SubType = ReqTypeListNodes
@@ -196,8 +206,10 @@ func BuildReqListNodes(nodeFilterIn *data.Node) ([]byte, error) {
 }
 
 func ParseReqListNodes(jsonIn []byte, nodeFilterOut *data.Node) error {
-	var err error
-	var reqListNodes reqListNodes
+	var (
+		err          error
+		reqListNodes reqListNodes
+	)
 
 	err = json.Unmarshal(jsonIn, &reqListNodes)
 	if err != nil {
@@ -226,9 +238,11 @@ type repListNodes struct {
 }
 
 func BuildRepListNodes(nodesIn []data.NodeDB) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repListNodes repListNodes
+	var (
+		err          error
+		rep          []byte
+		repListNodes repListNodes
+	)
 
 	repListNodes.MsgHeader.Type = MsgTypeReply
 	repListNodes.MsgHeader.SubType = ReqTypeListNodes
@@ -245,8 +259,10 @@ func BuildRepListNodes(nodesIn []data.NodeDB) ([]byte, error) {
 }
 
 func ParseRepListNodes(jsonIn []byte) ([]data.NodeDB, error) {
-	var err error
-	var repListNodes repListNodes
+	var (
+		err          error
+		repListNodes repListNodes
+	)
 
 	err = json.Unmarshal(jsonIn, &repListNodes)
 	if err != nil {
@@ -281,9 +297,11 @@ type reqFindInNodesCache struct {
 }
 
 func BuildReqFindInNodesCache(nodeFilterIn *data.NodeAuth, fullMatch bool) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqFindInNodesCache reqFindInNodesCache
+	var (
+		err                 error
+		req                 []byte
+		reqFindInNodesCache reqFindInNodesCache
+	)
 
 	reqFindInNodesCache.MsgHeader.Type = MsgTypeRequest
 	reqFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache

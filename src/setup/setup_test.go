@@ -39,10 +39,12 @@ const (
 )
 
 func Test(t *testing.T) {
-	var err error
-	var userInfo *user.User
-	var userGroupIds []string
-	var fileContent []byte
+	var (
+		err          error
+		userInfo     *user.User
+		userGroupIds []string
+		fileContent  []byte
+	)
 
 	err = GroupPresent("esam", &GroupPresentOpts{})
 	if err != nil {

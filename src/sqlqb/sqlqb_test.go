@@ -45,10 +45,12 @@ type UserDB struct {
 }
 
 func Test(t *testing.T) {
-	var err error
-	var qb QB
-	var user User
-	var userDB UserDB
+	var (
+		err    error
+		qb     QB
+		user   User
+		userDB UserDB
+	)
 
 	fmt.Printf("\n*********** ColumnsListFromStruct\n")
 

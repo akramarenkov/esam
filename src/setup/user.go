@@ -110,10 +110,12 @@ type UserAbsentOpts struct {
 }
 
 func useradd(name string, cmdOpts *userAddOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -137,10 +139,12 @@ func useradd(name string, cmdOpts *userAddOpts) error {
 }
 
 func usermod(name string, cmdOpts *userModOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -164,10 +168,12 @@ func usermod(name string, cmdOpts *userModOpts) error {
 }
 
 func userdel(name string, cmdOpts *userDelOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -191,8 +197,10 @@ func userdel(name string, cmdOpts *userDelOpts) error {
 }
 
 func UserPresent(name string, userOpts *UserPresentOpts) error {
-	var err error
-	var castOk bool
+	var (
+		err    error
+		castOk bool
+	)
 
 	_, err = user.Lookup(name)
 	_, castOk = err.(user.UnknownUserError)
@@ -240,8 +248,10 @@ func UserPresent(name string, userOpts *UserPresentOpts) error {
 }
 
 func UserAbsent(name string, userOpts *UserAbsentOpts) error {
-	var err error
-	var castOk bool
+	var (
+		err    error
+		castOk bool
+	)
 
 	_, err = user.Lookup(name)
 	_, castOk = err.(user.UnknownUserError)

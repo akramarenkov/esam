@@ -65,10 +65,12 @@ type GroupPresentOpts struct {
 }
 
 func groupadd(name string, cmdOpts *groupAddOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -92,10 +94,12 @@ func groupadd(name string, cmdOpts *groupAddOpts) error {
 }
 
 func groupmod(name string, cmdOpts *groupModOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -119,10 +123,12 @@ func groupmod(name string, cmdOpts *groupModOpts) error {
 }
 
 func groupdel(name string, cmdOpts *groupDelOpts) error {
-	var err error
-	var cmd *exec.Cmd
-	var cmdArgs []string
-	var cmdError bytes.Buffer
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
 	defer cancel()
@@ -146,8 +152,10 @@ func groupdel(name string, cmdOpts *groupDelOpts) error {
 }
 
 func GroupPresent(name string, groupOpts *GroupPresentOpts) error {
-	var err error
-	var castOk bool
+	var (
+		err    error
+		castOk bool
+	)
 
 	_, err = user.LookupGroup(name)
 	_, castOk = err.(user.UnknownGroupError)
@@ -185,8 +193,10 @@ func GroupPresent(name string, groupOpts *GroupPresentOpts) error {
 }
 
 func GroupAbsent(name string) error {
-	var err error
-	var castOk bool
+	var (
+		err    error
+		castOk bool
+	)
 
 	_, err = user.LookupGroup(name)
 	_, castOk = err.(user.UnknownGroupError)

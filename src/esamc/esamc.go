@@ -80,8 +80,10 @@ const (
 )
 
 func main() {
-	var err error
-	var app *cli.App
+	var (
+		err error
+		app *cli.App
+	)
 
 	log.SetFormatter(&log.JSONFormatter{})
 
@@ -521,8 +523,10 @@ func main() {
 }
 
 func genKeyHandler(c *cli.Context) error {
-	var err error
-	var password string
+	var (
+		err      error
+		password string
+	)
 
 	setPassword, err := ui.AskYesNo("Encrypt key with password?")
 	if err != nil {
@@ -550,16 +554,18 @@ func genKeyHandler(c *cli.Context) error {
 }
 
 func sendAccessReqHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var pubKey *rsa.PublicKey
-	var pubKeyPem []byte
+		pubKey    *rsa.PublicKey
+		pubKeyPem []byte
 
-	var tlsConfig tls.Config
-	var tlsCAPool *x509.CertPool
-	var dirConn *tls.Conn
+		tlsConfig tls.Config
+		tlsCAPool *x509.CertPool
+		dirConn   *tls.Conn
 
-	var accessReq data.AccessReq
+		accessReq data.AccessReq
+	)
 
 	pubKey, err = keysconv.LoadPubKeyFromFile(c.String("esam-pub-key"))
 	if err != nil {
@@ -608,15 +614,17 @@ func sendAccessReqHandler(c *cli.Context) error {
 }
 
 func loginHandler(c *cli.Context) error {
-	var err error
-	var loginContext *login.Context
-	var udsListener net.Listener
-	var waitLoops sync.WaitGroup
-	var dirConnSettings *data.DirConnSettings
-	var nodesCache caches.NodesAuth
-	var authUserCache caches.UserAuth
-	var esamKeyIsEncrypted bool
-	var esamKeyPassword string
+	var (
+		err                error
+		loginContext       *login.Context
+		udsListener        net.Listener
+		waitLoops          sync.WaitGroup
+		dirConnSettings    *data.DirConnSettings
+		nodesCache         caches.NodesAuth
+		authUserCache      caches.UserAuth
+		esamKeyIsEncrypted bool
+		esamKeyPassword    string
+	)
 
 	mainCtx, mainCancel := context.WithCancel(context.Background())
 
@@ -709,11 +717,13 @@ func loginHandler(c *cli.Context) error {
 }
 
 func udsAskPassword(udsPath string) (string, error) {
-	var err error
-	var password string
-	var udsListener net.Listener
-	var udsConn net.Conn
-	var onceConnClose sync.Once
+	var (
+		err           error
+		password      string
+		udsListener   net.Listener
+		udsConn       net.Conn
+		onceConnClose sync.Once
+	)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -744,12 +754,14 @@ func udsAskPassword(udsPath string) (string, error) {
 	udsConnHandler := func(conn net.Conn) (string, error) {
 		defer conn.Close()
 
-		var err error
-		var password string
+		var (
+			err      error
+			password string
 
-		var msgIn []byte
-		var msgOut []byte
-		var msgInHeader netapi.MsgHeader
+			msgIn       []byte
+			msgOut      []byte
+			msgInHeader netapi.MsgHeader
+		)
 
 		sendErrorReply := func(reason string) {
 			var err error
@@ -864,10 +876,11 @@ func udsAskPassword(udsPath string) (string, error) {
 func udsLoop(ctx context.Context, listener net.Listener, dirConnSettings *data.DirConnSettings, authUserCache *caches.UserAuth, nodesCache *caches.NodesAuth, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var udsConn net.Conn
-	var waitConn sync.WaitGroup
-
+	var (
+		err      error
+		udsConn  net.Conn
+		waitConn sync.WaitGroup
+	)
 	for {
 		select {
 		case <-ctx.Done():
@@ -898,14 +911,16 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 	defer conn.Close()
 	defer wait.Done()
 
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
+		msgIn       []byte
+		msgOut      []byte
+		msgInHeader netapi.MsgHeader
 
-	var requireSendErrorReply bool
-	var reasonSendErrorReply string
+		requireSendErrorReply bool
+		reasonSendErrorReply  string
+	)
 
 	sendErrorReply := func() {
 		var err error
@@ -1121,15 +1136,17 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache *caches.UserAuth, nodesCache *caches.NodesAuth, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var dirConn *tls.Conn
-	var dirConnAllocated bool
-	var updateNodesCacheTimer <-chan time.Time
-	var noMsgTimer <-chan time.Time
-	var noopTimer <-chan time.Time
+	var (
+		err                   error
+		dirConn               *tls.Conn
+		dirConnAllocated      bool
+		updateNodesCacheTimer <-chan time.Time
+		noMsgTimer            <-chan time.Time
+		noopTimer             <-chan time.Time
 
-	var usersListDB []data.UserDB
-	var nodesListDB []data.NodeDB
+		usersListDB []data.UserDB
+		nodesListDB []data.NodeDB
+	)
 
 	freeLoopResources := func() {
 		if dirConnAllocated {
@@ -1174,13 +1191,16 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 
 			authLoop:
 				for {
-					var msgIn []byte
-					var msgOut []byte
-					var msgInHeader netapi.MsgHeader
-
+					var (
+						msgIn       []byte
+						msgOut      []byte
+						msgInHeader netapi.MsgHeader
+					)
 					sendReqListUsers := func(netTimeout time.Duration) error {
-						var err error
-						var userFilter data.User
+						var (
+							err        error
+							userFilter data.User
+						)
 
 						msgOut, err = netapi.BuildReqListUsers(&userFilter)
 						if err != nil {
@@ -1196,8 +1216,10 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 					}
 
 					sendReqListNodes := func(netTimeout time.Duration) error {
-						var err error
-						var nodeFilter data.Node
+						var (
+							err        error
+							nodeFilter data.Node
+						)
 
 						msgOut, err = netapi.BuildReqListNodes(&nodeFilter)
 						if err != nil {
@@ -1436,13 +1458,15 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 }
 
 func sshHandler(c *cli.Context) error {
-	var err error
-	var clientConn net.Conn
-	var authUserData data.UserAuth
-	var nodeFilter data.NodeAuth
-	var nodesList []data.NodeAuth
-	var selectedNode data.NodeAuth
-	var ssh *exec.Cmd
+	var (
+		err          error
+		clientConn   net.Conn
+		authUserData data.UserAuth
+		nodeFilter   data.NodeAuth
+		nodesList    []data.NodeAuth
+		selectedNode data.NodeAuth
+		ssh          *exec.Cmd
+	)
 
 	if c.Args().Len() > 0 {
 		nodeFilter.Name = c.Args().Get(0)
@@ -1510,13 +1534,15 @@ func sshHandler(c *cli.Context) error {
 }
 
 func listAccessReqHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var accessReqFilter data.AccessReqDB
-	var accessReqsList []data.AccessReqDB
+		dirConn         net.Conn
+		accessReqFilter data.AccessReqDB
+		accessReqsList  []data.AccessReqDB
 
-	var out []byte
+		out []byte
+	)
 
 	dirConn, _, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -1565,12 +1591,14 @@ func listAccessReqHandler(c *cli.Context) error {
 }
 
 func delAccessReqHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var accessReqFilter data.AccessReqDB
-	var foundAccessReqs []data.AccessReqDB
-	var selectedAccessReq data.AccessReqDB
+		dirConn           net.Conn
+		accessReqFilter   data.AccessReqDB
+		foundAccessReqs   []data.AccessReqDB
+		selectedAccessReq data.AccessReqDB
+	)
 
 	dirConn, _, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -1648,11 +1676,13 @@ func delAccessReqHandler(c *cli.Context) error {
 }
 
 func addUserHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
-	var newUser data.UserDB
+		dirConn      net.Conn
+		loginContext *login.Context
+		newUser      data.UserDB
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -1664,9 +1694,11 @@ func addUserHandler(c *cli.Context) error {
 	newUser.User.Template()
 
 	if !c.Bool("manual") {
-		var accessReqFilter data.AccessReqDB
-		var accessReqsList []data.AccessReqDB
-		var accessReqSelected data.AccessReqDB
+		var (
+			accessReqFilter   data.AccessReqDB
+			accessReqsList    []data.AccessReqDB
+			accessReqSelected data.AccessReqDB
+		)
 
 		accessReqSelected.ESAMPubKey = newUser.ESAMPubKey
 
@@ -1752,17 +1784,19 @@ func addUserHandler(c *cli.Context) error {
 }
 
 func updateUserHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
+		dirConn      net.Conn
+		loginContext *login.Context
 
-	var userFilter data.User
-	var foundUsers []data.UserDB
-	var selectedUser data.UserDB
-	var updatedUser data.UserDB
+		userFilter   data.User
+		foundUsers   []data.UserDB
+		selectedUser data.UserDB
+		updatedUser  data.UserDB
 
-	var altSignKey *rsa.PrivateKey
+		altSignKey *rsa.PrivateKey
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -1909,12 +1943,14 @@ func updateUserHandler(c *cli.Context) error {
 }
 
 func changePasswordHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
-	var userPassword string
-	var userData data.UserDB
+		dirConn      net.Conn
+		loginContext *login.Context
+		userPassword string
+		userData     data.UserDB
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), "")
 	if err != nil {
@@ -1961,16 +1997,18 @@ func changePasswordHandler(c *cli.Context) error {
 }
 
 func listUsersHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
+		dirConn      net.Conn
+		loginContext *login.Context
 
-	var userFilter data.User
-	var usersListDB []data.UserDB
-	var usersList []data.UserAuth
+		userFilter  data.User
+		usersListDB []data.UserDB
+		usersList   []data.UserAuth
 
-	var out []byte
+		out []byte
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -2015,12 +2053,14 @@ func listUsersHandler(c *cli.Context) error {
 }
 
 func delUserHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var userFilter data.User
-	var foundUsers []data.UserDB
-	var selectedUser data.UserDB
+		dirConn      net.Conn
+		userFilter   data.User
+		foundUsers   []data.UserDB
+		selectedUser data.UserDB
+	)
 
 	dirConn, _, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -2074,11 +2114,13 @@ func delUserHandler(c *cli.Context) error {
 }
 
 func addNodeHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
-	var newNode data.NodeDB
+		dirConn      net.Conn
+		loginContext *login.Context
+		newNode      data.NodeDB
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -2090,9 +2132,11 @@ func addNodeHandler(c *cli.Context) error {
 	newNode.Node.Template()
 
 	if !c.Bool("manual") {
-		var accessReqFilter data.AccessReqDB
-		var accessReqsList []data.AccessReqDB
-		var accessReqSelected data.AccessReqDB
+		var (
+			accessReqFilter   data.AccessReqDB
+			accessReqsList    []data.AccessReqDB
+			accessReqSelected data.AccessReqDB
+		)
 
 		accessReqSelected.ESAMPubKey = newNode.ESAMPubKey
 
@@ -2157,15 +2201,17 @@ func addNodeHandler(c *cli.Context) error {
 }
 
 func updateNodeHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var loginContext *login.Context
+		dirConn      net.Conn
+		loginContext *login.Context
 
-	var nodeFilter data.Node
-	var foundNodes []data.NodeDB
-	var selectedNode data.NodeDB
-	var updatedNode data.NodeDB
+		nodeFilter   data.Node
+		foundNodes   []data.NodeDB
+		selectedNode data.NodeDB
+		updatedNode  data.NodeDB
+	)
 
 	dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -2251,16 +2297,18 @@ func updateNodeHandler(c *cli.Context) error {
 }
 
 func listNodesHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var clientConn net.Conn
-	var loginContext *login.Context
+		dirConn      net.Conn
+		clientConn   net.Conn
+		loginContext *login.Context
 
-	var nodeFilterAuth data.NodeAuth
-	var nodesList []data.NodeAuth
+		nodeFilterAuth data.NodeAuth
+		nodesList      []data.NodeAuth
 
-	var out []byte
+		out []byte
+	)
 
 	if c.Args().Len() > 0 {
 		nodeFilterAuth.Name = c.Args().Get(0)
@@ -2271,10 +2319,12 @@ func listNodesHandler(c *cli.Context) error {
 	}
 
 	if c.Bool("no-cache") {
-		var nodeFilter data.Node
-		var userFilter data.User
-		var nodesListDB []data.NodeDB
-		var usersListDB []data.UserDB
+		var (
+			nodeFilter  data.Node
+			userFilter  data.User
+			nodesListDB []data.NodeDB
+			usersListDB []data.UserDB
+		)
 
 		dirConn, loginContext, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 		if err != nil {
@@ -2347,12 +2397,14 @@ func listNodesHandler(c *cli.Context) error {
 }
 
 func delNodeHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var dirConn net.Conn
-	var nodeFilter data.Node
-	var foundNodes []data.NodeDB
-	var selectedNode data.NodeDB
+		dirConn      net.Conn
+		nodeFilter   data.Node
+		foundNodes   []data.NodeDB
+		selectedNode data.NodeDB
+	)
 
 	dirConn, _, err = connectToDirectorOnOneTry(c.String("uds-path"), c.String("dir-uds-path"))
 	if err != nil {
@@ -2406,10 +2458,12 @@ func delNodeHandler(c *cli.Context) error {
 }
 
 func passKeyPasswordHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
 
-	var esamKeyPassword string
-	var clientConn net.Conn
+		esamKeyPassword string
+		clientConn      net.Conn
+	)
 
 	clientConn, err = net.DialTimeout("unix", os.ExpandEnv(c.String("uds-path")), opts.NetTimeout)
 	if err != nil {
@@ -2436,8 +2490,10 @@ func passKeyPasswordHandler(c *cli.Context) error {
 }
 
 func makeDirConnSettings(esamKeyPath string, dirAddr string, dirPort string, tlsCACertPath string, verifyKeyPath string) (*data.DirConnSettings, error) {
-	var err error
-	var dirConnSettings *data.DirConnSettings
+	var (
+		err             error
+		dirConnSettings *data.DirConnSettings
+	)
 
 	dirConnSettings = new(data.DirConnSettings)
 
@@ -2463,11 +2519,13 @@ func makeDirConnSettings(esamKeyPath string, dirAddr string, dirPort string, tls
 }
 
 func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *login.Context, error) {
-	var err error
-	var dirConn net.Conn
-	var loginContext *login.Context
-	var esamKeyIsEncrypted bool
-	var esamKeyPassword string
+	var (
+		err                error
+		dirConn            net.Conn
+		loginContext       *login.Context
+		esamKeyIsEncrypted bool
+		esamKeyPassword    string
+	)
 
 	if os.ExpandEnv(dirUDSPath) != "" {
 		dirConn, err = net.DialTimeout("unix", os.ExpandEnv(dirUDSPath), opts.NetTimeout)
@@ -2478,8 +2536,10 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
 		var dirConnSettings data.DirConnSettings
 
 		getDirConnSettings := func() error {
-			var err error
-			var clientConn net.Conn
+			var (
+				err        error
+				clientConn net.Conn
+			)
 
 			clientConn, err = net.DialTimeout("unix", os.ExpandEnv(udsPath), opts.NetTimeout)
 			if err != nil {
@@ -2532,8 +2592,10 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
 }
 
 func filterNodeAuthList(nodesListIn []data.NodeAuth, nodeFilter *data.NodeAuth, fullMatch bool) ([]data.NodeAuth, error) {
-	var nodesList []data.NodeAuth
-	var nodesListTmp []data.NodeAuth
+	var (
+		nodesList    []data.NodeAuth
+		nodesListTmp []data.NodeAuth
+	)
 
 	nodesList = nodesListIn
 

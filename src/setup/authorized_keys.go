@@ -34,13 +34,15 @@ import (
 )
 
 func AuthorizedKeyPresent(userName string, authKeyIn *types.AuthorizedKey, exclusive bool) error {
-	var err error
-	var authKey *types.AuthorizedKey
-	var userInfo *user.User
-	var sshDirPath string
-	var authKeysFilePath string
-	var authKeysFile *os.File
-	var authKeys []types.AuthorizedKey
+	var (
+		err              error
+		authKey          *types.AuthorizedKey
+		userInfo         *user.User
+		sshDirPath       string
+		authKeysFilePath string
+		authKeysFile     *os.File
+		authKeys         []types.AuthorizedKey
+	)
 
 	if authKeyIn == nil {
 		return errors.New("Authorized key pointer can't be nil")
@@ -116,14 +118,16 @@ func AuthorizedKeyPresent(userName string, authKeyIn *types.AuthorizedKey, exclu
 }
 
 func AuthorizedKeyAbsent(userName string, authKeyIn *types.AuthorizedKey, all bool) error {
-	var err error
-	var authKey *types.AuthorizedKey
-	var userInfo *user.User
-	var sshDirPath string
-	var authKeysFilePath string
-	var authKeysFile *os.File
-	var authKeys []types.AuthorizedKey
-	var authKeysTmp []types.AuthorizedKey
+	var (
+		err              error
+		authKey          *types.AuthorizedKey
+		userInfo         *user.User
+		sshDirPath       string
+		authKeysFilePath string
+		authKeysFile     *os.File
+		authKeys         []types.AuthorizedKey
+		authKeysTmp      []types.AuthorizedKey
+	)
 
 	if !all {
 		if authKeyIn == nil {

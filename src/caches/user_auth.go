@@ -47,9 +47,11 @@ func (cache *UserAuth) Init(filePath string) error {
 }
 
 func (cache *UserAuth) FromFile() error {
-	var err error
-	var cacheFile *os.File
-	var jsonDec *json.Decoder
+	var (
+		err       error
+		cacheFile *os.File
+		jsonDec   *json.Decoder
+	)
 
 	cacheFile, err = os.Open(cache.filePath)
 	if err != nil {
@@ -70,9 +72,11 @@ func (cache *UserAuth) FromFile() error {
 }
 
 func (cache *UserAuth) ToFile() error {
-	var err error
-	var cacheFile *os.File
-	var jsonEnc *json.Encoder
+	var (
+		err       error
+		cacheFile *os.File
+		jsonEnc   *json.Encoder
+	)
 
 	cacheFile, err = os.Open(cache.filePath)
 	if err == nil {
@@ -104,9 +108,11 @@ func (cache *UserAuth) ToFile() error {
 func (cache *UserAuth) Update(usersListDB []data.UserDB, userESAMPubKey *data.ESAMPubKey, verifyKey *data.ESAMPubKey) error {
 	var err error
 
-	var keyMatchesNumber int
-	var targetUserIndex int
-	var trustedData bool
+	var (
+		keyMatchesNumber int
+		targetUserIndex  int
+		trustedData      bool
+	)
 
 	for index := range usersListDB {
 		if userESAMPubKey.Equal(&usersListDB[index].User.ESAMPubKey) {

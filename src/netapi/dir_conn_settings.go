@@ -44,9 +44,11 @@ type repGetDirConnSettings struct {
 }
 
 func BuildRepGetDirConnSettings(dirConnSettingsIn *data.DirConnSettings) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repGetDirConnSettings repGetDirConnSettings
+	var (
+		err                   error
+		rep                   []byte
+		repGetDirConnSettings repGetDirConnSettings
+	)
 
 	repGetDirConnSettings.MsgHeader.Type = MsgTypeReply
 	repGetDirConnSettings.MsgHeader.SubType = ReqTypeGetDirConnSettings
@@ -63,8 +65,10 @@ func BuildRepGetDirConnSettings(dirConnSettingsIn *data.DirConnSettings) ([]byte
 }
 
 func ParseRepGetDirConnSettings(jsonIn []byte, dirConnSettingsOut *data.DirConnSettings) error {
-	var err error
-	var repGetDirConnSettings repGetDirConnSettings
+	var (
+		err                   error
+		repGetDirConnSettings repGetDirConnSettings
+	)
 
 	err = json.Unmarshal(jsonIn, &repGetDirConnSettings)
 	if err != nil {

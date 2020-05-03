@@ -44,8 +44,10 @@ type AuthorizedKey struct {
 }
 
 func (key *AuthorizedKey) Copy() (*AuthorizedKey, error) {
-	var err error
-	var keyOut *AuthorizedKey
+	var (
+		err    error
+		keyOut *AuthorizedKey
+	)
 
 	if key == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -62,10 +64,12 @@ func (key *AuthorizedKey) Copy() (*AuthorizedKey, error) {
 }
 
 func (key *AuthorizedKey) FromBlock(block []byte) ([]byte, error) {
-	var err error
-	var sshKey ssh.PublicKey
-	var keyTmp AuthorizedKey
-	var restOfBlock []byte
+	var (
+		err         error
+		sshKey      ssh.PublicKey
+		keyTmp      AuthorizedKey
+		restOfBlock []byte
+	)
 
 	sshKey, keyTmp.Comment, keyTmp.Options, restOfBlock, err = ssh.ParseAuthorizedKey(block)
 	if err != nil {
@@ -135,8 +139,10 @@ func (key *AuthorizedKey) Normalize() error {
 }
 
 func (key *AuthorizedKey) Test() error {
-	var err error
-	var keyTmp AuthorizedKey
+	var (
+		err    error
+		keyTmp AuthorizedKey
+	)
 
 	err = keyTmp.FromString(key.String())
 	if err != nil {
@@ -147,8 +153,10 @@ func (key *AuthorizedKey) Test() error {
 }
 
 func NormalizeSSHPublicKey(keyAsString string) (string, error) {
-	var err error
-	var key AuthorizedKey
+	var (
+		err error
+		key AuthorizedKey
+	)
 
 	err = key.FromString(keyAsString)
 	if err != nil {
@@ -159,8 +167,10 @@ func NormalizeSSHPublicKey(keyAsString string) (string, error) {
 }
 
 func TestSSHPublicKey(keyAsString string) error {
-	var err error
-	var key AuthorizedKey
+	var (
+		err error
+		key AuthorizedKey
+	)
 
 	err = key.FromString(keyAsString)
 	if err != nil {
@@ -171,10 +181,12 @@ func TestSSHPublicKey(keyAsString string) error {
 }
 
 func AuthorizedKeysFromFile(file *os.File) ([]AuthorizedKey, error) {
-	var err error
-	var keys []AuthorizedKey
-	var fileContent []byte
-	var keysBlock []byte
+	var (
+		err         error
+		keys        []AuthorizedKey
+		fileContent []byte
+		keysBlock   []byte
+	)
 
 	keys = make([]AuthorizedKey, 0)
 
@@ -185,8 +197,10 @@ func AuthorizedKeysFromFile(file *os.File) ([]AuthorizedKey, error) {
 
 	keysBlock = fileContent
 	for len(keysBlock) > 0 {
-		var key AuthorizedKey
-		var restOfBlock []byte
+		var (
+			key         AuthorizedKey
+			restOfBlock []byte
+		)
 
 		restOfBlock, err = key.FromBlock(keysBlock)
 		if err != nil {

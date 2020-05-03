@@ -45,9 +45,11 @@ func (cache *NodesAuth) Init(filePath string) error {
 }
 
 func (cache *NodesAuth) FromFile() error {
-	var err error
-	var cacheFile *os.File
-	var jsonDec *json.Decoder
+	var (
+		err       error
+		cacheFile *os.File
+		jsonDec   *json.Decoder
+	)
 
 	cacheFile, err = os.Open(cache.filePath)
 	if err != nil {
@@ -68,9 +70,11 @@ func (cache *NodesAuth) FromFile() error {
 }
 
 func (cache *NodesAuth) ToFile() error {
-	var err error
-	var cacheFile *os.File
-	var jsonEnc *json.Encoder
+	var (
+		err       error
+		cacheFile *os.File
+		jsonEnc   *json.Encoder
+	)
 
 	cacheFile, err = os.Open(cache.filePath)
 	if err == nil {
@@ -100,8 +104,10 @@ func (cache *NodesAuth) ToFile() error {
 }
 
 func (cache *NodesAuth) Update(nodesListDB []data.NodeDB, usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) error {
-	var err error
-	var nodesList []data.NodeAuth
+	var (
+		err       error
+		nodesList []data.NodeAuth
+	)
 
 	nodesList, err = parallel.MakeNodeAuthList(nodesListDB, usersListDB, verifyKey, coresRatio)
 	if err != nil {

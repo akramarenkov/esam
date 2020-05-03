@@ -31,8 +31,10 @@ const (
 )
 
 func buildArgs(structIn interface{}) ([]string, error) {
-	var structInRV reflect.Value
-	var args []string
+	var (
+		structInRV reflect.Value
+		args       []string
+	)
 
 	structInRV = reflect.ValueOf(structIn)
 
@@ -47,10 +49,12 @@ func buildArgs(structIn interface{}) ([]string, error) {
 	args = make([]string, 0)
 
 	for index := 0; index < structInRV.NumField(); index++ {
-		var fieldRV reflect.Value
-		var field reflect.StructField
-		var fieldOpt string
-		var fieldValue string
+		var (
+			fieldRV    reflect.Value
+			field      reflect.StructField
+			fieldOpt   string
+			fieldValue string
+		)
 
 		fieldRV = structInRV.Field(index)
 		field = structInRV.Type().Field(index)

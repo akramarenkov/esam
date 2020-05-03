@@ -28,12 +28,14 @@ import (
 )
 
 func FilePresent(path string, mode os.FileMode, uid, gid string) (*os.File, error) {
-	var err error
-	var file *os.File
-	var fileInfo os.FileInfo
-	var uidAsInt, gidAsInt uint64
-	var fileStat *syscall.Stat_t
-	var castOk bool
+	var (
+		err                error
+		file               *os.File
+		fileInfo           os.FileInfo
+		uidAsInt, gidAsInt uint64
+		fileStat           *syscall.Stat_t
+		castOk             bool
+	)
 
 	if !mode.IsRegular() {
 		return nil, errors.New("Mode describes not a regular file")
@@ -86,8 +88,10 @@ func FilePresent(path string, mode os.FileMode, uid, gid string) (*os.File, erro
 }
 
 func FileAbsent(path string) error {
-	var err error
-	var fileInfo os.FileInfo
+	var (
+		err      error
+		fileInfo os.FileInfo
+	)
 
 	fileInfo, err = os.Stat(path)
 	if err != nil {

@@ -46,10 +46,12 @@ type Desc struct {
 }
 
 func (desc *Desc) Connect(dbmsType string, dbmsAddr string, dbmsPort string, dbmsUser string, dbmsUserPassword string, dbName string) error {
-	var err error
-	var descTmp Desc
-	var driverName string
-	var dsn string
+	var (
+		err        error
+		descTmp    Desc
+		driverName string
+		dsn        string
+	)
 
 	switch dbmsType {
 	case DBMSTypeSQLite:
@@ -101,11 +103,13 @@ func (desc *Desc) Connect(dbmsType string, dbmsAddr string, dbmsPort string, dbm
 }
 
 func (desc *Desc) Init() error {
-	var err error
-	var qb sqlqb.QB
-	var access_req data.AccessReqDB
-	var user data.UserDB
-	var node data.NodeDB
+	var (
+		err        error
+		qb         sqlqb.QB
+		access_req data.AccessReqDB
+		user       data.UserDB
+		node       data.NodeDB
+	)
 
 	switch desc.dbmsType {
 	case DBMSTypeMySQL, DBMSTypePostgreSQL:
@@ -166,11 +170,13 @@ func (desc *Desc) Init() error {
 }
 
 func (desc *Desc) Test() error {
-	var err error
-	var qb sqlqb.QB
-	var access_req data.AccessReqDB
-	var user data.UserDB
-	var node data.NodeDB
+	var (
+		err        error
+		qb         sqlqb.QB
+		access_req data.AccessReqDB
+		user       data.UserDB
+		node       data.NodeDB
+	)
 
 	err = qb.Begin(`SELECT`, "db")
 	if err != nil {
@@ -221,8 +227,10 @@ func (desc *Desc) Test() error {
 }
 
 func (desc *Desc) GetAccessReqCount() (uint, error) {
-	var err error
-	var count uint
+	var (
+		err   error
+		count uint
+	)
 
 	err = desc.db.Get(&count, `SELECT COUNT(*) FROM access_reqs`)
 	if err != nil {
@@ -233,8 +241,10 @@ func (desc *Desc) GetAccessReqCount() (uint, error) {
 }
 
 func (desc *Desc) AddAccessReq(access_req *data.AccessReqDB) error {
-	var err error
-	var qb sqlqb.QB
+	var (
+		err error
+		qb  sqlqb.QB
+	)
 
 	err = qb.Begin(`INSERT INTO access_reqs`, "db")
 	if err != nil {
@@ -255,9 +265,11 @@ func (desc *Desc) AddAccessReq(access_req *data.AccessReqDB) error {
 }
 
 func (desc *Desc) ListAccessReqs(filter *data.AccessReqDB) ([]data.AccessReqDB, error) {
-	var err error
-	var qb sqlqb.QB
-	var rows *sqlx.Rows
+	var (
+		err  error
+		qb   sqlqb.QB
+		rows *sqlx.Rows
+	)
 
 	err = qb.Begin(`SELECT * FROM access_reqs`, "db")
 	if err != nil {
@@ -290,9 +302,11 @@ func (desc *Desc) ListAccessReqs(filter *data.AccessReqDB) ([]data.AccessReqDB, 
 }
 
 func (desc *Desc) DelAccessReq(esamPubKey data.ESAMPubKey) error {
-	var err error
-	var qb sqlqb.QB
-	var filter data.AccessReqDB
+	var (
+		err    error
+		qb     sqlqb.QB
+		filter data.AccessReqDB
+	)
 
 	filter.ESAMPubKey = esamPubKey
 
@@ -315,8 +329,10 @@ func (desc *Desc) DelAccessReq(esamPubKey data.ESAMPubKey) error {
 }
 
 func (desc *Desc) AddUser(user *data.UserDB) error {
-	var err error
-	var qb sqlqb.QB
+	var (
+		err error
+		qb  sqlqb.QB
+	)
 
 	err = qb.Begin(`INSERT INTO users`, "db")
 	if err != nil {
@@ -337,8 +353,10 @@ func (desc *Desc) AddUser(user *data.UserDB) error {
 }
 
 func (desc *Desc) UpdateUser(filter *data.User, user *data.UserDB) error {
-	var err error
-	var qb sqlqb.QB
+	var (
+		err error
+		qb  sqlqb.QB
+	)
 
 	err = qb.Begin(`UPDATE users`, "db")
 	if err != nil {
@@ -359,9 +377,11 @@ func (desc *Desc) UpdateUser(filter *data.User, user *data.UserDB) error {
 }
 
 func (desc *Desc) ListUsers(filter *data.User) ([]data.UserDB, error) {
-	var err error
-	var qb sqlqb.QB
-	var rows *sqlx.Rows
+	var (
+		err  error
+		qb   sqlqb.QB
+		rows *sqlx.Rows
+	)
 
 	err = qb.Begin(`SELECT * FROM users`, "db")
 	if err != nil {
@@ -394,9 +414,11 @@ func (desc *Desc) ListUsers(filter *data.User) ([]data.UserDB, error) {
 }
 
 func (desc *Desc) DelUser(esamPubKey data.ESAMPubKey) error {
-	var err error
-	var qb sqlqb.QB
-	var filter data.User
+	var (
+		err    error
+		qb     sqlqb.QB
+		filter data.User
+	)
 
 	filter.ESAMPubKey = esamPubKey
 
@@ -419,8 +441,10 @@ func (desc *Desc) DelUser(esamPubKey data.ESAMPubKey) error {
 }
 
 func (desc *Desc) AddNode(node *data.NodeDB) error {
-	var err error
-	var qb sqlqb.QB
+	var (
+		err error
+		qb  sqlqb.QB
+	)
 
 	err = qb.Begin(`INSERT INTO nodes`, "db")
 	if err != nil {
@@ -441,8 +465,10 @@ func (desc *Desc) AddNode(node *data.NodeDB) error {
 }
 
 func (desc *Desc) UpdateNode(filter *data.Node, node *data.NodeDB) error {
-	var err error
-	var qb sqlqb.QB
+	var (
+		err error
+		qb  sqlqb.QB
+	)
 
 	err = qb.Begin(`UPDATE nodes`, "db")
 	if err != nil {
@@ -463,9 +489,11 @@ func (desc *Desc) UpdateNode(filter *data.Node, node *data.NodeDB) error {
 }
 
 func (desc *Desc) ListNodes(filter *data.Node) ([]data.NodeDB, error) {
-	var err error
-	var qb sqlqb.QB
-	var rows *sqlx.Rows
+	var (
+		err  error
+		qb   sqlqb.QB
+		rows *sqlx.Rows
+	)
 
 	err = qb.Begin(`SELECT * FROM nodes`, "db")
 	if err != nil {
@@ -498,9 +526,11 @@ func (desc *Desc) ListNodes(filter *data.Node) ([]data.NodeDB, error) {
 }
 
 func (desc *Desc) DelNode(esamPubKey data.ESAMPubKey) error {
-	var err error
-	var qb sqlqb.QB
-	var filter data.Node
+	var (
+		err    error
+		qb     sqlqb.QB
+		filter data.Node
+	)
 
 	filter.ESAMPubKey = esamPubKey
 
