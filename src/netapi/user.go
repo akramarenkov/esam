@@ -21,12 +21,12 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 import (
-  "esam/src/data"
+	"esam/src/data"
 )
 
 /*
@@ -78,47 +78,47 @@ import (
 /*Add */
 
 type reqAddUser struct {
-  msgHeaderWrapper
-  data.UserDB `json:"user"`
+	msgHeaderWrapper
+	data.UserDB `json:"user"`
 }
 
 func BuildReqAddUser(userIn *data.UserDB) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqAddUser reqAddUser
-  
-  reqAddUser.MsgHeader.Type = MsgTypeRequest
-  reqAddUser.MsgHeader.SubType = ReqTypeAddUser
-  reqAddUser.UserDB = (*userIn)
-  
-  req, err = json.Marshal(reqAddUser)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqAddUser reqAddUser
+
+	reqAddUser.MsgHeader.Type = MsgTypeRequest
+	reqAddUser.MsgHeader.SubType = ReqTypeAddUser
+	reqAddUser.UserDB = (*userIn)
+
+	req, err = json.Marshal(reqAddUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqAddUser(jsonIn []byte, userOut *data.UserDB) (error) {
-  var err error
-  var reqAddUser reqAddUser
-  
-  err = json.Unmarshal(jsonIn[:], &reqAddUser)
-  if err != nil {
-    return err
-  }
-  
-  if reqAddUser.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqAddUser.MsgHeader.SubType != ReqTypeAddUser {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*userOut) = reqAddUser.UserDB
-  
-  return nil
+func ParseReqAddUser(jsonIn []byte, userOut *data.UserDB) error {
+	var err error
+	var reqAddUser reqAddUser
+
+	err = json.Unmarshal(jsonIn[:], &reqAddUser)
+	if err != nil {
+		return err
+	}
+
+	if reqAddUser.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqAddUser.MsgHeader.SubType != ReqTypeAddUser {
+		return errors.New("Unexpected request type")
+	}
+
+	(*userOut) = reqAddUser.UserDB
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
@@ -128,50 +128,50 @@ func ParseReqAddUser(jsonIn []byte, userOut *data.UserDB) (error) {
 /* Update */
 
 type reqUpdateUser struct {
-  msgHeaderWrapper
-  data.ESAMPubKey `json:"esam_pub_key"`
-  data.UserDB `json:"user"`
+	msgHeaderWrapper
+	data.ESAMPubKey `json:"esam_pub_key"`
+	data.UserDB     `json:"user"`
 }
 
 func BuildReqUpdateUser(esamPubKeyIn *data.ESAMPubKey, userIn *data.UserDB) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqUpdateUser reqUpdateUser
-  
-  reqUpdateUser.MsgHeader.Type = MsgTypeRequest
-  reqUpdateUser.MsgHeader.SubType = ReqTypeUpdateUser
-  reqUpdateUser.ESAMPubKey = (*esamPubKeyIn)
-  reqUpdateUser.UserDB = (*userIn)
-  
-  req, err = json.Marshal(reqUpdateUser)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqUpdateUser reqUpdateUser
+
+	reqUpdateUser.MsgHeader.Type = MsgTypeRequest
+	reqUpdateUser.MsgHeader.SubType = ReqTypeUpdateUser
+	reqUpdateUser.ESAMPubKey = (*esamPubKeyIn)
+	reqUpdateUser.UserDB = (*userIn)
+
+	req, err = json.Marshal(reqUpdateUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqUpdateUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, userOut *data.UserDB) (error) {
-  var err error
-  var reqUpdateUser reqUpdateUser
-  
-  err = json.Unmarshal(jsonIn[:], &reqUpdateUser)
-  if err != nil {
-    return err
-  }
-  
-  if reqUpdateUser.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqUpdateUser.MsgHeader.SubType != ReqTypeUpdateUser {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*esamPubKeyOut) = reqUpdateUser.ESAMPubKey
-  (*userOut) = reqUpdateUser.UserDB
-  
-  return nil
+func ParseReqUpdateUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, userOut *data.UserDB) error {
+	var err error
+	var reqUpdateUser reqUpdateUser
+
+	err = json.Unmarshal(jsonIn[:], &reqUpdateUser)
+	if err != nil {
+		return err
+	}
+
+	if reqUpdateUser.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqUpdateUser.MsgHeader.SubType != ReqTypeUpdateUser {
+		return errors.New("Unexpected request type")
+	}
+
+	(*esamPubKeyOut) = reqUpdateUser.ESAMPubKey
+	(*userOut) = reqUpdateUser.UserDB
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
@@ -181,49 +181,49 @@ func ParseReqUpdateUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, userOut *
 /* ChangePassword */
 
 type reqChangePassword struct {
-  msgHeaderWrapper
-  Password string `json:"password"`
-  PasswordHash string `json:"password_hash"`
-  PasswordHashSign []byte `json:"password_hash_sign"`
+	msgHeaderWrapper
+	Password         string `json:"password"`
+	PasswordHash     string `json:"password_hash"`
+	PasswordHashSign []byte `json:"password_hash_sign"`
 }
 
 func BuildReqChangePassword(password string, passwordHash string, passwordHashSign []byte) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqChangePassword reqChangePassword
-  
-  reqChangePassword.MsgHeader.Type = MsgTypeRequest
-  reqChangePassword.MsgHeader.SubType = ReqTypeChangePassword
-  reqChangePassword.Password = password
-  reqChangePassword.PasswordHash = passwordHash
-  reqChangePassword.PasswordHashSign = passwordHashSign[:]
-  
-  req, err = json.Marshal(reqChangePassword)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqChangePassword reqChangePassword
+
+	reqChangePassword.MsgHeader.Type = MsgTypeRequest
+	reqChangePassword.MsgHeader.SubType = ReqTypeChangePassword
+	reqChangePassword.Password = password
+	reqChangePassword.PasswordHash = passwordHash
+	reqChangePassword.PasswordHashSign = passwordHashSign[:]
+
+	req, err = json.Marshal(reqChangePassword)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
 func ParseReqChangePassword(jsonIn []byte) (string, string, []byte, error) {
-  var err error
-  var reqChangePassword reqChangePassword
-  
-  err = json.Unmarshal(jsonIn[:], &reqChangePassword)
-  if err != nil {
-    return "", "", nil, err
-  }
-  
-  if reqChangePassword.MsgHeader.Type != MsgTypeRequest {
-    return "", "", nil, errors.New("Unexpected message type")
-  }
-  
-  if reqChangePassword.MsgHeader.SubType != ReqTypeChangePassword {
-    return "", "", nil, errors.New("Unexpected request type")
-  }
-  
-  return reqChangePassword.Password, reqChangePassword.PasswordHash, reqChangePassword.PasswordHashSign[:], nil
+	var err error
+	var reqChangePassword reqChangePassword
+
+	err = json.Unmarshal(jsonIn[:], &reqChangePassword)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	if reqChangePassword.MsgHeader.Type != MsgTypeRequest {
+		return "", "", nil, errors.New("Unexpected message type")
+	}
+
+	if reqChangePassword.MsgHeader.SubType != ReqTypeChangePassword {
+		return "", "", nil, errors.New("Unexpected request type")
+	}
+
+	return reqChangePassword.Password, reqChangePassword.PasswordHash, reqChangePassword.PasswordHashSign[:], nil
 }
 
 /* ChangePassword */
@@ -231,100 +231,100 @@ func ParseReqChangePassword(jsonIn []byte) (string, string, []byte, error) {
 /* List */
 
 type reqListUsers struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  data.User `json:"filter"`
+	msgHeaderWrapper
+	reqResultWrapper
+	data.User `json:"filter"`
 }
 
 func BuildReqListUsers(userFilterIn *data.User) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqListUsers reqListUsers
-  
-  reqListUsers.MsgHeader.Type = MsgTypeRequest
-  reqListUsers.MsgHeader.SubType = ReqTypeListUsers
-  reqListUsers.User = (*userFilterIn)
-  
-  req, err = json.Marshal(reqListUsers)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqListUsers reqListUsers
+
+	reqListUsers.MsgHeader.Type = MsgTypeRequest
+	reqListUsers.MsgHeader.SubType = ReqTypeListUsers
+	reqListUsers.User = (*userFilterIn)
+
+	req, err = json.Marshal(reqListUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqListUsers(jsonIn []byte, userFilterOut *data.User) (error) {
-  var err error
-  var reqListUsers reqListUsers
-  
-  err = json.Unmarshal(jsonIn[:], &reqListUsers)
-  if err != nil {
-    return err
-  }
-  
-  if reqListUsers.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqListUsers.MsgHeader.SubType != ReqTypeListUsers {
-    return errors.New("Unexpected request type")
-  }
-  
-  if userFilterOut != nil {
-    (*userFilterOut) = reqListUsers.User
-  }
-  
-  return nil
+func ParseReqListUsers(jsonIn []byte, userFilterOut *data.User) error {
+	var err error
+	var reqListUsers reqListUsers
+
+	err = json.Unmarshal(jsonIn[:], &reqListUsers)
+	if err != nil {
+		return err
+	}
+
+	if reqListUsers.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqListUsers.MsgHeader.SubType != ReqTypeListUsers {
+		return errors.New("Unexpected request type")
+	}
+
+	if userFilterOut != nil {
+		(*userFilterOut) = reqListUsers.User
+	}
+
+	return nil
 }
 
 type repListUsers struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  Users []data.UserDB `json:"users"`
+	msgHeaderWrapper
+	reqResultWrapper
+	Users []data.UserDB `json:"users"`
 }
 
 func BuildRepListUsers(usersIn []data.UserDB) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repListUsers repListUsers
-  
-  repListUsers.MsgHeader.Type = MsgTypeReply
-  repListUsers.MsgHeader.SubType = ReqTypeListUsers
-  repListUsers.ReqResult.Status = ReqResultStatusSuccessful
-  repListUsers.ReqResult.Reason = ReqResultReasonEmpty
-  repListUsers.Users = usersIn[:]
-  
-  rep, err = json.Marshal(repListUsers)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var err error
+	var rep []byte
+	var repListUsers repListUsers
+
+	repListUsers.MsgHeader.Type = MsgTypeReply
+	repListUsers.MsgHeader.SubType = ReqTypeListUsers
+	repListUsers.ReqResult.Status = ReqResultStatusSuccessful
+	repListUsers.ReqResult.Reason = ReqResultReasonEmpty
+	repListUsers.Users = usersIn[:]
+
+	rep, err = json.Marshal(repListUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep[:], nil
 }
 
 func ParseRepListUsers(jsonIn []byte) ([]data.UserDB, error) {
-  var err error
-  var repListUsers repListUsers
-  
-  err = json.Unmarshal(jsonIn[:], &repListUsers)
-  if err != nil {
-    return nil, err
-  }
-  
-  if repListUsers.MsgHeader.Type != MsgTypeReply {
-    return nil, errors.New("Unexpected message type")
-  }
-  
-  if repListUsers.MsgHeader.SubType != ReqTypeListUsers {
-    return nil, errors.New("Unexpected request type")
-  }
-  
-  err = repListUsers.ReqResult.Test()
-  if err != nil {
-    return nil, err
-  }
-  
-  return repListUsers.Users[:], nil
+	var err error
+	var repListUsers repListUsers
+
+	err = json.Unmarshal(jsonIn[:], &repListUsers)
+	if err != nil {
+		return nil, err
+	}
+
+	if repListUsers.MsgHeader.Type != MsgTypeReply {
+		return nil, errors.New("Unexpected message type")
+	}
+
+	if repListUsers.MsgHeader.SubType != ReqTypeListUsers {
+		return nil, errors.New("Unexpected request type")
+	}
+
+	err = repListUsers.ReqResult.Test()
+	if err != nil {
+		return nil, err
+	}
+
+	return repListUsers.Users[:], nil
 }
 
 /* List */
@@ -334,55 +334,55 @@ func ParseRepListUsers(jsonIn []byte) ([]data.UserDB, error) {
 /* For build and parse request use BuildSimpleReq and ParseMsgHeader functions */
 
 type repGetAuthUserData struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  User data.UserAuth `json:"auth_user_data"`
+	msgHeaderWrapper
+	reqResultWrapper
+	User data.UserAuth `json:"auth_user_data"`
 }
 
 func BuildRepGetAuthUserData(userIn *data.UserAuth) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repGetAuthUserData repGetAuthUserData
-  
-  repGetAuthUserData.MsgHeader.Type = MsgTypeReply
-  repGetAuthUserData.MsgHeader.SubType = ReqTypeGetAuthUserData
-  repGetAuthUserData.ReqResult.Status = ReqResultStatusSuccessful
-  repGetAuthUserData.ReqResult.Reason = ReqResultReasonEmpty
-  repGetAuthUserData.User = (*userIn)
-  
-  rep, err = json.Marshal(repGetAuthUserData)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var err error
+	var rep []byte
+	var repGetAuthUserData repGetAuthUserData
+
+	repGetAuthUserData.MsgHeader.Type = MsgTypeReply
+	repGetAuthUserData.MsgHeader.SubType = ReqTypeGetAuthUserData
+	repGetAuthUserData.ReqResult.Status = ReqResultStatusSuccessful
+	repGetAuthUserData.ReqResult.Reason = ReqResultReasonEmpty
+	repGetAuthUserData.User = (*userIn)
+
+	rep, err = json.Marshal(repGetAuthUserData)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep[:], nil
 }
 
-func ParseRepGetAuthUserData(jsonIn []byte, userOut *data.UserAuth) (error) {
-  var err error
-  var repGetAuthUserData repGetAuthUserData
-  
-  err = json.Unmarshal(jsonIn[:], &repGetAuthUserData)
-  if err != nil {
-    return err
-  }
-  
-  if repGetAuthUserData.MsgHeader.Type != MsgTypeReply {
-    return errors.New("Unexpected message type")
-  }
-  
-  if repGetAuthUserData.MsgHeader.SubType != ReqTypeGetAuthUserData {
-    return errors.New("Unexpected request type")
-  }
-  
-  err = repGetAuthUserData.ReqResult.Test()
-  if err != nil {
-    return err
-  }
-  
-  (*userOut) = repGetAuthUserData.User
-  
-  return nil
+func ParseRepGetAuthUserData(jsonIn []byte, userOut *data.UserAuth) error {
+	var err error
+	var repGetAuthUserData repGetAuthUserData
+
+	err = json.Unmarshal(jsonIn[:], &repGetAuthUserData)
+	if err != nil {
+		return err
+	}
+
+	if repGetAuthUserData.MsgHeader.Type != MsgTypeReply {
+		return errors.New("Unexpected message type")
+	}
+
+	if repGetAuthUserData.MsgHeader.SubType != ReqTypeGetAuthUserData {
+		return errors.New("Unexpected request type")
+	}
+
+	err = repGetAuthUserData.ReqResult.Test()
+	if err != nil {
+		return err
+	}
+
+	(*userOut) = repGetAuthUserData.User
+
+	return nil
 }
 
 /* Get auth user data */
@@ -390,47 +390,47 @@ func ParseRepGetAuthUserData(jsonIn []byte, userOut *data.UserAuth) (error) {
 /* Del */
 
 type reqDelUser struct {
-  msgHeaderWrapper
-  data.ESAMPubKey `json:"esam_pub_key"`
+	msgHeaderWrapper
+	data.ESAMPubKey `json:"esam_pub_key"`
 }
 
 func BuildReqDelUser(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqDelUser reqDelUser
-  
-  reqDelUser.MsgHeader.Type = MsgTypeRequest
-  reqDelUser.MsgHeader.SubType = ReqTypeDelUser
-  reqDelUser.ESAMPubKey = (*esamPubKeyIn)
-  
-  req, err = json.Marshal(reqDelUser)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqDelUser reqDelUser
+
+	reqDelUser.MsgHeader.Type = MsgTypeRequest
+	reqDelUser.MsgHeader.SubType = ReqTypeDelUser
+	reqDelUser.ESAMPubKey = (*esamPubKeyIn)
+
+	req, err = json.Marshal(reqDelUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqDelUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (error) {
-  var err error
-  var reqDelUser reqDelUser
-  
-  err = json.Unmarshal(jsonIn[:], &reqDelUser)
-  if err != nil {
-    return err
-  }
-  
-  if reqDelUser.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqDelUser.MsgHeader.SubType != ReqTypeDelUser {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*esamPubKeyOut) = reqDelUser.ESAMPubKey
-  
-  return nil
+func ParseReqDelUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
+	var err error
+	var reqDelUser reqDelUser
+
+	err = json.Unmarshal(jsonIn[:], &reqDelUser)
+	if err != nil {
+		return err
+	}
+
+	if reqDelUser.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqDelUser.MsgHeader.SubType != ReqTypeDelUser {
+		return errors.New("Unexpected request type")
+	}
+
+	(*esamPubKeyOut) = reqDelUser.ESAMPubKey
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */

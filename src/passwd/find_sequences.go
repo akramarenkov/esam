@@ -21,77 +21,77 @@
 package passwd
 
 import (
-  "errors"
-  "strings"
+	"errors"
+	"strings"
 )
 
 var (
-  typicalSequences = []string {
-    "~!@#$%^&*()_+|",
-    "1234567890-=\\",
-    "qwertyuiop[]",
-    "asdfghjkl;'",
-    "zxcvbnm,./",
-    "1qaz",
-    "2wsx",
-    "3edc",
-    "4rfv",
-    "5tgb",
-    "6yhn",
-    "7ujm",
-    "8ik,",
-    "9ol.",
-    "0p;/",
-    "zse4",
-    "xdr5",
-    "cft6",
-    "vgy7",
-    "bhu8",
-    "nji9",
-    "mko0",
-    ",lp-",
-    ".;[=",
-    "/']\\",
-  }
+	typicalSequences = []string{
+		"~!@#$%^&*()_+|",
+		"1234567890-=\\",
+		"qwertyuiop[]",
+		"asdfghjkl;'",
+		"zxcvbnm,./",
+		"1qaz",
+		"2wsx",
+		"3edc",
+		"4rfv",
+		"5tgb",
+		"6yhn",
+		"7ujm",
+		"8ik,",
+		"9ol.",
+		"0p;/",
+		"zse4",
+		"xdr5",
+		"cft6",
+		"vgy7",
+		"bhu8",
+		"nji9",
+		"mko0",
+		",lp-",
+		".;[=",
+		"/']\\",
+	}
 )
 
 /* Speed doesn't care us */
-func revertRunes(runes []rune) ([]rune) {
-  var out []rune
-  var runesLen int
-  
-  runesLen = len(runes[:])
-  
-  out = make([]rune, runesLen)
-  
-  for index, _ := range runes {
-    out[runesLen-index-1] = runes[index]
-  }
-  
-  return out[:]
+func revertRunes(runes []rune) []rune {
+	var out []rune
+	var runesLen int
+
+	runesLen = len(runes[:])
+
+	out = make([]rune, runesLen)
+
+	for index := range runes {
+		out[runesLen-index-1] = runes[index]
+	}
+
+	return out[:]
 }
 
-func findSequences(password []rune, sequencesMinLength int) (error) {
-  var passwordLen int
-  var subString string
-  var subStringReverse string
-  
-  passwordLen = len(password[:])
-  
-  for i, _ := range password {
-    if (i + sequencesMinLength) > passwordLen {
-      return nil
-    }
-    
-    subString = strings.ToLower(string(password[i:i+sequencesMinLength]))
-    subStringReverse = strings.ToLower(string(revertRunes(password[i:i+sequencesMinLength])))
-    
-    for j, _ := range typicalSequences {
-      if strings.Contains(typicalSequences[j], subString) || strings.Contains(typicalSequences[j], subStringReverse) {
-        return errors.New("Sequence finded")
-      }
-    }
-  }
-  
-  return nil
+func findSequences(password []rune, sequencesMinLength int) error {
+	var passwordLen int
+	var subString string
+	var subStringReverse string
+
+	passwordLen = len(password[:])
+
+	for i := range password {
+		if (i + sequencesMinLength) > passwordLen {
+			return nil
+		}
+
+		subString = strings.ToLower(string(password[i : i+sequencesMinLength]))
+		subStringReverse = strings.ToLower(string(revertRunes(password[i : i+sequencesMinLength])))
+
+		for j := range typicalSequences {
+			if strings.Contains(typicalSequences[j], subString) || strings.Contains(typicalSequences[j], subStringReverse) {
+				return errors.New("Sequence finded")
+			}
+		}
+	}
+
+	return nil
 }

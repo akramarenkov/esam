@@ -21,18 +21,18 @@
 package opts2
 
 import (
-  "esam/src/passwd"
+	"esam/src/passwd"
 )
 
 const (
-  PasswdHashAlgo = passwd.PasswdHashAlgoSHA512
+	PasswdHashAlgo = passwd.PasswdHashAlgoSHA512
 )
 
 var PasswdDifficulty = passwd.DifficultyOpt{
-  MinLength: 14,
-  DiffCase: true,
-  Numbers: true,
-  Specials: true,
-  MaxIdentSymPercent: 20,
-  ForbidSequences: 4,
+	MinLength:          14,
+	DiffCase:           true,
+	Numbers:            true,
+	Specials:           true,
+	MaxIdentSymPercent: 20,
+	ForbidSequences:    4,
 }

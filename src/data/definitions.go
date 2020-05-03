@@ -22,17 +22,17 @@ package data
 
 /* ToleratesEmptyFieldsYes used when using structures as filters */
 const (
-  ToleratesEmptyFieldsYes = true
-  ToleratesEmptyFieldsNo = false
+	ToleratesEmptyFieldsYes = true
+	ToleratesEmptyFieldsNo  = false
 )
 
 /* Signing process constants */
 const (
-  ESAMPubKeyFieldName = "ESAMPubKey"
-  SignSubjectFieldName = "SignSubject"
-  signFieldSuffix = "Sign"
+	ESAMPubKeyFieldName  = "ESAMPubKey"
+	SignSubjectFieldName = "SignSubject"
+	signFieldSuffix      = "Sign"
 )
 
 type Tester interface {
-  Test(bool) (error)
+	Test(bool) error
 }

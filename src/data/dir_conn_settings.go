@@ -21,9 +21,9 @@
 package data
 
 type DirConnSettings struct {
-  ESAMKeyPath string `json:"esam_key_path"`
-  DirAddr string `json:"dir_addr"`
-  DirPort string `json:"dir_port"`
-  TLSCaCertPath string `json:"tls_ca_cert_path"`
-  VerifyKeyPath string `json:"verify_key_path"`
+	ESAMKeyPath   string `json:"esam_key_path"`
+	DirAddr       string `json:"dir_addr"`
+	DirPort       string `json:"dir_port"`
+	TLSCaCertPath string `json:"tls_ca_cert_path"`
+	VerifyKeyPath string `json:"verify_key_path"`
 }

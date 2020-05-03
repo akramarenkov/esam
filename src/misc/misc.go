@@ -21,76 +21,77 @@
 package misc
 
 import (
-  "errors"
-  "strings"
-  "fmt"
-  "os/user"
+	"errors"
+	"fmt"
+	"os/user"
+	"strings"
 )
 
 import (
-  "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2"
 )
 
 import (
-  "esam/src/passwd"
-  "esam/src/opts2"
+	"esam/src/opts2"
+	"esam/src/passwd"
 )
 
-func ExtractAddr(fullAddr string) (string) {
-  var elements []string
-  var elementsLen int
-  
-  elements = strings.Split(fullAddr, ":")
-  elementsLen = len(elements[:])
-  
-  if elementsLen > 1 {
-    return strings.Join(elements[:elementsLen - 1], "")
-  }
-  
-  return fullAddr
+func ExtractAddr(fullAddr string) string {
+	var elements []string
+	var elementsLen int
+
+	elements = strings.Split(fullAddr, ":")
+	elementsLen = len(elements[:])
+
+	if elementsLen > 1 {
+		return strings.Join(elements[:elementsLen-1], "")
+	}
+
+	return fullAddr
 }
 
 func SubCommandBashCompleter(c *cli.Context) {
-  for _, flag := range c.Command.VisibleFlags() {
-    for _, name := range flag.Names() {
-      switch name {
-        case "h", "help":
-        default: {
-          if len(name) > 1 {
-            fmt.Printf("--%v\n", name)
-          } else {
-            fmt.Printf("-%v\n", name)
-          }
-        }
-      }
-    }
-  }
+	for _, flag := range c.Command.VisibleFlags() {
+		for _, name := range flag.Names() {
+			switch name {
+			case "h", "help":
+			default:
+				{
+					if len(name) > 1 {
+						fmt.Printf("--%v\n", name)
+					} else {
+						fmt.Printf("-%v\n", name)
+					}
+				}
+			}
+		}
+	}
 }
 
-func PasswordValidator(password interface{}) (error) {
-  var passwordAsString string
-  var castOk bool
-  
-  passwordAsString, castOk = password.(string)
-  if !castOk {
-    return errors.New("Failed to cast password to string")
-  }
-  
-  return passwd.CheckDifficulty(passwordAsString, &opts2.PasswdDifficulty)
+func PasswordValidator(password interface{}) error {
+	var passwordAsString string
+	var castOk bool
+
+	passwordAsString, castOk = password.(string)
+	if !castOk {
+		return errors.New("Failed to cast password to string")
+	}
+
+	return passwd.CheckDifficulty(passwordAsString, &opts2.PasswdDifficulty)
 }
 
 func LeaveAvailableGroups(groups []string) ([]string, error) {
-  var err error
-  var availableGroups []string
-  
-  availableGroups = make([]string, 0)
-  
-  for index, _ := range groups {
-    _, err = user.LookupGroup(groups[index])
-    if err == nil {
-      availableGroups = append(availableGroups, groups[index])
-    }
-  }
-  
-  return availableGroups[:], nil
+	var err error
+	var availableGroups []string
+
+	availableGroups = make([]string, 0)
+
+	for index := range groups {
+		_, err = user.LookupGroup(groups[index])
+		if err == nil {
+			availableGroups = append(availableGroups, groups[index])
+		}
+	}
+
+	return availableGroups[:], nil
 }

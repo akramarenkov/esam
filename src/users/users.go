@@ -21,17 +21,17 @@
 package users
 
 import (
-  "errors"
-  "os"
-  "io"
-  "bufio"
-  "strings"
+	"bufio"
+	"errors"
+	"io"
+	"os"
+	"strings"
 )
 
 const (
-  passwdFilePath = "/etc/passwd"
-  userItemsDelimiter = '\n'
-  userFieldsDelimiter = ":"
+	passwdFilePath      = "/etc/passwd"
+	userItemsDelimiter  = '\n'
+	userFieldsDelimiter = ":"
 )
 
 /*
@@ -40,84 +40,84 @@ https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_
 */
 
 var (
-  validUserNameCharacters = []rune{
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 
-  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 
-  'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '_', '-',
-  }
+	validUserNameCharacters = []rune{
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+		'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+		'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '_', '-',
+	}
 )
 
 func ListNames() ([]string, error) {
-  var err error
-  var list []string
-  var file *os.File
-  var bufFile *bufio.Reader
-  var userItem string
-  var userFields []string
-  
-  list = make([]string, 0)
-  
-  file, err = os.Open(passwdFilePath)
-  if err != nil {
-    return nil, err
-  }
-  
-  bufFile = bufio.NewReader(file)
-  
-  for {
-    userItem, err = bufFile.ReadString(userItemsDelimiter)
-    if err != nil && err != io.EOF {
-      return nil, err
-    }
-    
-    if err == io.EOF {
-      break
-    }
-    
-    userFields = strings.Split(userItem, userFieldsDelimiter)
-    if len(userFields[:]) > 0 {
-      if userFields[0] != "" {
-        list = append(list, userFields[0])
-      }
-    }
-  }
-  
-  return list[:], nil
+	var err error
+	var list []string
+	var file *os.File
+	var bufFile *bufio.Reader
+	var userItem string
+	var userFields []string
+
+	list = make([]string, 0)
+
+	file, err = os.Open(passwdFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	bufFile = bufio.NewReader(file)
+
+	for {
+		userItem, err = bufFile.ReadString(userItemsDelimiter)
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+
+		if err == io.EOF {
+			break
+		}
+
+		userFields = strings.Split(userItem, userFieldsDelimiter)
+		if len(userFields[:]) > 0 {
+			if userFields[0] != "" {
+				list = append(list, userFields[0])
+			}
+		}
+	}
+
+	return list[:], nil
 }
 
-func ValidateName(name string) (error) {
-  var nameAsRunes []rune
-  
-  nameAsRunes = []rune(name)
-  
-  if len(nameAsRunes[:]) < 1 {
-    return errors.New("User name can't be empty")
-  }
-  
-  if len(nameAsRunes[:]) > 32 {
-    return errors.New("User name can't be longer than 32 characters")
-  }
-  
-  for _, char := range nameAsRunes {
-    var charIsValid bool
-    
-    for _, validChar := range validUserNameCharacters[:] {
-      if char == validChar {
-        charIsValid = true
-        break
-      }
-    }
-    
-    if !charIsValid {
-      return errors.New("User name contain characters not from the allowed character set: [a-z][A-Z][0-9][._-]")
-    }
-  }
-  
-  if nameAsRunes[0] == rune('-') {
-    return errors.New("User name cannot begin with a hyphen-minus character")
-  }
-  
-  return nil
+func ValidateName(name string) error {
+	var nameAsRunes []rune
+
+	nameAsRunes = []rune(name)
+
+	if len(nameAsRunes[:]) < 1 {
+		return errors.New("User name can't be empty")
+	}
+
+	if len(nameAsRunes[:]) > 32 {
+		return errors.New("User name can't be longer than 32 characters")
+	}
+
+	for _, char := range nameAsRunes {
+		var charIsValid bool
+
+		for _, validChar := range validUserNameCharacters[:] {
+			if char == validChar {
+				charIsValid = true
+				break
+			}
+		}
+
+		if !charIsValid {
+			return errors.New("User name contain characters not from the allowed character set: [a-z][A-Z][0-9][._-]")
+		}
+	}
+
+	if nameAsRunes[0] == rune('-') {
+		return errors.New("User name cannot begin with a hyphen-minus character")
+	}
+
+	return nil
 }

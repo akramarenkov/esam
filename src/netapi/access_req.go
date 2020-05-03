@@ -21,12 +21,12 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 import (
-  "esam/src/data"
+	"esam/src/data"
 )
 
 /*
@@ -52,50 +52,50 @@ import (
 /* Add */
 
 type reqAddAccessReq struct {
-  msgHeaderWrapper
-  data.AccessReq `json:"access_req"`
-  Secret string `json:"secret"`
+	msgHeaderWrapper
+	data.AccessReq `json:"access_req"`
+	Secret         string `json:"secret"`
 }
 
 func BuildReqAddAccessReq(accessReqIn *data.AccessReq, secret string) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqAddAccessReq reqAddAccessReq
-  
-  reqAddAccessReq.MsgHeader.Type = MsgTypeRequest
-  reqAddAccessReq.MsgHeader.SubType = ReqTypeAddAccessReq
-  reqAddAccessReq.AccessReq = (*accessReqIn)
-  reqAddAccessReq.Secret = secret
-  
-  req, err = json.Marshal(reqAddAccessReq)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqAddAccessReq reqAddAccessReq
+
+	reqAddAccessReq.MsgHeader.Type = MsgTypeRequest
+	reqAddAccessReq.MsgHeader.SubType = ReqTypeAddAccessReq
+	reqAddAccessReq.AccessReq = (*accessReqIn)
+	reqAddAccessReq.Secret = secret
+
+	req, err = json.Marshal(reqAddAccessReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqAddAccessReq(jsonIn []byte, accessReqOut *data.AccessReq, secret *string) (error) {
-  var err error
-  var reqAddAccessReq reqAddAccessReq
-  
-  err = json.Unmarshal(jsonIn[:], &reqAddAccessReq)
-  if err != nil {
-    return err
-  }
-  
-  if reqAddAccessReq.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqAddAccessReq.MsgHeader.SubType != ReqTypeAddAccessReq {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*accessReqOut) = reqAddAccessReq.AccessReq
-  (*secret) = reqAddAccessReq.Secret
-  
-  return nil
+func ParseReqAddAccessReq(jsonIn []byte, accessReqOut *data.AccessReq, secret *string) error {
+	var err error
+	var reqAddAccessReq reqAddAccessReq
+
+	err = json.Unmarshal(jsonIn[:], &reqAddAccessReq)
+	if err != nil {
+		return err
+	}
+
+	if reqAddAccessReq.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqAddAccessReq.MsgHeader.SubType != ReqTypeAddAccessReq {
+		return errors.New("Unexpected request type")
+	}
+
+	(*accessReqOut) = reqAddAccessReq.AccessReq
+	(*secret) = reqAddAccessReq.Secret
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
@@ -105,100 +105,100 @@ func ParseReqAddAccessReq(jsonIn []byte, accessReqOut *data.AccessReq, secret *s
 /* List */
 
 type reqListAccessReqs struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  data.AccessReqDB `json:"filter"`
+	msgHeaderWrapper
+	reqResultWrapper
+	data.AccessReqDB `json:"filter"`
 }
 
 func BuildReqListAccessReqs(accessReqFilterIn *data.AccessReqDB) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqListAccessReqs reqListAccessReqs
-  
-  reqListAccessReqs.MsgHeader.Type = MsgTypeRequest
-  reqListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
-  reqListAccessReqs.AccessReqDB = (*accessReqFilterIn)
-  
-  req, err = json.Marshal(reqListAccessReqs)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqListAccessReqs reqListAccessReqs
+
+	reqListAccessReqs.MsgHeader.Type = MsgTypeRequest
+	reqListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
+	reqListAccessReqs.AccessReqDB = (*accessReqFilterIn)
+
+	req, err = json.Marshal(reqListAccessReqs)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqListAccessReqs(jsonIn []byte, accessReqFilterOut *data.AccessReqDB) (error) {
-  var err error
-  var reqListAccessReqs reqListAccessReqs
-  
-  err = json.Unmarshal(jsonIn[:], &reqListAccessReqs)
-  if err != nil {
-    return err
-  }
-  
-  if reqListAccessReqs.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqListAccessReqs.MsgHeader.SubType != ReqTypeListAccessReqs {
-    return errors.New("Unexpected request type")
-  }
-  
-  if accessReqFilterOut != nil {
-    (*accessReqFilterOut) = reqListAccessReqs.AccessReqDB
-  }
-  
-  return nil
+func ParseReqListAccessReqs(jsonIn []byte, accessReqFilterOut *data.AccessReqDB) error {
+	var err error
+	var reqListAccessReqs reqListAccessReqs
+
+	err = json.Unmarshal(jsonIn[:], &reqListAccessReqs)
+	if err != nil {
+		return err
+	}
+
+	if reqListAccessReqs.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqListAccessReqs.MsgHeader.SubType != ReqTypeListAccessReqs {
+		return errors.New("Unexpected request type")
+	}
+
+	if accessReqFilterOut != nil {
+		(*accessReqFilterOut) = reqListAccessReqs.AccessReqDB
+	}
+
+	return nil
 }
 
 type repListAccessReqs struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  AccessReqs []data.AccessReqDB `json:"access_reqs"`
+	msgHeaderWrapper
+	reqResultWrapper
+	AccessReqs []data.AccessReqDB `json:"access_reqs"`
 }
 
 func BuildRepListAccessReqs(accessReqsIn []data.AccessReqDB) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repListAccessReqs repListAccessReqs
-  
-  repListAccessReqs.MsgHeader.Type = MsgTypeReply
-  repListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
-  repListAccessReqs.ReqResult.Status = ReqResultStatusSuccessful
-  repListAccessReqs.ReqResult.Reason = ReqResultReasonEmpty
-  repListAccessReqs.AccessReqs = accessReqsIn[:]
-  
-  rep, err = json.Marshal(repListAccessReqs)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var err error
+	var rep []byte
+	var repListAccessReqs repListAccessReqs
+
+	repListAccessReqs.MsgHeader.Type = MsgTypeReply
+	repListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
+	repListAccessReqs.ReqResult.Status = ReqResultStatusSuccessful
+	repListAccessReqs.ReqResult.Reason = ReqResultReasonEmpty
+	repListAccessReqs.AccessReqs = accessReqsIn[:]
+
+	rep, err = json.Marshal(repListAccessReqs)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep[:], nil
 }
 
 func ParseRepListAccessReqs(jsonIn []byte) ([]data.AccessReqDB, error) {
-  var err error
-  var repListAccessReqs repListAccessReqs
-  
-  err = json.Unmarshal(jsonIn[:], &repListAccessReqs)
-  if err != nil {
-    return nil, err
-  }
-  
-  if repListAccessReqs.MsgHeader.Type != MsgTypeReply {
-    return nil, errors.New("Unexpected message type")
-  }
-  
-  if repListAccessReqs.MsgHeader.SubType != ReqTypeListAccessReqs {
-    return nil, errors.New("Unexpected request type")
-  }
-  
-  err = repListAccessReqs.ReqResult.Test()
-  if err != nil {
-    return nil, err
-  }
-  
-  return repListAccessReqs.AccessReqs[:], nil
+	var err error
+	var repListAccessReqs repListAccessReqs
+
+	err = json.Unmarshal(jsonIn[:], &repListAccessReqs)
+	if err != nil {
+		return nil, err
+	}
+
+	if repListAccessReqs.MsgHeader.Type != MsgTypeReply {
+		return nil, errors.New("Unexpected message type")
+	}
+
+	if repListAccessReqs.MsgHeader.SubType != ReqTypeListAccessReqs {
+		return nil, errors.New("Unexpected request type")
+	}
+
+	err = repListAccessReqs.ReqResult.Test()
+	if err != nil {
+		return nil, err
+	}
+
+	return repListAccessReqs.AccessReqs[:], nil
 }
 
 /* List */
@@ -206,47 +206,47 @@ func ParseRepListAccessReqs(jsonIn []byte) ([]data.AccessReqDB, error) {
 /* Del */
 
 type reqDelAccessReq struct {
-  msgHeaderWrapper
-  data.ESAMPubKey `json:"esam_pub_key"`
+	msgHeaderWrapper
+	data.ESAMPubKey `json:"esam_pub_key"`
 }
 
 func BuildReqDelAccessReq(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqDelAccessReq reqDelAccessReq
-  
-  reqDelAccessReq.MsgHeader.Type = MsgTypeRequest
-  reqDelAccessReq.MsgHeader.SubType = ReqTypeDelAccessReq
-  reqDelAccessReq.ESAMPubKey = (*esamPubKeyIn)
-  
-  req, err = json.Marshal(reqDelAccessReq)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var err error
+	var req []byte
+	var reqDelAccessReq reqDelAccessReq
+
+	reqDelAccessReq.MsgHeader.Type = MsgTypeRequest
+	reqDelAccessReq.MsgHeader.SubType = ReqTypeDelAccessReq
+	reqDelAccessReq.ESAMPubKey = (*esamPubKeyIn)
+
+	req, err = json.Marshal(reqDelAccessReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return req[:], nil
 }
 
-func ParseReqDelAccessReq(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (error) {
-  var err error
-  var reqDelAccessReq reqDelAccessReq
-  
-  err = json.Unmarshal(jsonIn[:], &reqDelAccessReq)
-  if err != nil {
-    return err
-  }
-  
-  if reqDelAccessReq.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqDelAccessReq.MsgHeader.SubType != ReqTypeDelAccessReq {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*esamPubKeyOut) = reqDelAccessReq.ESAMPubKey
-  
-  return nil
+func ParseReqDelAccessReq(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
+	var err error
+	var reqDelAccessReq reqDelAccessReq
+
+	err = json.Unmarshal(jsonIn[:], &reqDelAccessReq)
+	if err != nil {
+		return err
+	}
+
+	if reqDelAccessReq.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqDelAccessReq.MsgHeader.SubType != ReqTypeDelAccessReq {
+		return errors.New("Unexpected request type")
+	}
+
+	(*esamPubKeyOut) = reqDelAccessReq.ESAMPubKey
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
