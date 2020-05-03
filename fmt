@@ -1,7 +1,101 @@
 #!/usr/bin/env bash
 
-go fmt './...'
+################################################################################
 
-grep --recursive --null-data --perl-regexp --only-matching 'var[ \t]+[^\n]*\n(([ \t]*\n)*[ \t]*var[ \t]+[^\n]*\n)+' '.'
+# ${1} - line
+get_var_line_definition()
+{
+	printf "%s" "${1}" | sed --quiet "/^[ \t]*var[ \t][ \t]*.*$/{s/^[ \t]*var[ \t][ \t]*\(.*\)$/\1/;p}"
+}
 
-grep --recursive --null-data --perl-regexp --only-matching 'case[ \t]+[^:]+[ \t]*:[ \t]*\n*[ \t]*{' '.'
+# ${1} - root directory
+find_go_files()
+{
+	find "${1}" -regex '.*\.go$' -type f | sed --quiet "s/^/'/;s/$/'/;p"
+}
+
+# Добавляет по одному символу одинарной кавычки с краев строки
+# ${1} - input string
+add_trailing_single_quotes()
+{
+	printf "%s" "${1}" | sed --quiet "s/^/'/;s/$/'/;p"
+}
+
+################################################################################
+
+#go fmt './...'
+
+#grep --recursive --null-data --perl-regexp --only-matching 'var[ \t]+[^\n]*\n(([ \t]*\n)*[ \t]*var[ \t]+[^\n]*\n)+' '.'
+
+#grep --recursive --null-data --perl-regexp --only-matching 'case[ \t]+[^:]+[ \t]*:[ \t]*\n*[ \t]*{' '.'
+
+IFS=$'\n'
+
+for file in $( find_go_files '.' );
+do
+	file="${file#\'}"
+	file="${file%\'}"
+
+	outText=""
+	blockBegined="false"
+
+	for line in $( add_trailing_single_quotes "$( < "${file}" )" );
+	do
+		line="${line#\'}"
+		line="${line%\'}"
+
+		if [[ "${line}" =~ ^[[:blank:]]*var[[:blank:]][[:blank:]]*.*$ ]];
+		then
+			var_expr="$( get_var_line_definition "${line}" )"
+			last_index=$(( ${#var_expr}-1 ))
+
+			if test "${var_expr}" == "(";
+			then
+				if test "${blockBegined}" = "true";
+				then
+					outText="${outText}"$'\n'")"$'\n'$'\n'
+					blockBegined="false"
+				fi
+
+				outText="${outText}"$'\n'"${line}"
+				continue
+			fi
+
+			if test "${var_expr:${last_index}:1}" == "{";
+			then
+				outText="${outText}"$'\n'"${line}"
+				continue
+			fi
+
+			if test "${blockBegined}" == "false";
+			then
+				outText="${outText}"$'\n'"var ("$'\n'"${var_expr}"
+				blockBegined="true"
+			else
+				outText="${outText}"$'\n'"${var_expr}"
+			fi
+
+			continue
+		fi
+
+		if [[ "${line}" =~ ^[[:blank:]]*$ ]];
+		then
+			outText="${outText}"$'\n'"${line}"
+			continue
+		fi
+
+		if test "${blockBegined}" == "true";
+		then
+			outText="${outText}"$'\n'")"$'\n'$'\n'"${line}"
+			blockBegined="false"
+			continue
+		fi
+
+		outText="${outText}"$'\n'"${line}"
+	done
+
+	if test -n "${outText}";
+	then
+		printf "%s" "${outText}" > "${file}"
+	fi
+done
