@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-go build -o esamd src/esamd/esamd.go
-go build -o esamc src/esamc/esamc.go
+go build github.com/akramarenkov/esam/src/esamd
+go build github.com/akramarenkov/esam/src/esamc
 
+# Agent can be built without libc dependency
+# See https://golang.org/pkg/os/user/ for none-cgo specificities
 # export CGO_ENABLED=0
-go build -o esama src/esama/esama.go
+go build github.com/akramarenkov/esam/src/esama
