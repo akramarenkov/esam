@@ -148,7 +148,7 @@ OWQFbcsNBL5V8/4TUDUskXDb+cVpUE0AmCImvplkzLWiAnA/K5scqeUGbYUa/h49
 In2I+5OpmLcNsVFVqkwcD4GF8ufRqg==
 -----END PRIVATE KEY-----`)
 
-	verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM)
+	verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM, "")
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert verify private key from PEM", err)
 		os.Exit(1)
@@ -220,7 +220,7 @@ iV8mbuJNBNMvgk0h+fEEG4sIFVgpaaS9rq6TZtriyadlot+qZ55RH4MQzCehhTs7
 2fpxajCzvK9ryUwWx9W0Wm8jl21Lmw==
 -----END PRIVATE KEY-----`)
 
-	OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM)
+	OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM, "")
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne private key from PEM", err)
 		os.Exit(1)
@@ -238,7 +238,7 @@ iV8mbuJNBNMvgk0h+fEEG4sIFVgpaaS9rq6TZtriyadlot+qZ55RH4MQzCehhTs7
 			Name:              "OwnerOne",
 			Role:              data.UserRoleOwner,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key OwnerOne",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash OwnerOne",
 			ElevatePrivileges: true,
 		},
@@ -442,7 +442,7 @@ iyJ4RPtFs/JVJ8rRcyGAOH15isbLFCK1C+NnHe1KuL55k/i/GSP2H9hTsdmYJgqo
 dsbtUzU0g4G5a/e82/Kzkh53ajcY7A==
 -----END PRIVATE KEY-----`)
 
-	OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM)
+	OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM, "")
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo private key from PEM", err)
 		os.Exit(1)
@@ -460,7 +460,7 @@ dsbtUzU0g4G5a/e82/Kzkh53ajcY7A==
 			Name:              "OwnerTwo",
 			Role:              data.UserRoleOwner,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key OwnerTwo",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash OwnerTwo",
 			ElevatePrivileges: true,
 		},
@@ -520,7 +520,7 @@ tQuSSIYnPDlp/bgpNDiT3I2Vrzy7BEbKkbAjg9eQsxpe80FoZxNIgQ2XALOah9qE
 nucbcHW8j0PGtltMz4vgv5rbDiYxt9oI
 -----END PRIVATE KEY-----`)
 
-	SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM)
+	SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM, "")
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne private key from PEM", err)
 		os.Exit(1)
@@ -538,7 +538,7 @@ nucbcHW8j0PGtltMz4vgv5rbDiYxt9oI
 			Name:              "SecAdminOne",
 			Role:              data.UserRoleSecAdmin,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key SecAdminOne",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash SecAdminOne",
 			ElevatePrivileges: true,
 		},
@@ -598,7 +598,7 @@ YEP9k6MnuSTG0T8xWvRmegJ1puAvjRatCg7fOlWkMBzOONB6Ld8XYy59jHDh33M1
 2UoQemzakBMQ/GI/Ym259HrAxJd+Wqk=
 -----END PRIVATE KEY-----`)
 
-	SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM)
+	SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM, "")
 	if err != nil {
 		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo private key from PEM", err)
 		os.Exit(1)
@@ -616,7 +616,7 @@ YEP9k6MnuSTG0T8xWvRmegJ1puAvjRatCg7fOlWkMBzOONB6Ld8XYy59jHDh33M1
 			Name:              "SecAdminTwo",
 			Role:              data.UserRoleSecAdmin,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key SecAdminTwo",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash SecAdminTwo",
 			ElevatePrivileges: true,
 		},
@@ -642,7 +642,7 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 			Name:              "EngineerOne",
 			Role:              data.UserRoleEngineer,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key EngineerOne",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash EngineerOne",
 			ElevatePrivileges: true,
 		},
@@ -668,7 +668,7 @@ r6v4F05vdUYMTkBAPzJ77buFDlrgdfIMYDZptND1t3q8ZFPt2L31pJ/OVZA3Near
 			Name:              "EngineerTwo",
 			Role:              data.UserRoleEngineer,
 			State:             data.UserStateEnabled,
-			SSHPubKey:         "SSH public key EngineerTwo",
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
 			PasswordHash:      "password hash EngineerTwo",
 			ElevatePrivileges: false,
 		},
