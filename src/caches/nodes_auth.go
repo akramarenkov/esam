@@ -21,108 +21,114 @@
 package caches
 
 import (
-  "os"
-  "encoding/json"
-  "sync"
+	"encoding/json"
+	"os"
+	"sync"
 )
 
 import (
-  "esam/src/data"
-  "esam/src/parallel"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/parallel"
 )
 
 type NodesAuth struct {
-  filePath string
-  list *[]data.NodeAuth
-  mutex sync.RWMutex
+	filePath string
+	list     *[]data.NodeAuth
+	mutex    sync.RWMutex
 }
 
-func (cache *NodesAuth) Init(filePath string) (error) {
-  cache.filePath = filePath
-  cache.list = &([]data.NodeAuth{})
-  
-  return nil
+func (cache *NodesAuth) Init(filePath string) error {
+	cache.filePath = filePath
+	cache.list = &([]data.NodeAuth{})
+
+	return nil
 }
 
-func (cache *NodesAuth) FromFile() (error) {
-  var err error
-  var cacheFile *os.File
-  var jsonDec *json.Decoder
-  
-  cacheFile, err = os.Open(cache.filePath)
-  if err != nil {
-    return err
-  }
-  defer cacheFile.Close()
-  
-  jsonDec = json.NewDecoder(cacheFile)
-  
-  cache.mutex.Lock()
-    err = jsonDec.Decode(cache.list)
-  cache.mutex.Unlock()
-  if err != nil {
-    return err
-  }
-  
-  return nil
+func (cache *NodesAuth) FromFile() error {
+	var (
+		err       error
+		cacheFile *os.File
+		jsonDec   *json.Decoder
+	)
+
+	cacheFile, err = os.Open(cache.filePath)
+	if err != nil {
+		return err
+	}
+	defer cacheFile.Close()
+
+	jsonDec = json.NewDecoder(cacheFile)
+
+	cache.mutex.Lock()
+	err = jsonDec.Decode(cache.list)
+	cache.mutex.Unlock()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (cache *NodesAuth) ToFile() (error) {
-  var err error
-  var cacheFile *os.File
-  var jsonEnc *json.Encoder
-  
-  cacheFile, err = os.Open(cache.filePath)
-  if err == nil {
-    cacheFile.Close()
-    os.Rename(cache.filePath, cache.filePath + ".old")
-  }
-  
-  cacheFile, err = os.OpenFile(cache.filePath, os.O_RDWR | os.O_CREATE, 0600)
-  if err != nil {
-    return err
-  }
-  defer cacheFile.Close()
-  
-  jsonEnc = json.NewEncoder(cacheFile)
-  
-  err = nil
-  cache.mutex.RLock()
-    if len((*cache.list)[:]) > 0 {
-      err = jsonEnc.Encode((*cache.list)[:])
-    }
-  cache.mutex.RUnlock()
-  if err != nil {
-    return err
-  }
-  
-  return nil
+func (cache *NodesAuth) ToFile() error {
+	var (
+		err       error
+		cacheFile *os.File
+		jsonEnc   *json.Encoder
+	)
+
+	cacheFile, err = os.Open(cache.filePath)
+	if err == nil {
+		cacheFile.Close()
+		os.Rename(cache.filePath, cache.filePath+".old")
+	}
+
+	cacheFile, err = os.OpenFile(cache.filePath, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer cacheFile.Close()
+
+	jsonEnc = json.NewEncoder(cacheFile)
+
+	err = nil
+	cache.mutex.RLock()
+	if len((*cache.list)) > 0 {
+		err = jsonEnc.Encode((*cache.list))
+	}
+	cache.mutex.RUnlock()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (cache *NodesAuth) Update(nodesListDB []data.NodeDB, usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) (error) {
-  var err error
-  var nodesList []data.NodeAuth
-  
-  nodesList, err = parallel.MakeNodeAuthList(nodesListDB[:], usersListDB[:], verifyKey, coresRatio)
-  if err != nil {
-    return err
-  }
-  
-  cache.mutex.Lock()
-    cache.list = &nodesList
-  cache.mutex.Unlock()
-  
-  return nil
+func (cache *NodesAuth) Update(nodesListDB []data.NodeDB, usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) error {
+	var (
+		err       error
+		nodesList []data.NodeAuth
+	)
+
+	nodesList, err = parallel.MakeNodeAuthList(nodesListDB, usersListDB, verifyKey, coresRatio)
+	if err != nil {
+		return err
+	}
+
+	cache.mutex.Lock()
+	cache.list = &nodesList
+	cache.mutex.Unlock()
+
+	return nil
 }
 
 func (cache *NodesAuth) RLock() {
-  cache.mutex.RLock()
+	cache.mutex.RLock()
 }
 
 func (cache *NodesAuth) RUnlock() {
-  cache.mutex.RUnlock()
+	cache.mutex.RUnlock()
 }
 
-func (cache *NodesAuth) Get() ([]data.NodeAuth) {
-  return (*cache.list)[:]
+func (cache *NodesAuth) Get() []data.NodeAuth {
+	return (*cache.list)
 }

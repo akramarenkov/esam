@@ -21,79 +21,81 @@
 package auth
 
 import (
-  "fmt"
-  "os"
-  "crypto/rsa"
-  "testing"
+	"crypto/rsa"
+	"fmt"
+	"os"
+	"testing"
 )
 
 import (
-  "esam/src/data"
-  "esam/src/db"
-  "esam/src/netapi"
-  "esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/data"
+	"github.com/akramarenkov/esam/src/db"
+	"github.com/akramarenkov/esam/src/keysconv"
+	"github.com/akramarenkov/esam/src/netapi"
 )
 
 import (
-  _ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
-  dbFile = "test.db"
+	dbFile = "test.db"
 )
 
 func Test(t *testing.T) {
-  var err error
-  
-  var verifyKeyPrivatePEM []byte
-  var verifyKeyPrivate *rsa.PrivateKey
-  var verifyKeyESAMPubKey data.ESAMPubKey
-  
-  var OwnerOne data.UserDB
-  var OwnerOneFilter data.User
-  var OwnerOnePrivateKeyPEM []byte
-  var OwnerOnePrivateKey *rsa.PrivateKey
-  var OwnerOneESAMPubKey data.ESAMPubKey
-  
-  var OwnerTwo data.UserDB
-  //var OwnerTwoFilter data.User
-  var OwnerTwoPrivateKeyPEM []byte
-  var OwnerTwoPrivateKey *rsa.PrivateKey
-  var OwnerTwoESAMPubKey data.ESAMPubKey
-  
-  var SecAdminOne data.UserDB
-  var SecAdminOnePrivateKeyPEM []byte
-  var SecAdminOnePrivateKey *rsa.PrivateKey
-  var SecAdminOneESAMPubKey data.ESAMPubKey
-  
-  var SecAdminTwo data.UserDB
-  var SecAdminTwoPrivateKeyPEM []byte
-  var SecAdminTwoPrivateKey *rsa.PrivateKey
-  var SecAdminTwoESAMPubKey data.ESAMPubKey
-  
-  var EngineerOne data.UserDB
-  var EngineerTwo data.UserDB
-  
-  var db db.Desc
-  
-  var udsAuthContext *Context
-  var ownerOneAuthContext *Context
-  var ownerTwoAuthContext *Context
-  var secAdminOneAuthContext *Context
-  var secAdminTwoAuthContext *Context
-  var engineerOneAuthContext *Context
-  var engineerTwoAuthContext *Context
-  
-  var userFilter data.User
-  var usersList []data.UserDB
-  
-  var NodeOne data.NodeDB
-  var NodeTwo data.NodeDB
-  
-  var checkAccessRightsResult bool
-  var dataTrusted bool
-  
-  verifyKeyPrivatePEM = []byte(`-----BEGIN PRIVATE KEY-----
+	var (
+		err error
+
+		verifyKeyPrivatePEM []byte
+		verifyKeyPrivate    *rsa.PrivateKey
+		verifyKeyESAMPubKey data.ESAMPubKey
+
+		OwnerOne              data.UserDB
+		OwnerOneFilter        data.User
+		OwnerOnePrivateKeyPEM []byte
+		OwnerOnePrivateKey    *rsa.PrivateKey
+		OwnerOneESAMPubKey    data.ESAMPubKey
+
+		OwnerTwo data.UserDB
+		// OwnerTwoFilter data.User
+		OwnerTwoPrivateKeyPEM []byte
+		OwnerTwoPrivateKey    *rsa.PrivateKey
+		OwnerTwoESAMPubKey    data.ESAMPubKey
+
+		SecAdminOne              data.UserDB
+		SecAdminOnePrivateKeyPEM []byte
+		SecAdminOnePrivateKey    *rsa.PrivateKey
+		SecAdminOneESAMPubKey    data.ESAMPubKey
+
+		SecAdminTwo              data.UserDB
+		SecAdminTwoPrivateKeyPEM []byte
+		SecAdminTwoPrivateKey    *rsa.PrivateKey
+		SecAdminTwoESAMPubKey    data.ESAMPubKey
+
+		EngineerOne data.UserDB
+		EngineerTwo data.UserDB
+
+		db db.Desc
+
+		udsAuthContext         *Context
+		ownerOneAuthContext    *Context
+		ownerTwoAuthContext    *Context
+		secAdminOneAuthContext *Context
+		secAdminTwoAuthContext *Context
+		engineerOneAuthContext *Context
+		engineerTwoAuthContext *Context
+
+		userFilter data.User
+		usersList  []data.UserDB
+
+		NodeOne data.NodeDB
+		NodeTwo data.NodeDB
+
+		checkAccessRightsResult bool
+		dataTrusted             bool
+	)
+
+	verifyKeyPrivatePEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQCpX56lEshft1J8
 E+anWTh431Qnvc6G4Trzo1QOkF8e/UgB33+V5lPXFhEsEPlaNf5KfKi2StCx19fp
 xVbThaIYXy1HKL5KNHcnxUppeMrRNOhWLHzYVknBrgiSiPy/rHGi0BbYGSxqFqvZ
@@ -145,27 +147,27 @@ Gbkc6vWtv+s8Susv2HuP5zTcqLyrAtvZqLKSljamyKQ9KEjDF3ID6FRkEafbMO3m
 OWQFbcsNBL5V8/4TUDUskXDb+cVpUE0AmCImvplkzLWiAnA/K5scqeUGbYUa/h49
 In2I+5OpmLcNsVFVqkwcD4GF8ufRqg==
 -----END PRIVATE KEY-----`)
-  
-  verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert verify private key from PEM", err)
-    os.Exit(1)
-  }
-  
-  verifyKeyESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&verifyKeyPrivate.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert public key to PEM", err)
-    os.Exit(1)
-  }
-  
-  OwnerOne.Template()
-  OwnerTwo.Template()
-  SecAdminOne.Template()
-  SecAdminTwo.Template()
-  EngineerOne.Template()
-  EngineerTwo.Template()
-  
-  OwnerOnePrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
+
+	verifyKeyPrivate, err = keysconv.KeyInPEMToRSA(verifyKeyPrivatePEM, "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert verify private key from PEM", err)
+		os.Exit(1)
+	}
+
+	verifyKeyESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&verifyKeyPrivate.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert public key to PEM", err)
+		os.Exit(1)
+	}
+
+	OwnerOne.Template()
+	OwnerTwo.Template()
+	SecAdminOne.Template()
+	SecAdminTwo.Template()
+	EngineerOne.Template()
+	EngineerTwo.Template()
+
+	OwnerOnePrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIJQgIBADANBgkqhkiG9w0BAQEFAASCCSwwggkoAgEAAoICAQDn5+OSqp5aC2ay
 DOlGlbVIGIm90w+AQx7yDQgO/hpa9hD2R++f2APrRufIsiLYJd5n6UYV/vjyvs7B
 XQFAyjGPWNfWqugAaZxYcRtP/imQU0w3uHoCIwDecGcL9KEHHMJwcxqv5vghtpw+
@@ -217,34 +219,33 @@ iV8mbuJNBNMvgk0h+fEEG4sIFVgpaaS9rq6TZtriyadlot+qZ55RH4MQzCehhTs7
 3JX7br4G3r/e+Kg5BJ5TW4kzgjv/7My/HZ1sGfiVf5+e1AKhV503Pa7mwD+4cooT
 2fpxajCzvK9ryUwWx9W0Wm8jl21Lmw==
 -----END PRIVATE KEY-----`)
-  
-  OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne private key from PEM", err)
-    os.Exit(1)
-  }
-  
-  OwnerOneESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&OwnerOnePrivateKey.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne public key to PEM", err)
-    os.Exit(1)
-  }
-  
-  OwnerOne = data.UserDB{
-    User: data.User{
-      ESAMPubKey: OwnerOneESAMPubKey,
-      Name: "OwnerOne",
-      Role: data.UserRoleOwner,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key OwnerOne",
-      PasswordHash: "password hash OwnerOne",
-      ElevatePrivileges: true,
-    },
-    UserSign: OwnerOne.UserSign,
-  }
-  
-  
-  OwnerTwoPrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
+
+	OwnerOnePrivateKey, err = keysconv.KeyInPEMToRSA(OwnerOnePrivateKeyPEM, "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne private key from PEM", err)
+		os.Exit(1)
+	}
+
+	OwnerOneESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&OwnerOnePrivateKey.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerOne public key to PEM", err)
+		os.Exit(1)
+	}
+
+	OwnerOne = data.UserDB{
+		User: data.User{
+			ESAMPubKey:        OwnerOneESAMPubKey,
+			Name:              "OwnerOne",
+			Role:              data.UserRoleOwner,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash OwnerOne",
+			ElevatePrivileges: true,
+		},
+		UserSign: OwnerOne.UserSign,
+	}
+
+	OwnerTwoPrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIkQgIBADANBgkqhkiG9w0BAQEFAASCJCwwgiQoAgEAAoIIAQCsQcD3j0StIp/w
 xOQUiDFNRn4gcgpwZ1rx3oLAq5nzXBIOgR2QidCyQdgphaCpOJDPV2z5PqhZVUNi
 61Ylu4Vl7fp2U0cYJe5neKWdNtgMbR444SIEtECLW5WTaJcYfx3XeaiF22jU6TT3
@@ -440,34 +441,33 @@ iyJ4RPtFs/JVJ8rRcyGAOH15isbLFCK1C+NnHe1KuL55k/i/GSP2H9hTsdmYJgqo
 5hUhFl4NTEe+5g/6BZvO3sJYg+GvA05OSOe4+W9Qx+7IQb51/NVhRfi/UNg7bOB5
 dsbtUzU0g4G5a/e82/Kzkh53ajcY7A==
 -----END PRIVATE KEY-----`)
-  
-  OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo private key from PEM", err)
-    os.Exit(1)
-  }
-  
-  OwnerTwoESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&OwnerTwoPrivateKey.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo public key to PEM", err)
-    os.Exit(1)
-  }
-  
-  OwnerTwo = data.UserDB{
-    User: data.User{
-      ESAMPubKey: OwnerTwoESAMPubKey,
-      Name: "OwnerTwo",
-      Role: data.UserRoleOwner,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key OwnerTwo",
-      PasswordHash: "password hash OwnerTwo",
-      ElevatePrivileges: true,
-    },
-    UserSign: OwnerTwo.UserSign,
-  }
-  
-  
-  SecAdminOnePrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
+
+	OwnerTwoPrivateKey, err = keysconv.KeyInPEMToRSA(OwnerTwoPrivateKeyPEM, "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo private key from PEM", err)
+		os.Exit(1)
+	}
+
+	OwnerTwoESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&OwnerTwoPrivateKey.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert OwnerTwo public key to PEM", err)
+		os.Exit(1)
+	}
+
+	OwnerTwo = data.UserDB{
+		User: data.User{
+			ESAMPubKey:        OwnerTwoESAMPubKey,
+			Name:              "OwnerTwo",
+			Role:              data.UserRoleOwner,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash OwnerTwo",
+			ElevatePrivileges: true,
+		},
+		UserSign: OwnerTwo.UserSign,
+	}
+
+	SecAdminOnePrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIJRAIBADANBgkqhkiG9w0BAQEFAASCCS4wggkqAgEAAoICAQCpM/UUd2GRTF+e
 2m0lPFoFc+JUSS9vJxw/aUWSocHkohlMTsj7+nGr9XKPVFY7M5MpzuWblGnsn3NI
 lu7ez8BO9gJkn0Q1Sw9bbeZYXXeltz3E9G+c2EiSbZlxXI3GvjGVaFanaDx/SKWO
@@ -519,34 +519,33 @@ ZxM/csGuFxYw04pVNoXgVXc5TIraUE6t5FzIkHTMgWLTE45xDPH6yKm4/JOmVVHj
 tQuSSIYnPDlp/bgpNDiT3I2Vrzy7BEbKkbAjg9eQsxpe80FoZxNIgQ2XALOah9qE
 nucbcHW8j0PGtltMz4vgv5rbDiYxt9oI
 -----END PRIVATE KEY-----`)
-  
-  SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne private key from PEM", err)
-    os.Exit(1)
-  }
-  
-  SecAdminOneESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&SecAdminOnePrivateKey.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne public key to PEM", err)
-    os.Exit(1)
-  }
-  
-  SecAdminOne = data.UserDB{
-    User: data.User{
-      ESAMPubKey: SecAdminOneESAMPubKey,
-      Name: "SecAdminOne",
-      Role: data.UserRoleSecAdmin,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key SecAdminOne",
-      PasswordHash: "password hash SecAdminOne",
-      ElevatePrivileges: true,
-    },
-    UserSign: SecAdminOne.UserSign,
-  }
-  
-  
-  SecAdminTwoPrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
+
+	SecAdminOnePrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminOnePrivateKeyPEM, "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne private key from PEM", err)
+		os.Exit(1)
+	}
+
+	SecAdminOneESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&SecAdminOnePrivateKey.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminOne public key to PEM", err)
+		os.Exit(1)
+	}
+
+	SecAdminOne = data.UserDB{
+		User: data.User{
+			ESAMPubKey:        SecAdminOneESAMPubKey,
+			Name:              "SecAdminOne",
+			Role:              data.UserRoleSecAdmin,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash SecAdminOne",
+			ElevatePrivileges: true,
+		},
+		UserSign: SecAdminOne.UserSign,
+	}
+
+	SecAdminTwoPrivateKeyPEM = []byte(`-----BEGIN PRIVATE KEY-----
 MIIJQwIBADANBgkqhkiG9w0BAQEFAASCCS0wggkpAgEAAoICAQCoIeN+WqrbEen9
 /lB+7T4dG300pUK6EQR8VJadh/8D0leHKG4r1gPAc6MKf/XAhpNQ6aABIwPns/Cz
 fxPuYCAS8DMXDolkAr1iJ1XSfqb4QuYzQkXb+lKvzgxRK1uAslLwUMWzR8GJgLLE
@@ -598,35 +597,35 @@ YEP9k6MnuSTG0T8xWvRmegJ1puAvjRatCg7fOlWkMBzOONB6Ld8XYy59jHDh33M1
 07VaplWS0jCTQKNLf3zcDodCedE/pJERQ6EyeTL8x9gEba7r2hXyXDqjqkUmxJmv
 2UoQemzakBMQ/GI/Ym259HrAxJd+Wqk=
 -----END PRIVATE KEY-----`)
-  
-  SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo private key from PEM", err)
-    os.Exit(1)
-  }
-  
-  SecAdminTwoESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&SecAdminTwoPrivateKey.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo public key to PEM", err)
-    os.Exit(1)
-  }
-  
-  SecAdminTwo = data.UserDB{
-    User: data.User{
-      ESAMPubKey: SecAdminTwoESAMPubKey,
-      Name: "SecAdminTwo",
-      Role: data.UserRoleSecAdmin,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key SecAdminTwo",
-      PasswordHash: "password hash SecAdminTwo",
-      ElevatePrivileges: true,
-    },
-    UserSign: SecAdminTwo.UserSign,
-  }
-  
-  EngineerOne = data.UserDB{
-    User: data.User{
-      ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
+
+	SecAdminTwoPrivateKey, err = keysconv.KeyInPEMToRSA(SecAdminTwoPrivateKeyPEM, "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo private key from PEM", err)
+		os.Exit(1)
+	}
+
+	SecAdminTwoESAMPubKey, err = keysconv.PubKeyInRSAToPEM(&SecAdminTwoPrivateKey.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to convert SecAdminTwo public key to PEM", err)
+		os.Exit(1)
+	}
+
+	SecAdminTwo = data.UserDB{
+		User: data.User{
+			ESAMPubKey:        SecAdminTwoESAMPubKey,
+			Name:              "SecAdminTwo",
+			Role:              data.UserRoleSecAdmin,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash SecAdminTwo",
+			ElevatePrivileges: true,
+		},
+		UserSign: SecAdminTwo.UserSign,
+	}
+
+	EngineerOne = data.UserDB{
+		User: data.User{
+			ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA1UR2yOALzQyLqHc4X+zs
 zLDPJxA+kMEOukdsa0kgZlb2bMMXc7s/V6Jn5Lkk4F/vIT4ETKwsLGwX05y2CawZ
 S3As7ipyvLZSOciAU20rXjrWFHjMoRcKlw1iGE76wDTBarjLq+gUHtYe15XBON6w
@@ -640,19 +639,19 @@ tKkdqBpsgDwWH2/GxKNOFOsz6z0aV5wd7zr2uJuE8QQO96YBNc6wFTEpFXYAdthl
 MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 1e+8OAQ3faYXeL0Ow81iNW0CAwEAAQ==
 -----END PUBLIC KEY-----`),
-      Name: "EngineerOne",
-      Role: data.UserRoleEngineer,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key EngineerOne",
-      PasswordHash: "password hash EngineerOne",
-      ElevatePrivileges: true,
-    },
-    UserSign: EngineerOne.UserSign,
-  }
-  
-  EngineerTwo = data.UserDB{
-    User: data.User{
-      ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
+			Name:              "EngineerOne",
+			Role:              data.UserRoleEngineer,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash EngineerOne",
+			ElevatePrivileges: true,
+		},
+		UserSign: EngineerOne.UserSign,
+	}
+
+	EngineerTwo = data.UserDB{
+		User: data.User{
+			ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvDdChyd2HCs3VeSFThjk
 5MDL2+0GVYv+xmx1MY3tv7yQsFlqUbDrdtFf9HR3w7aXjIumwu/AXcE3Kx+uksLw
 qg3tOBifkolAp8dah92QusOumW5ZYLs37zq6Nq9YdKg8k4RFOSodmMlBbudE1OF8
@@ -666,19 +665,19 @@ OiY4Dh+17W5zzysAWQhYx5JyYgfYNYaA0iiihSjKxM7k8kElY6SOCoq15vsWAtth
 r6v4F05vdUYMTkBAPzJ77buFDlrgdfIMYDZptND1t3q8ZFPt2L31pJ/OVZA3Near
 54FKPNSiC226uO/yeYE2tMUCAwEAAQ==
 -----END PUBLIC KEY-----`),
-      Name: "EngineerTwo",
-      Role: data.UserRoleEngineer,
-      State: data.UserStateEnabled,
-      SSHPubKey: "SSH public key EngineerTwo",
-      PasswordHash: "password hash EngineerTwo",
-      ElevatePrivileges: false,
-    },
-    UserSign: EngineerTwo.UserSign,
-  }
-  
-  NodeOne = data.NodeDB {
-    Node: data.Node{
-      ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
+			Name:              "EngineerTwo",
+			Role:              data.UserRoleEngineer,
+			State:             data.UserStateEnabled,
+			SSHPubKey:         `ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCsRTNIrZFw1K2BJVUR1Zy4vINr+A60h6nUBLxeXAHWfVpU7ssca2dvrJ/l1TdGmVqykEvF6UEv9bdcMyJzV+E/60X+P6AjNJLTR5cFDcqd2U3GQrZt8hK1bFnEEbes4fvNH2/a2jeIE7gk6gN5yQn7vQ4k7o9eealwy+UPE0zI/yrNeUq02mvc6sw3VBIKVvQ40cXm0ZKp56Dd5nT7LXcm0Ri+MMJSdXF3j+v98cGDKMp5lqEbGALfvLjACgh+hQm+KIj/Au6joN7dYwIXpT1WQce6haBJb6ebgarSp0/zzU8y30/CoETA4Y1iRhXd3NONH5RzLv3W//n3zPktyrEtcCIkBaUxdDJHMAr2/eN+ZUKfyO2PNLUwNTN6VfXN7cFk+uhDN49d+9hsfuQZ1VH3Vl50Xg0LLRFg+7QPSg5CaE91yrAh1019IVk8hRgkRpdSw9oZcFbg8+Z9DZ8OtqJOoaTnRHotk2x6hiDZW+AVZnOK8JYpCpu13lfl71rD35k=`,
+			PasswordHash:      "password hash EngineerTwo",
+			ElevatePrivileges: false,
+		},
+		UserSign: EngineerTwo.UserSign,
+	}
+
+	NodeOne = data.NodeDB{
+		Node: data.Node{
+			ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA3JMAjkJFrJgx8rx6b1Jv
 qcFSH6NYA+AH2QnR/lbBTa7o19XKoY/Qxn9srgpbawdldaJ8W71kVD9W2Cbrxd/O
 L6k1xiLOGxgponODsWiBA2E1BG8vPNuErxfB/ggeoj5hlqSyhSxYMw5Dm5WCsiB8
@@ -692,13 +691,13 @@ mJO+/48jd+CbWZlqiBdsv82sWVxmgf4DP56YL6WrTynB5XPYGnxhX/Rf7Wn3pXk0
 CzaAEm/7qqlPGW690qRI0VkLaXRw3QzMGsQDK4FBp1UH7ila4Ai1liM/ri1hEC5B
 3W43bkJE9YSuuFfoJ0U6lesCAwEAAQ==
 -----END PUBLIC KEY-----`),
-      Name: "NodeOne",
-    },
-  }
-  
-  NodeTwo = data.NodeDB {
-    Node: data.Node{
-      ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
+			Name: "NodeOne",
+		},
+	}
+
+	NodeTwo = data.NodeDB{
+		Node: data.Node{
+			ESAMPubKey: data.ESAMPubKey(`-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA5BL1uiq/r3FWEdLXsTn4
 L7dV1NeqZbp+U4234y6mnpCtxBb81HnU/Xg+mMz7/k8dwdjPuUXTyoSqq5c8Kkq3
 kdijrEk/11WROKW6H3o6t54dzmX6DKYHRHNvuFHpMCP2IGE4BqXZcVhp8o8QYkU7
@@ -712,586 +711,586 @@ TJTqD9ZFFvgb/4xw6KbplIJlpStueMSzcCdbMtbZRcF2fZCZZs1xFDii5ASX43Mq
 4vpOVEyPR0DBuVyXdb87dz1HyMyWWu0ZM1JutJqxg4diocYEdvZQQcRx9VjSSQmq
 OkKdW+i3LJ9iL+6rj86PzCcCAwEAAQ==
 -----END PUBLIC KEY-----`),
-      Name: "NodeTwo",
-    },
-  }
-  
-  os.Remove(dbFile)
-  
-  err = db.Connect("sqlite", dbFile, "", "", "", "")
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to open database", err)
-    os.Exit(1)
-  }
-  
-  err = db.Init()
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to init database", err)
-    os.Exit(1)
-  }
-  
-  err = db.Test()
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to test database", err)
-    os.Exit(1)
-  }
-  
-  /* Add owners over UDS */
-  
-  udsAuthContext = &Context{SubjectType: SubjectUDS, SubjectData: nil}
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(udsAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult ==false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, udsAuthContext.SubjectType, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&OwnerOne)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(udsAuthContext, OwnerTwo, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult ==false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, udsAuthContext.SubjectType, OwnerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&OwnerTwo)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  /* Owners authentication */
-  
-  ownerOneAuthContext, err = IdentifySubject(&OwnerOne.ESAMPubKey, &db)
-  if err != nil || ownerOneAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  ownerTwoAuthContext, err = IdentifySubject(&OwnerTwo.ESAMPubKey, &db)
-  if err != nil || ownerTwoAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", OwnerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Re-sign OwnerOne data by verify key (private) and update his data in DB */
-  
-  err = OwnerOne.Sign(verifyKeyPrivate, nil)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign OwnerOne", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  OwnerOneFilter.ESAMPubKey = OwnerOne.ESAMPubKey
-  err = db.UpdateUser(&OwnerOneFilter, &OwnerOne)
-  if err != nil {
-    fmt.Printf("Failed to update '%v'. Details: %v\n", OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeChangePassword)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, OwnerOne.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Owner should not be able to update the data of another owner, including password or delete another owner*/
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, OwnerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeChangePassword)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, OwnerOne.Name, OwnerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeDelUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, OwnerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Owner should be able to add, update and delete an security administrator and engineer of course */
-  
-  err = SecAdminOne.Sign(OwnerOnePrivateKey, nil)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, OwnerOne.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&SecAdminOne)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  err = SecAdminTwo.Sign(OwnerTwoPrivateKey, nil)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminTwo", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminTwo, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, OwnerOne.Name, SecAdminTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&SecAdminTwo)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminTwo, SecAdminTwo, netapi.ReqTypeUpdateUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, SecAdminTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, SecAdminTwo, netapi.ReqTypeDelUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, SecAdminTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeUpdateUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, EngineerTwo, netapi.ReqTypeDelUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Security administrators authentication */
-  
-  secAdminOneAuthContext, err = IdentifySubject(&SecAdminOne.ESAMPubKey, &db)
-  if err != nil || ownerOneAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  secAdminTwoAuthContext, err = IdentifySubject(&SecAdminTwo.ESAMPubKey, &db)
-  if err != nil || ownerTwoAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", SecAdminTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /*
-  Security administrators should be able to:
-    - add, update and delete an engineer
-    - change own password (but not password hash)
-  */
-  
-  err = EngineerOne.Sign(SecAdminOnePrivateKey, nil)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerOne, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminOne.Name, EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&EngineerOne)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  err = EngineerTwo.Sign(SecAdminOnePrivateKey, nil)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  err = db.AddUser(&EngineerTwo)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeChangePassword)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, SecAdminOne.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeUpdateUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, EngineerTwo, netapi.ReqTypeDelUser)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /*
-  Security administrators should not be able to:
-    - add, update and delete owners
-    - add, update and delete security administrators
-    - increase role of engineer and security administrators
-    - reduce role of owner and security administrators
-    - increase or reduce own role
-    - update own data including password hash
-  */
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminTwo.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, OwnerOne, netapi.ReqTypeDelUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminTwo.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, SecAdminOne, netapi.ReqTypeDelUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  OwnerOneAsSecAdmin := OwnerOne
-  OwnerOneAsSecAdmin.Role = data.UserRoleSecAdmin
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOneAsSecAdmin, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOneAsSecAdmin.Name, err)
-    os.Exit(1)
-  }
-  
-  OwnerOneAsEngineer := OwnerOne
-  OwnerOneAsEngineer.Role = data.UserRoleEngineer
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOneAsEngineer, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOneAsEngineer.Name, err)
-    os.Exit(1)
-  }
-  
-  SecAdminOneAsEngineer := SecAdminOne
-  SecAdminOneAsEngineer.Role = data.UserRoleEngineer
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOneAsEngineer, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOneAsEngineer.Name, err)
-    os.Exit(1)
-  }
-  
-  SecAdminOneAsOwner := SecAdminOne
-  SecAdminOneAsOwner.Role = data.UserRoleOwner
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOneAsOwner, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOneAsOwner.Name, err)
-    os.Exit(1)
-  }
-  
-  EngineerOneAsSecAdmin := EngineerOne
-  EngineerOneAsSecAdmin.Role = data.UserRoleSecAdmin
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, EngineerOne, EngineerOneAsSecAdmin, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, EngineerOneAsSecAdmin.Name, err)
-    os.Exit(1)
-  }
-  
-  EngineerOneAsOwner := EngineerOne
-  EngineerOneAsOwner.Role = data.UserRoleOwner
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, EngineerOne, EngineerOneAsOwner, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, EngineerOneAsOwner.Name, err)
-    os.Exit(1)
-  }
-  
-  SecAdminTwoAsEngineer := SecAdminTwo
-  SecAdminTwoAsEngineer.Role = data.UserRoleEngineer
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoAsEngineer, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoAsEngineer.Name, err)
-    os.Exit(1)
-  }
-  
-  SecAdminTwoAsOwner := SecAdminTwo
-  SecAdminTwoAsOwner.Role = data.UserRoleOwner
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoAsOwner, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoAsOwner.Name, err)
-    os.Exit(1)
-  }
-  
-  SecAdminTwoWithOtherPasswordHash := SecAdminTwo
-  SecAdminTwoWithOtherPasswordHash.PasswordHash = "Other password hash SecAdminTwo"
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoWithOtherPasswordHash, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoWithOtherPasswordHash.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeChangePassword)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, SecAdminTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Engineers authentication */
-  
-  engineerOneAuthContext, err = IdentifySubject(&EngineerOne.ESAMPubKey, &db)
-  if err != nil || ownerOneAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  engineerTwoAuthContext, err = IdentifySubject(&EngineerTwo.ESAMPubKey, &db)
-  if err != nil || ownerTwoAuthContext == nil {
-    fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  /* Engineers may only change own password (but not password hash) */
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, EngineerOne.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, EngineerOne.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, OwnerOne, netapi.ReqTypeDelUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, EngineerOne.Name, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, EngineerTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeUpdateUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, EngineerTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, nil, SecAdminOne, netapi.ReqTypeDelUser)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, EngineerTwo.Name, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, EngineerOne, EngineerOne, netapi.ReqTypeChangePassword)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, EngineerOne.Name, EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeChangePassword)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, EngineerOne.Name, EngineerTwo.Name, err)
-    os.Exit(1)
-  }
-  
-  userFilter = data.User{}
-  usersList, err = db.ListUsers(&userFilter)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.ListUsers", err)
-  }
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&OwnerOne, usersList, &verifyKeyESAMPubKey)
-  if err != nil || dataTrusted == false {
-    fmt.Printf("Unexpected data authenticity for %v\n", OwnerOne.Name)
-  }
-  
-  /* OwnerTwo data not pass authenticity checks because his data not signed by verify key */
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&OwnerTwo, usersList, &verifyKeyESAMPubKey)
-  if err == nil || dataTrusted == true {
-    fmt.Printf("Unexpected data authenticity for %v\n", OwnerTwo.Name)
-  }
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&SecAdminOne, usersList, &verifyKeyESAMPubKey)
-  if err != nil || dataTrusted == false {
-    fmt.Printf("Unexpected data authenticity for %v\n", SecAdminOne.Name)
-  }
-  
-  /* SecAdminTwo data not pass authenticity checks because his data signed by OwnerTwo */
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&SecAdminTwo, usersList, &verifyKeyESAMPubKey)
-  if err == nil || dataTrusted == true {
-    fmt.Printf("Unexpected data authenticity for %v\n", SecAdminTwo.Name)
-  }
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&EngineerOne, usersList, &verifyKeyESAMPubKey)
-  if err != nil || dataTrusted == false {
-    fmt.Printf("Unexpected data authenticity for %v\n", EngineerOne.Name)
-  }
-  
-  dataTrusted, err = CheckUserDataAuthenticity(&EngineerTwo, usersList, &verifyKeyESAMPubKey)
-  if err != nil || dataTrusted == false {
-    fmt.Printf("Unexpected data authenticity for %v\n", EngineerTwo.Name)
-  }
-  
-  /* Node can be added, updated and deleted only by Owners and Security Administrators */
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, OwnerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
-  if err != nil || checkAccessRightsResult == false {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, SecAdminOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
-  if err == nil && checkAccessRightsResult == true {
-    fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, EngineerOne.Name, err)
-    os.Exit(1)
-  }
-  
-  err = NodeOne.Sign(SecAdminOnePrivateKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign node one by SecAdminOne", err)
-    os.Exit(1)
-  }
-  
-  err = NodeTwo.Sign(SecAdminTwoPrivateKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign node two by SecAdminTwo", err)
-    os.Exit(1)
-  }
-  
-  err = db.AddNode(&NodeOne)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddNode", err)
-    os.Exit(1)
-  }
-  
-  err = db.AddNode(&NodeTwo)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to db.AddNode", err)
-    os.Exit(1)
-  }
-  
-  dataTrusted, err = CheckNodeDataAuthenticity(&NodeOne, usersList, &verifyKeyESAMPubKey)
-  if err != nil || dataTrusted == false {
-    fmt.Printf("Unexpected data authenticity for %v\n", NodeOne.Name)
-  }
-  
-  /* NodeTwo data must not pass authenticity checks because data of SecAdminTwo not pass authenticity checks */
-  
-  dataTrusted, err = CheckNodeDataAuthenticity(&NodeTwo, usersList, &verifyKeyESAMPubKey)
-  if err == nil && dataTrusted == true {
-    fmt.Printf("Unexpected data authenticity for %v\n", NodeTwo.Name)
-  }
-  
-  os.Remove(dbFile)
+			Name: "NodeTwo",
+		},
+	}
+
+	os.Remove(dbFile)
+
+	err = db.Connect("sqlite", dbFile, "", "", "", "")
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to open database", err)
+		os.Exit(1)
+	}
+
+	err = db.Init()
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to init database", err)
+		os.Exit(1)
+	}
+
+	err = db.Test()
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to test database", err)
+		os.Exit(1)
+	}
+
+	/* Add owners over UDS */
+
+	udsAuthContext = &Context{SubjectType: SubjectUDS, SubjectData: nil}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(udsAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, udsAuthContext.SubjectType, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&OwnerOne)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(udsAuthContext, OwnerTwo, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, udsAuthContext.SubjectType, OwnerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&OwnerTwo)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	/* Owners authentication */
+
+	ownerOneAuthContext, err = IdentifySubject(&OwnerOne.ESAMPubKey, &db)
+	if err != nil || ownerOneAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	ownerTwoAuthContext, err = IdentifySubject(&OwnerTwo.ESAMPubKey, &db)
+	if err != nil || ownerTwoAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", OwnerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/* Re-sign OwnerOne data by verify key (private) and update his data in DB */
+
+	err = OwnerOne.Sign(verifyKeyPrivate, nil)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign OwnerOne", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	OwnerOneFilter.ESAMPubKey = OwnerOne.ESAMPubKey
+	err = db.UpdateUser(&OwnerOneFilter, &OwnerOne)
+	if err != nil {
+		fmt.Printf("Failed to update '%v'. Details: %v\n", OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeChangePassword)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, OwnerOne.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	/* Owner should not be able to update the data of another owner, including password or delete another owner*/
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, OwnerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeChangePassword)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, OwnerOne.Name, OwnerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, OwnerOne, OwnerTwo, netapi.ReqTypeDelUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, OwnerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/* Owner should be able to add, update and delete an security administrator and engineer of course */
+
+	err = SecAdminOne.Sign(OwnerOnePrivateKey, nil)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, OwnerOne.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&SecAdminOne)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	err = SecAdminTwo.Sign(OwnerTwoPrivateKey, nil)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminTwo", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminTwo, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, OwnerOne.Name, SecAdminTwo.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&SecAdminTwo)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, SecAdminTwo, SecAdminTwo, netapi.ReqTypeUpdateUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, SecAdminTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, SecAdminTwo, netapi.ReqTypeDelUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, SecAdminTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeUpdateUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, OwnerOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, EngineerTwo, netapi.ReqTypeDelUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, OwnerOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/* Security administrators authentication */
+
+	secAdminOneAuthContext, err = IdentifySubject(&SecAdminOne.ESAMPubKey, &db)
+	if err != nil || ownerOneAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	secAdminTwoAuthContext, err = IdentifySubject(&SecAdminTwo.ESAMPubKey, &db)
+	if err != nil || ownerTwoAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", SecAdminTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/*
+	  Security administrators should be able to:
+	    - add, update and delete an engineer
+	    - change own password (but not password hash)
+	*/
+
+	err = EngineerOne.Sign(SecAdminOnePrivateKey, nil)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerOne, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminOne.Name, EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&EngineerOne)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	err = EngineerTwo.Sign(SecAdminOnePrivateKey, nil)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign SecAdminOne", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	err = db.AddUser(&EngineerTwo)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddUser", err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeChangePassword)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, SecAdminOne.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, nil, netapi.ReqTypeAddUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeUpdateUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, EngineerTwo, netapi.ReqTypeDelUser)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/*
+	  Security administrators should not be able to:
+	    - add, update and delete owners
+	    - add, update and delete security administrators
+	    - increase role of engineer and security administrators
+	    - reduce role of owner and security administrators
+	    - increase or reduce own role
+	    - update own data including password hash
+	*/
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminTwo.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, SecAdminTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, OwnerOne, netapi.ReqTypeDelUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminTwo.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, SecAdminOne, netapi.ReqTypeDelUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, SecAdminTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	OwnerOneAsSecAdmin := OwnerOne
+	OwnerOneAsSecAdmin.Role = data.UserRoleSecAdmin
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOneAsSecAdmin, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOneAsSecAdmin.Name, err)
+		os.Exit(1)
+	}
+
+	OwnerOneAsEngineer := OwnerOne
+	OwnerOneAsEngineer.Role = data.UserRoleEngineer
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, OwnerOne, OwnerOneAsEngineer, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, OwnerOneAsEngineer.Name, err)
+		os.Exit(1)
+	}
+
+	SecAdminOneAsEngineer := SecAdminOne
+	SecAdminOneAsEngineer.Role = data.UserRoleEngineer
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOneAsEngineer, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOneAsEngineer.Name, err)
+		os.Exit(1)
+	}
+
+	SecAdminOneAsOwner := SecAdminOne
+	SecAdminOneAsOwner.Role = data.UserRoleOwner
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOneAsOwner, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminOneAsOwner.Name, err)
+		os.Exit(1)
+	}
+
+	EngineerOneAsSecAdmin := EngineerOne
+	EngineerOneAsSecAdmin.Role = data.UserRoleSecAdmin
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, EngineerOne, EngineerOneAsSecAdmin, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, EngineerOneAsSecAdmin.Name, err)
+		os.Exit(1)
+	}
+
+	EngineerOneAsOwner := EngineerOne
+	EngineerOneAsOwner.Role = data.UserRoleOwner
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, EngineerOne, EngineerOneAsOwner, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, EngineerOneAsOwner.Name, err)
+		os.Exit(1)
+	}
+
+	SecAdminTwoAsEngineer := SecAdminTwo
+	SecAdminTwoAsEngineer.Role = data.UserRoleEngineer
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoAsEngineer, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoAsEngineer.Name, err)
+		os.Exit(1)
+	}
+
+	SecAdminTwoAsOwner := SecAdminTwo
+	SecAdminTwoAsOwner.Role = data.UserRoleOwner
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoAsOwner, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoAsOwner.Name, err)
+		os.Exit(1)
+	}
+
+	SecAdminTwoWithOtherPasswordHash := SecAdminTwo
+	SecAdminTwoWithOtherPasswordHash.PasswordHash = "Other password hash SecAdminTwo"
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminTwo, SecAdminTwoWithOtherPasswordHash, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, SecAdminTwo.Name, SecAdminTwoWithOtherPasswordHash.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeChangePassword)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, SecAdminTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	/* Engineers authentication */
+
+	engineerOneAuthContext, err = IdentifySubject(&EngineerOne.ESAMPubKey, &db)
+	if err != nil || ownerOneAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	engineerTwoAuthContext, err = IdentifySubject(&EngineerTwo.ESAMPubKey, &db)
+	if err != nil || ownerTwoAuthContext == nil {
+		fmt.Printf("Failed to identify subject for '%v'. Details: %v\n", EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	/* Engineers may only change own password (but not password hash) */
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, OwnerOne, nil, netapi.ReqTypeAddUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, EngineerOne.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, OwnerOne, OwnerOne, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, EngineerOne.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, OwnerOne, netapi.ReqTypeDelUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, EngineerOne.Name, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, SecAdminOne, nil, netapi.ReqTypeAddUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeAddUser, EngineerTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, SecAdminOne, SecAdminOne, netapi.ReqTypeUpdateUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeUpdateUser, EngineerTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerTwoAuthContext, nil, SecAdminOne, netapi.ReqTypeDelUser)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeDelUser, EngineerTwo.Name, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, EngineerOne, EngineerOne, netapi.ReqTypeChangePassword)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, EngineerOne.Name, EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, EngineerTwo, EngineerTwo, netapi.ReqTypeChangePassword)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v' for '%v'. Details: %v\n", netapi.ReqTypeChangePassword, EngineerOne.Name, EngineerTwo.Name, err)
+		os.Exit(1)
+	}
+
+	userFilter = data.User{}
+	usersList, err = db.ListUsers(&userFilter)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.ListUsers", err)
+	}
+
+	dataTrusted, err = CheckUserDataAuthenticity(&OwnerOne, usersList, &verifyKeyESAMPubKey)
+	if err != nil || dataTrusted == false {
+		fmt.Printf("Unexpected data authenticity for %v\n", OwnerOne.Name)
+	}
+
+	/* OwnerTwo data not pass authenticity checks because his data not signed by verify key */
+
+	dataTrusted, err = CheckUserDataAuthenticity(&OwnerTwo, usersList, &verifyKeyESAMPubKey)
+	if err == nil || dataTrusted == true {
+		fmt.Printf("Unexpected data authenticity for %v\n", OwnerTwo.Name)
+	}
+
+	dataTrusted, err = CheckUserDataAuthenticity(&SecAdminOne, usersList, &verifyKeyESAMPubKey)
+	if err != nil || dataTrusted == false {
+		fmt.Printf("Unexpected data authenticity for %v\n", SecAdminOne.Name)
+	}
+
+	/* SecAdminTwo data not pass authenticity checks because his data signed by OwnerTwo */
+
+	dataTrusted, err = CheckUserDataAuthenticity(&SecAdminTwo, usersList, &verifyKeyESAMPubKey)
+	if err == nil || dataTrusted == true {
+		fmt.Printf("Unexpected data authenticity for %v\n", SecAdminTwo.Name)
+	}
+
+	dataTrusted, err = CheckUserDataAuthenticity(&EngineerOne, usersList, &verifyKeyESAMPubKey)
+	if err != nil || dataTrusted == false {
+		fmt.Printf("Unexpected data authenticity for %v\n", EngineerOne.Name)
+	}
+
+	dataTrusted, err = CheckUserDataAuthenticity(&EngineerTwo, usersList, &verifyKeyESAMPubKey)
+	if err != nil || dataTrusted == false {
+		fmt.Printf("Unexpected data authenticity for %v\n", EngineerTwo.Name)
+	}
+
+	/* Node can be added, updated and deleted only by Owners and Security Administrators */
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(ownerOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, OwnerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(secAdminOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
+	if err != nil || checkAccessRightsResult == false {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, SecAdminOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeAddNode)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeAddNode, EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeUpdateNode)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeUpdateNode, EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	checkAccessRightsResult, err = CheckSubjectAccessRights(engineerOneAuthContext, nil, nil, netapi.ReqTypeDelNode)
+	if err == nil && checkAccessRightsResult == true {
+		fmt.Printf("Failed to check access rights to '%v' by '%v'. Details: %v\n", netapi.ReqTypeDelNode, EngineerOne.Name, err)
+		os.Exit(1)
+	}
+
+	err = NodeOne.Sign(SecAdminOnePrivateKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign node one by SecAdminOne", err)
+		os.Exit(1)
+	}
+
+	err = NodeTwo.Sign(SecAdminTwoPrivateKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign node two by SecAdminTwo", err)
+		os.Exit(1)
+	}
+
+	err = db.AddNode(&NodeOne)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddNode", err)
+		os.Exit(1)
+	}
+
+	err = db.AddNode(&NodeTwo)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to db.AddNode", err)
+		os.Exit(1)
+	}
+
+	dataTrusted, err = CheckNodeDataAuthenticity(&NodeOne, usersList, &verifyKeyESAMPubKey)
+	if err != nil || dataTrusted == false {
+		fmt.Printf("Unexpected data authenticity for %v\n", NodeOne.Name)
+	}
+
+	/* NodeTwo data must not pass authenticity checks because data of SecAdminTwo not pass authenticity checks */
+
+	dataTrusted, err = CheckNodeDataAuthenticity(&NodeTwo, usersList, &verifyKeyESAMPubKey)
+	if err == nil && dataTrusted == true {
+		fmt.Printf("Unexpected data authenticity for %v\n", NodeTwo.Name)
+	}
+
+	os.Remove(dbFile)
 }

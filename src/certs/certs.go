@@ -21,38 +21,40 @@
 package certs
 
 import (
-  "crypto/x509"
-  "encoding/pem"
-  "io/ioutil"
+	"crypto/x509"
+	"encoding/pem"
+	"io/ioutil"
 )
 
 func LoadCertsBundle(bundlePath string) (*x509.CertPool, error) {
-  var err error
-  var certsPool *x509.CertPool
-  var bundleContent []byte
-  var pemBlock *pem.Block
-  var certs []*x509.Certificate
-  
-  certsPool = x509.NewCertPool()
-  
-  bundleContent, err = ioutil.ReadFile(bundlePath)
-  if err != nil {
-    return nil, err
-  }
-  
-  pemBlock, _ = pem.Decode(bundleContent)
-  if pemBlock == nil {
-    return nil, err
-  }
-  
-  certs, err = x509.ParseCertificates(pemBlock.Bytes)
-  if err != nil {
-    return nil, err
-  }
-  
-  for _, cert := range certs {
-    certsPool.AddCert(cert)
-  }
-  
-  return certsPool, nil
+	var (
+		err           error
+		certsPool     *x509.CertPool
+		bundleContent []byte
+		pemBlock      *pem.Block
+		certs         []*x509.Certificate
+	)
+
+	certsPool = x509.NewCertPool()
+
+	bundleContent, err = ioutil.ReadFile(bundlePath)
+	if err != nil {
+		return nil, err
+	}
+
+	pemBlock, _ = pem.Decode(bundleContent)
+	if pemBlock == nil {
+		return nil, err
+	}
+
+	certs, err = x509.ParseCertificates(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, cert := range certs {
+		certsPool.AddCert(cert)
+	}
+
+	return certsPool, nil
 }

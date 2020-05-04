@@ -21,12 +21,12 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 import (
-  "esam/src/data"
+	"github.com/akramarenkov/esam/src/data"
 )
 
 /*
@@ -38,53 +38,57 @@ import (
 /* For build and parse request use BuildSimpleReq and ParseMsgHeader functions */
 
 type repGetDirConnSettings struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  Settings data.DirConnSettings `json:"dir_conn_settings"`
+	msgHeaderWrapper
+	reqResultWrapper
+	Settings data.DirConnSettings `json:"dir_conn_settings"`
 }
 
 func BuildRepGetDirConnSettings(dirConnSettingsIn *data.DirConnSettings) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repGetDirConnSettings repGetDirConnSettings
-  
-  repGetDirConnSettings.MsgHeader.Type = MsgTypeReply
-  repGetDirConnSettings.MsgHeader.SubType = ReqTypeGetDirConnSettings
-  repGetDirConnSettings.ReqResult.Status = ReqResultStatusSuccessful
-  repGetDirConnSettings.ReqResult.Reason = ReqResultReasonEmpty
-  repGetDirConnSettings.Settings = (*dirConnSettingsIn)
-  
-  rep, err = json.Marshal(repGetDirConnSettings)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var (
+		err                   error
+		rep                   []byte
+		repGetDirConnSettings repGetDirConnSettings
+	)
+
+	repGetDirConnSettings.MsgHeader.Type = MsgTypeReply
+	repGetDirConnSettings.MsgHeader.SubType = ReqTypeGetDirConnSettings
+	repGetDirConnSettings.ReqResult.Status = ReqResultStatusSuccessful
+	repGetDirConnSettings.ReqResult.Reason = ReqResultReasonEmpty
+	repGetDirConnSettings.Settings = (*dirConnSettingsIn)
+
+	rep, err = json.Marshal(repGetDirConnSettings)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep, nil
 }
 
-func ParseRepGetDirConnSettings(jsonIn []byte, dirConnSettingsOut *data.DirConnSettings) (error) {
-  var err error
-  var repGetDirConnSettings repGetDirConnSettings
-  
-  err = json.Unmarshal(jsonIn[:], &repGetDirConnSettings)
-  if err != nil {
-    return err
-  }
-  
-  if repGetDirConnSettings.MsgHeader.Type != MsgTypeReply {
-    return errors.New("Unexpected message type")
-  }
-  
-  if repGetDirConnSettings.MsgHeader.SubType != ReqTypeGetDirConnSettings {
-    return errors.New("Unexpected request type")
-  }
-  
-  err = repGetDirConnSettings.ReqResult.Test()
-  if err != nil {
-    return err
-  }
-  
-  (*dirConnSettingsOut) = repGetDirConnSettings.Settings
-  
-  return nil
+func ParseRepGetDirConnSettings(jsonIn []byte, dirConnSettingsOut *data.DirConnSettings) error {
+	var (
+		err                   error
+		repGetDirConnSettings repGetDirConnSettings
+	)
+
+	err = json.Unmarshal(jsonIn, &repGetDirConnSettings)
+	if err != nil {
+		return err
+	}
+
+	if repGetDirConnSettings.MsgHeader.Type != MsgTypeReply {
+		return errors.New("Unexpected message type")
+	}
+
+	if repGetDirConnSettings.MsgHeader.SubType != ReqTypeGetDirConnSettings {
+		return errors.New("Unexpected request type")
+	}
+
+	err = repGetDirConnSettings.ReqResult.Test()
+	if err != nil {
+		return err
+	}
+
+	(*dirConnSettingsOut) = repGetDirConnSettings.Settings
+
+	return nil
 }

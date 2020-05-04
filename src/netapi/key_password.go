@@ -21,8 +21,8 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 /*
@@ -33,45 +33,49 @@ import (
 */
 
 type reqPassKeyPassword struct {
-  msgHeaderWrapper
-  Password string`json:"password"`
+	msgHeaderWrapper
+	Password string `json:"password"`
 }
 
 func BuildReqPassKeyPassword(password string) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqPassKeyPassword reqPassKeyPassword
-  
-  reqPassKeyPassword.MsgHeader.Type = MsgTypeRequest
-  reqPassKeyPassword.MsgHeader.SubType = ReqTypePassKeyPassword
-  reqPassKeyPassword.Password = password
-  
-  req, err = json.Marshal(reqPassKeyPassword)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err                error
+		req                []byte
+		reqPassKeyPassword reqPassKeyPassword
+	)
+
+	reqPassKeyPassword.MsgHeader.Type = MsgTypeRequest
+	reqPassKeyPassword.MsgHeader.SubType = ReqTypePassKeyPassword
+	reqPassKeyPassword.Password = password
+
+	req, err = json.Marshal(reqPassKeyPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 func ParseReqPassKeyPassword(jsonIn []byte) (string, error) {
-  var err error
-  var reqPassKeyPassword reqPassKeyPassword
-  
-  err = json.Unmarshal(jsonIn[:], &reqPassKeyPassword)
-  if err != nil {
-    return "", err
-  }
-  
-  if reqPassKeyPassword.MsgHeader.Type != MsgTypeRequest {
-    return "", errors.New("Unexpected message type")
-  }
-  
-  if reqPassKeyPassword.MsgHeader.SubType != ReqTypePassKeyPassword {
-    return "", errors.New("Unexpected request type")
-  }
-  
-  return reqPassKeyPassword.Password, nil
+	var (
+		err                error
+		reqPassKeyPassword reqPassKeyPassword
+	)
+
+	err = json.Unmarshal(jsonIn, &reqPassKeyPassword)
+	if err != nil {
+		return "", err
+	}
+
+	if reqPassKeyPassword.MsgHeader.Type != MsgTypeRequest {
+		return "", errors.New("Unexpected message type")
+	}
+
+	if reqPassKeyPassword.MsgHeader.SubType != ReqTypePassKeyPassword {
+		return "", errors.New("Unexpected request type")
+	}
+
+	return reqPassKeyPassword.Password, nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */

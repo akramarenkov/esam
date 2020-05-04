@@ -34,39 +34,39 @@ UDS_PATH_OPTION_KEY="--uds-path"
 # ${1} - input string
 esam_add_trailing_single_quotes()
 {
-  printf "%s" "${1}" | sed --quiet "s/^/'/;s/$/'/;p"
+	printf "%s" "${1}" | sed --quiet "s/^/'/;s/$/'/;p"
 }
 
 # ${1} - input string
 esam_trim_trailing_single_quotes()
 {
-  local value
-  
-  value="${1#\'}"
-  value="${value%\'}"
-  
-  printf "%s" "${value}"
-  
-  #printf "%s" "${1}" | sed --quiet "s/^'//;s/'$//;p"
+	local value
+
+	value="${1#\'}"
+	value="${value%\'}"
+
+	printf "%s" "${value}"
+
+	#printf "%s" "${1}" | sed --quiet "s/^'//;s/'$//;p"
 }
 
 # ${1} - COMP_WORD
 esam_gen_files_compreply()
 {
-  for item in $( esam_add_trailing_single_quotes "$( compgen -f -- "${1}" )" );
-  do
-    COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
-  done
+	for item in $( esam_add_trailing_single_quotes "$( compgen -f -- "${1}" )" );
+	do
+		COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
+	done
 }
 
 # ${1} - COMP_WORD
 # ${2} - command
 esam_gen_command_compreply()
 {
-  for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${2}" --generate-bash-completion )" -- "${1}" )" );
-  do
-    COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
-  done
+	for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${2}" --generate-bash-completion )" -- "${1}" )" );
+	do
+		COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
+	done
 }
 
 # ${1} - COMP_WORD
@@ -74,10 +74,10 @@ esam_gen_command_compreply()
 # ${3} - subcommand
 esam_gen_subcommand_compreply()
 {
-  for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${2}" "${3}" --generate-bash-completion )" -- "${1}" )" );
-  do
-    COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
-  done
+	for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${2}" "${3}" --generate-bash-completion )" -- "${1}" )" );
+	do
+		COMPREPLY+=("$( esam_trim_trailing_single_quotes "${item}" )")
+	done
 }
 
 # ${1} - word
@@ -85,159 +85,159 @@ esam_gen_subcommand_compreply()
 # ${3} - subcommand
 esam_check_that_subcommand_word_is_option()
 {
-  local word_is_option
-  
-  word_is_option="no"
-  
-  for item in $( esam_add_trailing_single_quotes "$( "${2}" "${3}" --generate-bash-completion )" );
-  do
-    if test "${1}" == "$( esam_trim_trailing_single_quotes "${item}" )";
-    then
-      word_is_option="yes"
-      break
-    fi
-  done
-  
-  printf "%s" "${word_is_option}"
+	local word_is_option
+
+	word_is_option="no"
+
+	for item in $( esam_add_trailing_single_quotes "$( "${2}" "${3}" --generate-bash-completion )" );
+	do
+		if test "${1}" == "$( esam_trim_trailing_single_quotes "${item}" )";
+		then
+			word_is_option="yes"
+			break
+		fi
+	done
+
+	printf "%s" "${word_is_option}"
 }
 
 esam_find_uds_path_option_value()
 {
-  local value
-  
-  (( index=0 ))
-  while test "${index}" -le "${COMP_CWORD}";
-  do
-    if test "${COMP_WORDS[index]}" == "${UDS_PATH_OPTION_KEY}";
-    then
-      value="${COMP_WORDS[index+1]}"
-    fi
-    
-    (( index+=1 ))
-  done
-  
-  printf "%s" "${value}"
+	local value
+
+	(( index=0 ))
+	while test "${index}" -le "${COMP_CWORD}";
+	do
+		if test "${COMP_WORDS[index]}" == "${UDS_PATH_OPTION_KEY}";
+		then
+			value="${COMP_WORDS[index+1]}"
+		fi
+
+		(( index+=1 ))
+	done
+
+	printf "%s" "${value}"
 }
 
 # ${1} - COMP_WORD
 # ${2} - --uds-path option value
 esam_gen_esamc_nodes_list_compreply()
 {
-  # Unquoting with esam_trim_trailing_single_quotes function is slowly and not used here
-  if test -z "${2}";
-  then
-    for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${ESAMC}" list-nodes --only-trusted --nullify-esam-pub-key --json "${1}" | jq -r ".[].name" )" -- "${1}" )" );
-    do
-      item="${item#\'}"
-      item="${item%\'}"
-      COMPREPLY+=("${item}")
-    done
-  else
-    for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${ESAMC}" list-nodes --uds-path "${2}" --only-trusted --nullify-esam-pub-key --json "${1}" | jq -r ".[].name" )" -- "${1}" )" );
-    do
-      item="${item#\'}"
-      item="${item%\'}"
-      COMPREPLY+=("${item}")
-    done
-  fi
+	# Unquoting with esam_trim_trailing_single_quotes function is slowly and not used here
+	if test -z "${2}";
+	then
+		for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${ESAMC}" list-nodes --only-trusted --nullify-esam-pub-key --json "${1}" | jq -r ".[].name" )" -- "${1}" )" );
+		do
+			item="${item#\'}"
+			item="${item%\'}"
+			COMPREPLY+=("${item}")
+		done
+	else
+		for item in $( esam_add_trailing_single_quotes "$( compgen -W "$( "${ESAMC}" list-nodes --uds-path "${2}" --only-trusted --nullify-esam-pub-key --json "${1}" | jq -r ".[].name" )" -- "${1}" )" );
+		do
+			item="${item#\'}"
+			item="${item%\'}"
+			COMPREPLY+=("${item}")
+		done
+	fi
 }
 
 # ${1} - target program
 esam_completer()
 {
-  IFS=$'\n'
-  COMPREPLY=()
-  
-  case "${COMP_CWORD}" in
-    1)
-      esam_gen_command_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}"
-    ;;
-    2)
-      SUBCOMMAND="${COMP_WORDS[1]}"
-      case "${SUBCOMMAND}" in
-        *)
-          esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}" "${SUBCOMMAND}"
-        ;;
-      esac
-    ;;
-    *)
-      SUBCOMMAND="${COMP_WORDS[1]}"
-      PREV_WORD="${COMP_WORDS[COMP_CWORD-1]}"
-      
-      if test "$( esam_check_that_subcommand_word_is_option "${PREV_WORD}" "${1}" "${SUBCOMMAND}"  "" )" == "yes";
-      then
-        esam_gen_files_compreply "${COMP_WORDS[COMP_CWORD]}"
-      else
-        esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}" "${SUBCOMMAND}"
-      fi
-    ;;
-  esac
+	IFS=$'\n'
+	COMPREPLY=()
+
+	case "${COMP_CWORD}" in
+		1)
+			esam_gen_command_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}"
+		;;
+		2)
+			SUBCOMMAND="${COMP_WORDS[1]}"
+			case "${SUBCOMMAND}" in
+				*)
+					esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}" "${SUBCOMMAND}"
+				;;
+			esac
+		;;
+		*)
+			SUBCOMMAND="${COMP_WORDS[1]}"
+			PREV_WORD="${COMP_WORDS[COMP_CWORD-1]}"
+
+			if test "$( esam_check_that_subcommand_word_is_option "${PREV_WORD}" "${1}" "${SUBCOMMAND}"  "" )" == "yes";
+			then
+				esam_gen_files_compreply "${COMP_WORDS[COMP_CWORD]}"
+			else
+				esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${1}" "${SUBCOMMAND}"
+			fi
+		;;
+	esac
 }
 
 esamd_completer()
 {
-  esam_completer "${ESAMD}"
+	esam_completer "${ESAMD}"
 }
 
 esama_completer()
 {
-  esam_completer "${ESAMA}"
+	esam_completer "${ESAMA}"
 }
 
 esamc_completer()
 {
-  IFS=$'\n'
-  COMPREPLY=()
-  
-  case "${COMP_CWORD}" in
-    1)
-      esam_gen_command_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}"
-    ;;
-    2)
-      SUBCOMMAND="${COMP_WORDS[1]}"
-      case "${SUBCOMMAND}" in
-        ssh)
-          if [[ "${COMP_WORDS[COMP_CWORD]}" =~ ^\- ]];
-          then
-            esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
-          else
-            esam_gen_esamc_nodes_list_compreply "${COMP_WORDS[COMP_CWORD]}" "$( esam_find_uds_path_option_value )"
-          fi
-        ;;
-        *)
-          esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
-        ;;
-      esac
-    ;;
-    *)
-      SUBCOMMAND="${COMP_WORDS[1]}"
-      PREV_WORD="${COMP_WORDS[COMP_CWORD-1]}"
-      
-      if test "$( esam_check_that_subcommand_word_is_option "${PREV_WORD}" "${ESAMC}" "${SUBCOMMAND}" "" )" == "yes";
-      then
-        esam_gen_files_compreply "${COMP_WORDS[COMP_CWORD]}"
-      else
-        case "${SUBCOMMAND}" in
-        ssh)
-          if [[ "${COMP_WORDS[COMP_CWORD]}" =~ ^\- ]];
-          then
-            esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
-          else
-            PREV_PREV_WORD="${COMP_WORDS[COMP_CWORD-2]}"
-            
-            if test "$( esam_check_that_subcommand_word_is_option "${PREV_PREV_WORD}" "${ESAMC}" "${SUBCOMMAND}" "" )" == "yes";
-            then
-              esam_gen_esamc_nodes_list_compreply "${COMP_WORDS[COMP_CWORD]}" "$( esam_find_uds_path_option_value )"
-            fi
-          fi
-        ;;
-        *)
-          esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
-        ;;
-      esac
-      fi
-    ;;
-  esac
+	IFS=$'\n'
+	COMPREPLY=()
+
+	case "${COMP_CWORD}" in
+		1)
+			esam_gen_command_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}"
+		;;
+		2)
+			SUBCOMMAND="${COMP_WORDS[1]}"
+			case "${SUBCOMMAND}" in
+				ssh)
+					if [[ "${COMP_WORDS[COMP_CWORD]}" =~ ^\- ]];
+					then
+						esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
+					else
+						esam_gen_esamc_nodes_list_compreply "${COMP_WORDS[COMP_CWORD]}" "$( esam_find_uds_path_option_value )"
+					fi
+				;;
+				*)
+					esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
+				;;
+			esac
+		;;
+		*)
+			SUBCOMMAND="${COMP_WORDS[1]}"
+			PREV_WORD="${COMP_WORDS[COMP_CWORD-1]}"
+
+			if test "$( esam_check_that_subcommand_word_is_option "${PREV_WORD}" "${ESAMC}" "${SUBCOMMAND}" "" )" == "yes";
+			then
+				esam_gen_files_compreply "${COMP_WORDS[COMP_CWORD]}"
+			else
+				case "${SUBCOMMAND}" in
+				ssh)
+					if [[ "${COMP_WORDS[COMP_CWORD]}" =~ ^\- ]];
+					then
+						esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
+					else
+						PREV_PREV_WORD="${COMP_WORDS[COMP_CWORD-2]}"
+
+						if test "$( esam_check_that_subcommand_word_is_option "${PREV_PREV_WORD}" "${ESAMC}" "${SUBCOMMAND}" "" )" == "yes";
+						then
+							esam_gen_esamc_nodes_list_compreply "${COMP_WORDS[COMP_CWORD]}" "$( esam_find_uds_path_option_value )"
+						fi
+					fi
+				;;
+				*)
+					esam_gen_subcommand_compreply "${COMP_WORDS[COMP_CWORD]}" "${ESAMC}" "${SUBCOMMAND}"
+				;;
+			esac
+			fi
+		;;
+	esac
 }
 
 complete -F esamd_completer "${ESAMD}"

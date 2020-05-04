@@ -21,49 +21,49 @@
 package types
 
 import (
-  "errors"
-  "strings"
-  "sort"
+	"errors"
+	"sort"
+	"strings"
 )
 
 const (
-  True = "true"
-  False = "false"
+	True  = "true"
+	False = "false"
 )
 
 var (
-  boolStringValues = map[string]string {
-    True: True,
-    False: False,
-  }
+	boolStringValues = map[string]string{
+		True:  True,
+		False: False,
+	}
 )
 
-func NormalizeBoolString(boolString string) (string) {
-  return strings.TrimSpace(boolString)
+func NormalizeBoolString(boolString string) string {
+	return strings.TrimSpace(boolString)
 }
 
-func TestBoolString(boolString string, toleratesEmptyFields bool) (error) {
-  if toleratesEmptyFields && len(boolString) == 0 {
-    return nil
-  }
-  
-  if boolStringValues[boolString] == "" {
-    return errors.New("Unsupported bool type value")
-  }
-  
-  return nil
+func TestBoolString(boolString string, toleratesEmptyFields bool) error {
+	if toleratesEmptyFields && len(boolString) == 0 {
+		return nil
+	}
+
+	if boolStringValues[boolString] == "" {
+		return errors.New("Unsupported bool type value")
+	}
+
+	return nil
 }
 
-func TemplateBoolString() (string) {
-  var list []string
-  
-  list = make([]string, 0)
-  
-  for _, item := range boolStringValues {
-    list = append(list, item)
-  }
-  
-  sort.Strings(list)
-  
-  return strings.Join(list, " | ")
+func TemplateBoolString() string {
+	var list []string
+
+	list = make([]string, 0)
+
+	for _, item := range boolStringValues {
+		list = append(list, item)
+	}
+
+	sort.Strings(list)
+
+	return strings.Join(list, " | ")
 }

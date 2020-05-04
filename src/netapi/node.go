@@ -21,12 +21,12 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 import (
-  "esam/src/data"
+	"github.com/akramarenkov/esam/src/data"
 )
 
 /*
@@ -70,47 +70,51 @@ import (
 /* Add */
 
 type reqAddNode struct {
-  msgHeaderWrapper
-  data.NodeDB `json:"node"`
+	msgHeaderWrapper
+	data.NodeDB `json:"node"`
 }
 
 func BuildReqAddNode(nodeIn *data.NodeDB) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqAddNode reqAddNode
-  
-  reqAddNode.MsgHeader.Type = MsgTypeRequest
-  reqAddNode.MsgHeader.SubType = ReqTypeAddNode
-  reqAddNode.NodeDB = (*nodeIn)
-  
-  req, err = json.Marshal(reqAddNode)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err        error
+		req        []byte
+		reqAddNode reqAddNode
+	)
+
+	reqAddNode.MsgHeader.Type = MsgTypeRequest
+	reqAddNode.MsgHeader.SubType = ReqTypeAddNode
+	reqAddNode.NodeDB = (*nodeIn)
+
+	req, err = json.Marshal(reqAddNode)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
-func ParseReqAddNode(jsonIn []byte, nodeOut *data.NodeDB) (error) {
-  var err error
-  var reqAddNode reqAddNode
-  
-  err = json.Unmarshal(jsonIn[:], &reqAddNode)
-  if err != nil {
-    return err
-  }
-  
-  if reqAddNode.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqAddNode.MsgHeader.SubType != ReqTypeAddNode {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*nodeOut) = reqAddNode.NodeDB
-  
-  return nil
+func ParseReqAddNode(jsonIn []byte, nodeOut *data.NodeDB) error {
+	var (
+		err        error
+		reqAddNode reqAddNode
+	)
+
+	err = json.Unmarshal(jsonIn, &reqAddNode)
+	if err != nil {
+		return err
+	}
+
+	if reqAddNode.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqAddNode.MsgHeader.SubType != ReqTypeAddNode {
+		return errors.New("Unexpected request type")
+	}
+
+	(*nodeOut) = reqAddNode.NodeDB
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
@@ -120,50 +124,54 @@ func ParseReqAddNode(jsonIn []byte, nodeOut *data.NodeDB) (error) {
 /* Update */
 
 type reqUpdateNode struct {
-  msgHeaderWrapper
-  data.ESAMPubKey `json:"esam_pub_key"`
-  data.NodeDB `json:"node"`
+	msgHeaderWrapper
+	data.ESAMPubKey `json:"esam_pub_key"`
+	data.NodeDB     `json:"node"`
 }
 
 func BuildReqUpdateNode(esamPubKeyIn *data.ESAMPubKey, nodeIn *data.NodeDB) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqUpdateNode reqUpdateNode
-  
-  reqUpdateNode.MsgHeader.Type = MsgTypeRequest
-  reqUpdateNode.MsgHeader.SubType = ReqTypeUpdateNode
-  reqUpdateNode.ESAMPubKey = (*esamPubKeyIn)
-  reqUpdateNode.NodeDB = (*nodeIn)
-  
-  req, err = json.Marshal(reqUpdateNode)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err           error
+		req           []byte
+		reqUpdateNode reqUpdateNode
+	)
+
+	reqUpdateNode.MsgHeader.Type = MsgTypeRequest
+	reqUpdateNode.MsgHeader.SubType = ReqTypeUpdateNode
+	reqUpdateNode.ESAMPubKey = (*esamPubKeyIn)
+	reqUpdateNode.NodeDB = (*nodeIn)
+
+	req, err = json.Marshal(reqUpdateNode)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
-func ParseReqUpdateNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, nodeOut *data.NodeDB) (error) {
-  var err error
-  var reqUpdateNode reqUpdateNode
-  
-  err = json.Unmarshal(jsonIn[:], &reqUpdateNode)
-  if err != nil {
-    return err
-  }
-  
-  if reqUpdateNode.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqUpdateNode.MsgHeader.SubType != ReqTypeUpdateNode {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*esamPubKeyOut) = reqUpdateNode.ESAMPubKey
-  (*nodeOut) = reqUpdateNode.NodeDB
-  
-  return nil
+func ParseReqUpdateNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, nodeOut *data.NodeDB) error {
+	var (
+		err           error
+		reqUpdateNode reqUpdateNode
+	)
+
+	err = json.Unmarshal(jsonIn, &reqUpdateNode)
+	if err != nil {
+		return err
+	}
+
+	if reqUpdateNode.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqUpdateNode.MsgHeader.SubType != ReqTypeUpdateNode {
+		return errors.New("Unexpected request type")
+	}
+
+	(*esamPubKeyOut) = reqUpdateNode.ESAMPubKey
+	(*nodeOut) = reqUpdateNode.NodeDB
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */
@@ -173,100 +181,108 @@ func ParseReqUpdateNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, nodeOut *
 /* List */
 
 type reqListNodes struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  data.Node `json:"filter"`
+	msgHeaderWrapper
+	reqResultWrapper
+	data.Node `json:"filter"`
 }
 
 func BuildReqListNodes(nodeFilterIn *data.Node) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqListNodes reqListNodes
-  
-  reqListNodes.MsgHeader.Type = MsgTypeRequest
-  reqListNodes.MsgHeader.SubType = ReqTypeListNodes
-  reqListNodes.Node = (*nodeFilterIn)
-  
-  req, err = json.Marshal(reqListNodes)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err          error
+		req          []byte
+		reqListNodes reqListNodes
+	)
+
+	reqListNodes.MsgHeader.Type = MsgTypeRequest
+	reqListNodes.MsgHeader.SubType = ReqTypeListNodes
+	reqListNodes.Node = (*nodeFilterIn)
+
+	req, err = json.Marshal(reqListNodes)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
-func ParseReqListNodes(jsonIn []byte, nodeFilterOut *data.Node) (error) {
-  var err error
-  var reqListNodes reqListNodes
-  
-  err = json.Unmarshal(jsonIn[:], &reqListNodes)
-  if err != nil {
-    return err
-  }
-  
-  if reqListNodes.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqListNodes.MsgHeader.SubType != ReqTypeListNodes {
-    return errors.New("Unexpected request type")
-  }
-  
-  if nodeFilterOut != nil {
-    (*nodeFilterOut) = reqListNodes.Node
-  }
-  
-  return nil
+func ParseReqListNodes(jsonIn []byte, nodeFilterOut *data.Node) error {
+	var (
+		err          error
+		reqListNodes reqListNodes
+	)
+
+	err = json.Unmarshal(jsonIn, &reqListNodes)
+	if err != nil {
+		return err
+	}
+
+	if reqListNodes.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqListNodes.MsgHeader.SubType != ReqTypeListNodes {
+		return errors.New("Unexpected request type")
+	}
+
+	if nodeFilterOut != nil {
+		(*nodeFilterOut) = reqListNodes.Node
+	}
+
+	return nil
 }
 
 type repListNodes struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  Nodes []data.NodeDB `json:"nodes"`
+	msgHeaderWrapper
+	reqResultWrapper
+	Nodes []data.NodeDB `json:"nodes"`
 }
 
 func BuildRepListNodes(nodesIn []data.NodeDB) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repListNodes repListNodes
-  
-  repListNodes.MsgHeader.Type = MsgTypeReply
-  repListNodes.MsgHeader.SubType = ReqTypeListNodes
-  repListNodes.ReqResult.Status = ReqResultStatusSuccessful
-  repListNodes.ReqResult.Reason = ReqResultReasonEmpty
-  repListNodes.Nodes = nodesIn[:]
-  
-  rep, err = json.Marshal(repListNodes)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var (
+		err          error
+		rep          []byte
+		repListNodes repListNodes
+	)
+
+	repListNodes.MsgHeader.Type = MsgTypeReply
+	repListNodes.MsgHeader.SubType = ReqTypeListNodes
+	repListNodes.ReqResult.Status = ReqResultStatusSuccessful
+	repListNodes.ReqResult.Reason = ReqResultReasonEmpty
+	repListNodes.Nodes = nodesIn
+
+	rep, err = json.Marshal(repListNodes)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep, nil
 }
 
 func ParseRepListNodes(jsonIn []byte) ([]data.NodeDB, error) {
-  var err error
-  var repListNodes repListNodes
-  
-  err = json.Unmarshal(jsonIn[:], &repListNodes)
-  if err != nil {
-    return nil, err
-  }
-  
-  if repListNodes.MsgHeader.Type != MsgTypeReply {
-    return nil, errors.New("Unexpected message type")
-  }
-  
-  if repListNodes.MsgHeader.SubType != ReqTypeListNodes {
-    return nil, errors.New("Unexpected request type")
-  }
-  
-  err = repListNodes.ReqResult.Test()
-  if err != nil {
-    return nil, err
-  }
-  
-  return repListNodes.Nodes[:], nil
+	var (
+		err          error
+		repListNodes repListNodes
+	)
+
+	err = json.Unmarshal(jsonIn, &repListNodes)
+	if err != nil {
+		return nil, err
+	}
+
+	if repListNodes.MsgHeader.Type != MsgTypeReply {
+		return nil, errors.New("Unexpected message type")
+	}
+
+	if repListNodes.MsgHeader.SubType != ReqTypeListNodes {
+		return nil, errors.New("Unexpected request type")
+	}
+
+	err = repListNodes.ReqResult.Test()
+	if err != nil {
+		return nil, err
+	}
+
+	return repListNodes.Nodes, nil
 }
 
 /* List */
@@ -274,106 +290,114 @@ func ParseRepListNodes(jsonIn []byte) ([]data.NodeDB, error) {
 /* Find in nodes cache*/
 
 type reqFindInNodesCache struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  data.NodeAuth `json:"filter"`
-  FullMatch bool `json:"full_match"`
+	msgHeaderWrapper
+	reqResultWrapper
+	data.NodeAuth `json:"filter"`
+	FullMatch     bool `json:"full_match"`
 }
 
 func BuildReqFindInNodesCache(nodeFilterIn *data.NodeAuth, fullMatch bool) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqFindInNodesCache reqFindInNodesCache
-  
-  reqFindInNodesCache.MsgHeader.Type = MsgTypeRequest
-  reqFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
-  reqFindInNodesCache.NodeAuth = (*nodeFilterIn)
-  reqFindInNodesCache.FullMatch = fullMatch
-  
-  req, err = json.Marshal(reqFindInNodesCache)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err                 error
+		req                 []byte
+		reqFindInNodesCache reqFindInNodesCache
+	)
+
+	reqFindInNodesCache.MsgHeader.Type = MsgTypeRequest
+	reqFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
+	reqFindInNodesCache.NodeAuth = (*nodeFilterIn)
+	reqFindInNodesCache.FullMatch = fullMatch
+
+	req, err = json.Marshal(reqFindInNodesCache)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
-func ParseReqFindInNodesCache(jsonIn []byte, nodeFilterOut *data.NodeAuth, fullMatchOut *bool) (error) {
-  var err error
-  var reqFindInNodesCache reqFindInNodesCache
-  
-  err = json.Unmarshal(jsonIn[:], &reqFindInNodesCache)
-  if err != nil {
-    return err
-  }
-  
-  if reqFindInNodesCache.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqFindInNodesCache.MsgHeader.SubType != ReqTypeFindInNodesCache {
-    return errors.New("Unexpected request type")
-  }
-  
-  if nodeFilterOut != nil {
-    (*nodeFilterOut) = reqFindInNodesCache.NodeAuth
-  }
-  
-  if fullMatchOut != nil {
-    (*fullMatchOut) = reqFindInNodesCache.FullMatch
-  }
-  
-  return nil
+func ParseReqFindInNodesCache(jsonIn []byte, nodeFilterOut *data.NodeAuth, fullMatchOut *bool) error {
+	var (
+		err                 error
+		reqFindInNodesCache reqFindInNodesCache
+	)
+
+	err = json.Unmarshal(jsonIn, &reqFindInNodesCache)
+	if err != nil {
+		return err
+	}
+
+	if reqFindInNodesCache.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqFindInNodesCache.MsgHeader.SubType != ReqTypeFindInNodesCache {
+		return errors.New("Unexpected request type")
+	}
+
+	if nodeFilterOut != nil {
+		(*nodeFilterOut) = reqFindInNodesCache.NodeAuth
+	}
+
+	if fullMatchOut != nil {
+		(*fullMatchOut) = reqFindInNodesCache.FullMatch
+	}
+
+	return nil
 }
 
 type repFindInNodesCache struct {
-  msgHeaderWrapper
-  reqResultWrapper
-  Nodes []data.NodeAuth `json:"nodes"`
+	msgHeaderWrapper
+	reqResultWrapper
+	Nodes []data.NodeAuth `json:"nodes"`
 }
 
 func BuildRepFindInNodesCache(nodesIn []data.NodeAuth) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repFindInNodesCache repFindInNodesCache
-  
-  repFindInNodesCache.MsgHeader.Type = MsgTypeReply
-  repFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
-  repFindInNodesCache.ReqResult.Status = ReqResultStatusSuccessful
-  repFindInNodesCache.ReqResult.Reason = ReqResultReasonEmpty
-  repFindInNodesCache.Nodes = nodesIn[:]
-  
-  rep, err = json.Marshal(repFindInNodesCache)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var (
+		err                 error
+		rep                 []byte
+		repFindInNodesCache repFindInNodesCache
+	)
+
+	repFindInNodesCache.MsgHeader.Type = MsgTypeReply
+	repFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
+	repFindInNodesCache.ReqResult.Status = ReqResultStatusSuccessful
+	repFindInNodesCache.ReqResult.Reason = ReqResultReasonEmpty
+	repFindInNodesCache.Nodes = nodesIn
+
+	rep, err = json.Marshal(repFindInNodesCache)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep, nil
 }
 
 func ParseRepFindInNodesCache(jsonIn []byte) ([]data.NodeAuth, error) {
-  var err error
-  var repFindInNodesCache repFindInNodesCache
-  
-  err = json.Unmarshal(jsonIn[:], &repFindInNodesCache)
-  if err != nil {
-    return nil, err
-  }
-  
-  if repFindInNodesCache.MsgHeader.Type != MsgTypeReply {
-    return nil, errors.New("Unexpected message type")
-  }
-  
-  if repFindInNodesCache.MsgHeader.SubType != ReqTypeFindInNodesCache {
-    return nil, errors.New("Unexpected request type")
-  }
-  
-  err = repFindInNodesCache.ReqResult.Test()
-  if err != nil {
-    return nil, err
-  }
-  
-  return repFindInNodesCache.Nodes[:], nil
+	var (
+		err                 error
+		repFindInNodesCache repFindInNodesCache
+	)
+
+	err = json.Unmarshal(jsonIn, &repFindInNodesCache)
+	if err != nil {
+		return nil, err
+	}
+
+	if repFindInNodesCache.MsgHeader.Type != MsgTypeReply {
+		return nil, errors.New("Unexpected message type")
+	}
+
+	if repFindInNodesCache.MsgHeader.SubType != ReqTypeFindInNodesCache {
+		return nil, errors.New("Unexpected request type")
+	}
+
+	err = repFindInNodesCache.ReqResult.Test()
+	if err != nil {
+		return nil, err
+	}
+
+	return repFindInNodesCache.Nodes, nil
 }
 
 /* Find in nodes cache */
@@ -381,47 +405,51 @@ func ParseRepFindInNodesCache(jsonIn []byte) ([]data.NodeAuth, error) {
 /* Del */
 
 type reqDelNode struct {
-  msgHeaderWrapper
-  data.ESAMPubKey `json:"esam_pub_key"`
+	msgHeaderWrapper
+	data.ESAMPubKey `json:"esam_pub_key"`
 }
 
 func BuildReqDelNode(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-  var err error
-  var req []byte
-  var reqDelNode reqDelNode
-  
-  reqDelNode.MsgHeader.Type = MsgTypeRequest
-  reqDelNode.MsgHeader.SubType = ReqTypeDelNode
-  reqDelNode.ESAMPubKey = (*esamPubKeyIn)
-  
-  req, err = json.Marshal(reqDelNode)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err        error
+		req        []byte
+		reqDelNode reqDelNode
+	)
+
+	reqDelNode.MsgHeader.Type = MsgTypeRequest
+	reqDelNode.MsgHeader.SubType = ReqTypeDelNode
+	reqDelNode.ESAMPubKey = (*esamPubKeyIn)
+
+	req, err = json.Marshal(reqDelNode)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
-func ParseReqDelNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (error) {
-  var err error
-  var reqDelNode reqDelNode
-  
-  err = json.Unmarshal(jsonIn[:], &reqDelNode)
-  if err != nil {
-    return err
-  }
-  
-  if reqDelNode.MsgHeader.Type != MsgTypeRequest {
-    return errors.New("Unexpected message type")
-  }
-  
-  if reqDelNode.MsgHeader.SubType != ReqTypeDelNode {
-    return errors.New("Unexpected request type")
-  }
-  
-  (*esamPubKeyOut) = reqDelNode.ESAMPubKey
-  
-  return nil
+func ParseReqDelNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
+	var (
+		err        error
+		reqDelNode reqDelNode
+	)
+
+	err = json.Unmarshal(jsonIn, &reqDelNode)
+	if err != nil {
+		return err
+	}
+
+	if reqDelNode.MsgHeader.Type != MsgTypeRequest {
+		return errors.New("Unexpected message type")
+	}
+
+	if reqDelNode.MsgHeader.SubType != ReqTypeDelNode {
+		return errors.New("Unexpected request type")
+	}
+
+	(*esamPubKeyOut) = reqDelNode.ESAMPubKey
+
+	return nil
 }
 
 /* For build and parse reply use BuildSimpleRep and ParseReqResult functions */

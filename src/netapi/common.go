@@ -21,8 +21,8 @@
 package netapi
 
 import (
-  "errors"
-  "encoding/json"
+	"encoding/json"
+	"errors"
 )
 
 /*
@@ -42,245 +42,258 @@ import (
 */
 
 type MsgHeader struct {
-  Type string `json:"type"`
-  SubType string `json:"subtype"`
+	Type    string `json:"type"`
+	SubType string `json:"subtype"`
 }
 
 type msgHeaderWrapper struct {
-  MsgHeader `json:"msg"`
+	MsgHeader `json:"msg"`
 }
 
 type ReqResult struct {
-  Status string `json:"status"`
-  Reason string `json:"reason"`
+	Status string `json:"status"`
+	Reason string `json:"reason"`
 }
 
 type reqResultWrapper struct {
-  ReqResult `json:"result"`
+	ReqResult `json:"result"`
 }
 
 const (
-  MsgTypeRequest = "request"
-  MsgTypeReply = "reply"
-  MsgTypeNotice = "notice"
+	MsgTypeRequest = "request"
+	MsgTypeReply   = "reply"
+	MsgTypeNotice  = "notice"
 )
 
 const (
-  ReqTypeAddAccessReq = "add_access_req"
-  
-  ReqTypeAuth = "auth"
-  
-  ReqTypeListAccessReqs = "list_access_reqs"
-  ReqTypeDelAccessReq = "del_access_req"
-  
-  ReqTypeAddUser = "add_user"
-  ReqTypeUpdateUser = "update_user"
-  ReqTypeChangePassword = "change_password"
-  ReqTypeListUsers = "list_user"
-  ReqTypeGetAuthUserData = "get_auth_user_data"
-  ReqTypeDelUser = "del_user"
-  
-  ReqTypeAddNode = "add_node"
-  ReqTypeUpdateNode = "update_node"
-  ReqTypeListNodes = "list_nodes"
-  ReqTypeFindInNodesCache = "find_in_nodes_cache"
-  ReqTypeDelNode = "del_node"
-  
-  ReqTypeGetDirConnSettings = "get_dir_conn_settings"
-  ReqTypePassKeyPassword = "pass_key_password"
+	ReqTypeAddAccessReq = "add_access_req"
+
+	ReqTypeAuth = "auth"
+
+	ReqTypeListAccessReqs = "list_access_reqs"
+	ReqTypeDelAccessReq   = "del_access_req"
+
+	ReqTypeAddUser         = "add_user"
+	ReqTypeUpdateUser      = "update_user"
+	ReqTypeChangePassword  = "change_password"
+	ReqTypeListUsers       = "list_user"
+	ReqTypeGetAuthUserData = "get_auth_user_data"
+	ReqTypeDelUser         = "del_user"
+
+	ReqTypeAddNode          = "add_node"
+	ReqTypeUpdateNode       = "update_node"
+	ReqTypeListNodes        = "list_nodes"
+	ReqTypeFindInNodesCache = "find_in_nodes_cache"
+	ReqTypeDelNode          = "del_node"
+
+	ReqTypeGetDirConnSettings = "get_dir_conn_settings"
+	ReqTypePassKeyPassword    = "pass_key_password"
 )
 
 const (
-  ReqResultStatusFailed = "failed"
-  ReqResultStatusSuccessful = "successful"
+	ReqResultStatusFailed     = "failed"
+	ReqResultStatusSuccessful = "successful"
 )
 
 const (
-  ReqResultReasonEmpty = ""
-  ReqResultReasonUnsupportedReq = "Unsupported request"
-  ReqResultReasonInvalidInputData = "Invalid input data"
-  ReqResultReasonInternalError = "Internal error"
-  ReqResultReasonAccessDenied = "Access denied"
-  ReqResultReasonInvalidSignature = "Invalid signature"
-  ReqResultReasonAlreadyExist = "Already exist"
-  ReqResultReasonNotFound = "Not found"
-  ReqResultReasonPasswordTooSimple= "Password too simple"
-  ReqResultReasonKeyPasswordRequired = "Key password required"
+	ReqResultReasonEmpty               = ""
+	ReqResultReasonUnsupportedReq      = "Unsupported request"
+	ReqResultReasonInvalidInputData    = "Invalid input data"
+	ReqResultReasonInternalError       = "Internal error"
+	ReqResultReasonAccessDenied        = "Access denied"
+	ReqResultReasonInvalidSignature    = "Invalid signature"
+	ReqResultReasonAlreadyExist        = "Already exist"
+	ReqResultReasonNotFound            = "Not found"
+	ReqResultReasonPasswordTooSimple   = "Password too simple"
+	ReqResultReasonKeyPasswordRequired = "Key password required"
 )
 
 const (
-  NoticeTypeNoop = "noop"
-  NoticeTypeUpdatedUsers = "updated_users"
-  NoticeTypeUpdatedNodes = "updated_nodes"
+	NoticeTypeNoop         = "noop"
+	NoticeTypeUpdatedUsers = "updated_users"
+	NoticeTypeUpdatedNodes = "updated_nodes"
 )
 
-func TestMsgType(msgType string) (error) {
-  switch msgType {
-    case MsgTypeRequest:
-    case MsgTypeReply:
-    case MsgTypeNotice:
-    
-    default: return errors.New("Unsupported message type")
-  }
-  
-  return nil
+func TestMsgType(msgType string) error {
+	switch msgType {
+	case MsgTypeRequest:
+	case MsgTypeReply:
+	case MsgTypeNotice:
+
+	default:
+		return errors.New("Unsupported message type")
+	}
+
+	return nil
 }
 
-func TestReqType(requestType string) (error) {
-  switch requestType {
-    case ReqTypeAddAccessReq:
-    
-    case ReqTypeAuth:
-    
-    case ReqTypeListAccessReqs:
-    case ReqTypeDelAccessReq:
-    
-    case ReqTypeAddUser:
-    case ReqTypeUpdateUser:
-    case ReqTypeChangePassword:
-    case ReqTypeListUsers:
-    case ReqTypeGetAuthUserData:
-    case ReqTypeDelUser:
-    
-    case ReqTypeAddNode:
-    case ReqTypeUpdateNode:
-    case ReqTypeListNodes:
-    case ReqTypeFindInNodesCache:
-    case ReqTypeDelNode:
-    
-    case ReqTypeGetDirConnSettings:
-    case ReqTypePassKeyPassword:
-    
-    default: return errors.New("Unsupported request")
-  }
-  
-  return nil
+func TestReqType(requestType string) error {
+	switch requestType {
+	case ReqTypeAddAccessReq:
+
+	case ReqTypeAuth:
+
+	case ReqTypeListAccessReqs:
+	case ReqTypeDelAccessReq:
+
+	case ReqTypeAddUser:
+	case ReqTypeUpdateUser:
+	case ReqTypeChangePassword:
+	case ReqTypeListUsers:
+	case ReqTypeGetAuthUserData:
+	case ReqTypeDelUser:
+
+	case ReqTypeAddNode:
+	case ReqTypeUpdateNode:
+	case ReqTypeListNodes:
+	case ReqTypeFindInNodesCache:
+	case ReqTypeDelNode:
+
+	case ReqTypeGetDirConnSettings:
+	case ReqTypePassKeyPassword:
+
+	default:
+		return errors.New("Unsupported request")
+	}
+
+	return nil
 }
 
-func TestNoticeType(noticeType string) (error) {
-  switch noticeType {
-    case NoticeTypeNoop:
-    case NoticeTypeUpdatedUsers:
-    case NoticeTypeUpdatedNodes:
-    
-    default: return errors.New("Unsupported notice")
-  }
-  
-  return nil
+func TestNoticeType(noticeType string) error {
+	switch noticeType {
+	case NoticeTypeNoop:
+	case NoticeTypeUpdatedUsers:
+	case NoticeTypeUpdatedNodes:
+
+	default:
+		return errors.New("Unsupported notice")
+	}
+
+	return nil
 }
 
-func TestMsgSubType(subType string) (error) {
-  var errReqType, errNoticeType error
-  
-  errReqType = TestReqType(subType)
-  errNoticeType = TestNoticeType(subType)
-  if errReqType != nil && errNoticeType != nil {
-    if errReqType != nil {
-      return errReqType
-    }
-    if errNoticeType != nil {
-      return errNoticeType
-    }
-  }
-  
-  return nil
+func TestMsgSubType(subType string) error {
+	var (
+		errReqType    error
+		errNoticeType error
+	)
+
+	errReqType = TestReqType(subType)
+	errNoticeType = TestNoticeType(subType)
+	if errReqType != nil && errNoticeType != nil {
+		if errReqType != nil {
+			return errReqType
+		}
+		if errNoticeType != nil {
+			return errNoticeType
+		}
+	}
+
+	return nil
 }
 
-func (msgHeader *MsgHeader) Test() (error) {
-  var err error
-  
-  err = TestMsgType(msgHeader.Type)
-  if err != nil {
-    return err
-  }
-  
-  err = TestMsgSubType(msgHeader.SubType)
-  if err != nil {
-    return err
-  }
-  
-  return nil
+func (msgHeader *MsgHeader) Test() error {
+	var err error
+
+	err = TestMsgType(msgHeader.Type)
+	if err != nil {
+		return err
+	}
+
+	err = TestMsgSubType(msgHeader.SubType)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func TestReqResultStatus(reqResultStatus string) (error) {
-  switch reqResultStatus {
-    case ReqResultStatusFailed:
-    case ReqResultStatusSuccessful:
-    
-    default: return errors.New("Unsupported request result status")
-  }
-  
-  return nil
+func TestReqResultStatus(reqResultStatus string) error {
+	switch reqResultStatus {
+	case ReqResultStatusFailed:
+	case ReqResultStatusSuccessful:
+
+	default:
+		return errors.New("Unsupported request result status")
+	}
+
+	return nil
 }
 
-func (reqResult *ReqResult) Test() (error) {
-  var err error
-  
-  err = TestReqResultStatus(reqResult.Status)
-  if err != nil {
-    return err
-  }
-  
-  return nil
+func (reqResult *ReqResult) Test() error {
+	var err error
+
+	err = TestReqResultStatus(reqResult.Status)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func ParseMsgHeader(jsonIn []byte, msgHeaderOut *MsgHeader) (error) {
-  var err error
-  var msgHeaderWrapper msgHeaderWrapper
-  
-  err = json.Unmarshal(jsonIn[:], &msgHeaderWrapper)
-  if err != nil {
-    return err
-  }
-  
-  err = msgHeaderWrapper.MsgHeader.Test()
-  if err != nil {
-    return err
-  }
-  
-  (*msgHeaderOut) = msgHeaderWrapper.MsgHeader
-  
-  return nil
+func ParseMsgHeader(jsonIn []byte, msgHeaderOut *MsgHeader) error {
+	var (
+		err              error
+		msgHeaderWrapper msgHeaderWrapper
+	)
+
+	err = json.Unmarshal(jsonIn, &msgHeaderWrapper)
+	if err != nil {
+		return err
+	}
+
+	err = msgHeaderWrapper.MsgHeader.Test()
+	if err != nil {
+		return err
+	}
+
+	(*msgHeaderOut) = msgHeaderWrapper.MsgHeader
+
+	return nil
 }
 
-func ParseReqResult(jsonIn []byte, reqResultOut *ReqResult) (error) {
-  var err error
-  var reqResultWrapper reqResultWrapper
-  
-  err = json.Unmarshal(jsonIn[:], &reqResultWrapper)
-  if err != nil {
-    return err
-  }
-  
-  err = reqResultWrapper.ReqResult.Test()
-  if err != nil {
-    return err
-  }
-  
-  (*reqResultOut) = reqResultWrapper.ReqResult
-  
-  return nil
+func ParseReqResult(jsonIn []byte, reqResultOut *ReqResult) error {
+	var (
+		err              error
+		reqResultWrapper reqResultWrapper
+	)
+
+	err = json.Unmarshal(jsonIn, &reqResultWrapper)
+	if err != nil {
+		return err
+	}
+
+	err = reqResultWrapper.ReqResult.Test()
+	if err != nil {
+		return err
+	}
+
+	(*reqResultOut) = reqResultWrapper.ReqResult
+
+	return nil
 }
 
 /* Unsupported message */
 
 type simpleReply struct {
-  Reply string `json:"reply"`
+	Reply string `json:"reply"`
 }
 
 func BuildUnsupportedMsg() ([]byte, error) {
-  var err error
-  var reply []byte
-  var simpleReply simpleReply
-  
-  simpleReply.Reply = "Unsupported message"
-  
-  reply, err = json.Marshal(simpleReply)
-  if err != nil {
-    return nil, err
-  }
-  
-  return reply[:], nil
+	var (
+		err         error
+		reply       []byte
+		simpleReply simpleReply
+	)
+
+	simpleReply.Reply = "Unsupported message"
+
+	reply, err = json.Marshal(simpleReply)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
 
 /* Unsupported message */
@@ -294,24 +307,26 @@ Suitable for:
 */
 /* For parse request use ParseMsgHeader */
 func BuildSimpleReq(reqType string) ([]byte, error) {
-  var err error
-  var req []byte
-  var msgHeaderWrapper msgHeaderWrapper
-  
-  err = TestReqType(reqType)
-  if err != nil {
-    return nil, err
-  }
-  
-  msgHeaderWrapper.MsgHeader.Type = MsgTypeRequest
-  msgHeaderWrapper.MsgHeader.SubType = reqType
-  
-  req, err = json.Marshal(msgHeaderWrapper)
-  if err != nil {
-    return nil, err
-  }
-  
-  return req[:], nil
+	var (
+		err              error
+		req              []byte
+		msgHeaderWrapper msgHeaderWrapper
+	)
+
+	err = TestReqType(reqType)
+	if err != nil {
+		return nil, err
+	}
+
+	msgHeaderWrapper.MsgHeader.Type = MsgTypeRequest
+	msgHeaderWrapper.MsgHeader.SubType = reqType
+
+	req, err = json.Marshal(msgHeaderWrapper)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 /*
@@ -331,35 +346,37 @@ Suitable for:
 */
 /* For parse request use ParseReqResult */
 type repReqResult struct {
-  msgHeaderWrapper
-  reqResultWrapper
+	msgHeaderWrapper
+	reqResultWrapper
 }
 
 func BuildSimpleRep(reqType string, reqResultIn *ReqResult) ([]byte, error) {
-  var err error
-  var rep []byte
-  var repReqResult repReqResult
-  
-  err = TestReqType(reqType)
-  if err != nil {
-    return nil, err
-  }
-  
-  err = reqResultIn.Test()
-  if err != nil {
-    return nil, err
-  }
-  
-  repReqResult.MsgHeader.Type = MsgTypeReply
-  repReqResult.MsgHeader.SubType = reqType
-  repReqResult.ReqResult = (*reqResultIn)
-  
-  rep, err = json.Marshal(repReqResult)
-  if err != nil {
-    return nil, err
-  }
-  
-  return rep[:], nil
+	var (
+		err          error
+		rep          []byte
+		repReqResult repReqResult
+	)
+
+	err = TestReqType(reqType)
+	if err != nil {
+		return nil, err
+	}
+
+	err = reqResultIn.Test()
+	if err != nil {
+		return nil, err
+	}
+
+	repReqResult.MsgHeader.Type = MsgTypeReply
+	repReqResult.MsgHeader.SubType = reqType
+	repReqResult.ReqResult = (*reqResultIn)
+
+	rep, err = json.Marshal(repReqResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return rep, nil
 }
 
 /* Universal */
@@ -368,24 +385,26 @@ func BuildSimpleRep(reqType string, reqResultIn *ReqResult) ([]byte, error) {
 
 /* For parse notice use ParseMsgHeader */
 func BuildNotice(noticeType string) ([]byte, error) {
-  var err error
-  var notice []byte
-  var msgHeaderWrapper msgHeaderWrapper
-  
-  err = TestNoticeType(noticeType)
-  if err != nil {
-    return nil, err
-  }
-  
-  msgHeaderWrapper.MsgHeader.Type = MsgTypeNotice
-  msgHeaderWrapper.MsgHeader.SubType = noticeType
-  
-  notice, err = json.Marshal(msgHeaderWrapper)
-  if err != nil {
-    return nil, err
-  }
-  
-  return notice[:], nil
+	var (
+		err              error
+		notice           []byte
+		msgHeaderWrapper msgHeaderWrapper
+	)
+
+	err = TestNoticeType(noticeType)
+	if err != nil {
+		return nil, err
+	}
+
+	msgHeaderWrapper.MsgHeader.Type = MsgTypeNotice
+	msgHeaderWrapper.MsgHeader.SubType = noticeType
+
+	notice, err = json.Marshal(msgHeaderWrapper)
+	if err != nil {
+		return nil, err
+	}
+
+	return notice, nil
 }
 
 /* Notices */

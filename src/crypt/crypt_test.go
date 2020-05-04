@@ -21,62 +21,64 @@
 package crypt
 
 import (
-  "fmt"
-  "os"
-  "testing"
-  "crypto/rand"
-  "crypto/rsa"
+	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
+	"os"
+	"testing"
 )
 
 const (
-  DefaultKeySize = 4096
+	DefaultKeySize = 4096
 )
 
 func Test(t *testing.T) {
-  var err error
-  var key *rsa.PrivateKey
-  var data []byte
-  var signature []byte
-  var encData []byte
-  var decData []byte
-  
-  data = []byte("test message")
-  fmt.Printf("Data = %+v\n", string(data[:]))
-  
-  key, err = rsa.GenerateKey(rand.Reader, DefaultKeySize)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to gen key", err)
-    os.Exit(1)
-  }
-  
-  signature, err = Sign(data[:], key)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to sign message", err)
-    os.Exit(1)
-  }
-  
-  fmt.Printf("Signature = %+v\n", signature[:])
-  fmt.Printf("Signature len = %+v\n", len(signature[:]))
-  
-  err = Verify(data[:], &key.PublicKey, signature[:])
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to verify sign message", err)
-    os.Exit(1)
-  }
-  
-  encData, err = Encrypt(data[:], &key.PublicKey)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to encrypt message", err)
-    os.Exit(1)
-  }
-  
-  fmt.Printf("Encrypted Data = %+v\n", encData[:])
-  
-  decData, err = Decrypt(encData[:], key)
-  if err != nil {
-    fmt.Printf("%v. Details: %v\n", "Failed to decrypt message", err)
-    os.Exit(1)
-  }
-  
-  fmt.Printf("Decrypted Data = %+v\n", string(decData[:]))
+	var (
+		err       error
+		key       *rsa.PrivateKey
+		data      []byte
+		signature []byte
+		encData   []byte
+		decData   []byte
+	)
+
+	data = []byte("test message")
+	fmt.Printf("Data = %+v\n", string(data))
+
+	key, err = rsa.GenerateKey(rand.Reader, DefaultKeySize)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to gen key", err)
+		os.Exit(1)
+	}
+
+	signature, err = Sign(data, key)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to sign message", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Signature = %+v\n", signature)
+	fmt.Printf("Signature len = %+v\n", len(signature))
+
+	err = Verify(data, &key.PublicKey, signature)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to verify sign message", err)
+		os.Exit(1)
+	}
+
+	encData, err = Encrypt(data, &key.PublicKey)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to encrypt message", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Encrypted Data = %+v\n", encData)
+
+	decData, err = Decrypt(encData, key)
+	if err != nil {
+		fmt.Printf("%v. Details: %v\n", "Failed to decrypt message", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Decrypted Data = %+v\n", string(decData))
 }

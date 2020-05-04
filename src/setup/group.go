@@ -21,188 +21,198 @@
 package setup
 
 import (
-  "errors"
-  "bytes"
-  "os/exec"
-  "os/user"
-  "context"
+	"bytes"
+	"context"
+	"errors"
+	"os/exec"
+	"os/user"
 )
 
 import (
-  "esam/src/opts"
+	"github.com/akramarenkov/esam/src/opts"
 )
 
 type groupAddOpts struct {
-  Force bool `opt:"--force"`
-  Gid string `opt:"--gid"`
-  NonUnique bool `opt:"--non-unique"`
-  Password string `opt:"--password"`
-  System bool `opt:"--system"`
-  Root string `opt:"--root"`
-  Prefix string `opt:"--prefix"`
+	Force     bool   `opt:"--force"`
+	Gid       string `opt:"--gid"`
+	NonUnique bool   `opt:"--non-unique"`
+	Password  string `opt:"--password"`
+	System    bool   `opt:"--system"`
+	Root      string `opt:"--root"`
+	Prefix    string `opt:"--prefix"`
 }
 
 type groupModOpts struct {
-  Gid string `opt:"--gid"`
-  NewName string `opt:"--new-name"`
-  NonUnique bool `opt:"--non-unique"`
-  Password string `opt:"--password"`
-  Root string `opt:"--root"`
-  Prefix string `opt:"--prefix"`
+	Gid       string `opt:"--gid"`
+	NewName   string `opt:"--new-name"`
+	NonUnique bool   `opt:"--non-unique"`
+	Password  string `opt:"--password"`
+	Root      string `opt:"--root"`
+	Prefix    string `opt:"--prefix"`
 }
 
 type groupDelOpts struct {
-  Root string `opt:"--root"`
-  Prefix string `opt:"--prefix"`
-  Force bool `opt:"--force"`
+	Root   string `opt:"--root"`
+	Prefix string `opt:"--prefix"`
+	Force  bool   `opt:"--force"`
 }
 
 type GroupPresentOpts struct {
-  Gid string
-  NonUnique bool
-  Password string
-  System bool
+	Gid       string
+	NonUnique bool
+	Password  string
+	System    bool
 }
 
-func groupadd(name string, cmdOpts *groupAddOpts) (error) {
-  var err error
-  var cmd *exec.Cmd
-  var cmdArgs []string
-  var cmdError bytes.Buffer
-  
-  ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
-  defer cancel()
-  
-  cmdArgs, err = buildArgs((*cmdOpts))
-  if err != nil {
-    return err
-  }
-  
-  cmdArgs = append(cmdArgs, name)
-  
-  cmd = exec.CommandContext(ctx, "groupadd", cmdArgs...)
-  cmd.Stderr = &cmdError
-  
-  err = cmd.Run()
-  if err != nil {
-    return errors.New(cmdError.String())
-  }
-  
-  return nil
+func groupadd(name string, cmdOpts *groupAddOpts) error {
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
+	defer cancel()
+
+	cmdArgs, err = buildArgs((*cmdOpts))
+	if err != nil {
+		return err
+	}
+
+	cmdArgs = append(cmdArgs, name)
+
+	cmd = exec.CommandContext(ctx, "groupadd", cmdArgs...)
+	cmd.Stderr = &cmdError
+
+	err = cmd.Run()
+	if err != nil {
+		return errors.New(cmdError.String())
+	}
+
+	return nil
 }
 
-func groupmod(name string, cmdOpts *groupModOpts) (error) {
-  var err error
-  var cmd *exec.Cmd
-  var cmdArgs []string
-  var cmdError bytes.Buffer
-  
-  ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
-  defer cancel()
-  
-  cmdArgs, err = buildArgs((*cmdOpts))
-  if err != nil {
-    return err
-  }
-  
-  cmdArgs = append(cmdArgs, name)
-  
-  cmd = exec.CommandContext(ctx, "groupmod", cmdArgs...)
-  cmd.Stderr = &cmdError
-  
-  err = cmd.Run()
-  if err != nil {
-    return errors.New(cmdError.String())
-  }
-  
-  return nil
+func groupmod(name string, cmdOpts *groupModOpts) error {
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
+	defer cancel()
+
+	cmdArgs, err = buildArgs((*cmdOpts))
+	if err != nil {
+		return err
+	}
+
+	cmdArgs = append(cmdArgs, name)
+
+	cmd = exec.CommandContext(ctx, "groupmod", cmdArgs...)
+	cmd.Stderr = &cmdError
+
+	err = cmd.Run()
+	if err != nil {
+		return errors.New(cmdError.String())
+	}
+
+	return nil
 }
 
-func groupdel(name string, cmdOpts *groupDelOpts) (error) {
-  var err error
-  var cmd *exec.Cmd
-  var cmdArgs []string
-  var cmdError bytes.Buffer
-  
-  ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
-  defer cancel()
-  
-  cmdArgs, err = buildArgs((*cmdOpts))
-  if err != nil {
-    return err
-  }
-  
-  cmdArgs = append(cmdArgs, name)
-  
-  cmd = exec.CommandContext(ctx, "groupdel", cmdArgs...)
-  cmd.Stderr = &cmdError
-  
-  err = cmd.Run()
-  if err != nil {
-    return errors.New(cmdError.String())
-  }
-  
-  return nil
+func groupdel(name string, cmdOpts *groupDelOpts) error {
+	var (
+		err      error
+		cmd      *exec.Cmd
+		cmdArgs  []string
+		cmdError bytes.Buffer
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), opts.CommandTimeout)
+	defer cancel()
+
+	cmdArgs, err = buildArgs((*cmdOpts))
+	if err != nil {
+		return err
+	}
+
+	cmdArgs = append(cmdArgs, name)
+
+	cmd = exec.CommandContext(ctx, "groupdel", cmdArgs...)
+	cmd.Stderr = &cmdError
+
+	err = cmd.Run()
+	if err != nil {
+		return errors.New(cmdError.String())
+	}
+
+	return nil
 }
 
-func GroupPresent(name string, groupOpts *GroupPresentOpts) (error) {
-  var err error
-  var castOk bool
-  
-  _, err = user.LookupGroup(name)
-  _, castOk = err.(user.UnknownGroupError)
-  
-  if err != nil && !castOk {
-    return err
-  }
-  
-  groupModOpts := &groupModOpts{
-    Gid: groupOpts.Gid,
-    NonUnique: groupOpts.NonUnique,
-    Password: groupOpts.Password,
-  }
-  
-  groupAddOpts := &groupAddOpts{
-    Gid: groupOpts.Gid,
-    NonUnique: groupOpts.NonUnique,
-    Password: groupOpts.Password,
-    System: groupOpts.System,
-  }
-  
-  if err == nil {
-    err = groupmod(name, groupModOpts)
-    if err != nil {
-      return err
-    }
-  } else {
-    err = groupadd(name, groupAddOpts)
-    if err != nil {
-      return err
-    }
-  }
-  
-  return nil
+func GroupPresent(name string, groupOpts *GroupPresentOpts) error {
+	var (
+		err    error
+		castOk bool
+	)
+
+	_, err = user.LookupGroup(name)
+	_, castOk = err.(user.UnknownGroupError)
+
+	if err != nil && !castOk {
+		return err
+	}
+
+	groupModOpts := &groupModOpts{
+		Gid:       groupOpts.Gid,
+		NonUnique: groupOpts.NonUnique,
+		Password:  groupOpts.Password,
+	}
+
+	groupAddOpts := &groupAddOpts{
+		Gid:       groupOpts.Gid,
+		NonUnique: groupOpts.NonUnique,
+		Password:  groupOpts.Password,
+		System:    groupOpts.System,
+	}
+
+	if err == nil {
+		err = groupmod(name, groupModOpts)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = groupadd(name, groupAddOpts)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func GroupAbsent(name string) (error) {
-  var err error
-  var castOk bool
-  
-  _, err = user.LookupGroup(name)
-  _, castOk = err.(user.UnknownGroupError)
-  
-  if err != nil && !castOk {
-    return err
-  }
-  
-  if err != nil && castOk {
-    return nil
-  }
-  
-  err = groupdel(name, &groupDelOpts{})
-  if err != nil {
-    return err
-  }
-  
-  return nil
+func GroupAbsent(name string) error {
+	var (
+		err    error
+		castOk bool
+	)
+
+	_, err = user.LookupGroup(name)
+	_, castOk = err.(user.UnknownGroupError)
+
+	if err != nil && !castOk {
+		return err
+	}
+
+	if err != nil && castOk {
+		return nil
+	}
+
+	err = groupdel(name, &groupDelOpts{})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
