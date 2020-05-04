@@ -58,12 +58,10 @@ func SubCommandBashCompleter(c *cli.Context) {
 			switch name {
 			case "h", "help":
 			default:
-				{
-					if len(name) > 1 {
-						fmt.Printf("--%v\n", name)
-					} else {
-						fmt.Printf("-%v\n", name)
-					}
+				if len(name) > 1 {
+					fmt.Printf("--%v\n", name)
+				} else {
+					fmt.Printf("-%v\n", name)
 				}
 			}
 		}

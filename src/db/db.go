@@ -55,38 +55,30 @@ func (desc *Desc) Connect(dbmsType string, dbmsAddr string, dbmsPort string, dbm
 
 	switch dbmsType {
 	case DBMSTypeSQLite:
-		{
-			driverName = "sqlite3"
+		driverName = "sqlite3"
 
-			if dbmsAddr != "" {
-				dsn = "file:" + dbmsAddr
-			} else {
-				return errors.New("Path to the database file was not defined")
-			}
+		if dbmsAddr != "" {
+			dsn = "file:" + dbmsAddr
+		} else {
+			return errors.New("Path to the database file was not defined")
 		}
 
 	case DBMSTypeMySQL:
-		{
-			driverName = "mysql"
+		driverName = "mysql"
 
-			if dbName == "" {
-				return errors.New("Database name was not specified")
-			}
+		if dbName == "" {
+			return errors.New("Database name was not specified")
 		}
 
 	case DBMSTypePostgreSQL:
-		{
-			driverName = "postgres"
+		driverName = "postgres"
 
-			if dbName == "" {
-				return errors.New("Database name was not specified")
-			}
+		if dbName == "" {
+			return errors.New("Database name was not specified")
 		}
 
 	default:
-		{
-			return errors.New("Unsupported DBMS was specified")
-		}
+		return errors.New("Unsupported DBMS was specified")
 	}
 
 	descTmp.dbmsType = dbmsType
@@ -113,11 +105,9 @@ func (desc *Desc) Init() error {
 
 	switch desc.dbmsType {
 	case DBMSTypeMySQL, DBMSTypePostgreSQL:
-		{
-			_, err = desc.db.Exec(`CREATE DATABASE IF NOT EXISTS $1`, desc.dbName)
-			if err != nil {
-				return err
-			}
+		_, err = desc.db.Exec(`CREATE DATABASE IF NOT EXISTS $1`, desc.dbName)
+		if err != nil {
+			return err
 		}
 	}
 

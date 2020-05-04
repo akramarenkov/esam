@@ -119,115 +119,87 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 
 	switch msgInHeader.Type {
 	case netapi.MsgTypeReply:
-		{
-			switch msgInHeader.SubType {
-			case netapi.ReqTypeAuth:
-				{
+		switch msgInHeader.SubType {
+		case netapi.ReqTypeAuth:
 
-					err = netapi.ParseReqResult(msgIn, &msgInReqResult)
-					if err != nil {
-						return err
-					}
+			err = netapi.ParseReqResult(msgIn, &msgInReqResult)
+			if err != nil {
+				return err
+			}
 
-					switch msgInReqResult.Status {
-					case netapi.ReqResultStatusFailed:
-						{
-							return errors.New(msgInReqResult.Reason)
+			switch msgInReqResult.Status {
+			case netapi.ReqResultStatusFailed:
+				return errors.New(msgInReqResult.Reason)
+
+			case netapi.ReqResultStatusSuccessful:
+				authQuestionEncrypted, err = netapi.ParseRepAuthStageOne(msgIn)
+				if err != nil {
+					return err
+				}
+
+				authQuestion, err = crypt.Decrypt(authQuestionEncrypted, key)
+				if err != nil {
+					return err
+				}
+
+				msgOut, err = netapi.BuildReqAuthStageTwo(authQuestion)
+				if err != nil {
+					return err
+				}
+
+				_, err = netmsg.Send(conn, msgOut, netTimeout)
+				if err != nil {
+					return err
+				}
+
+				msgIn, err = netmsg.Recv(conn, netTimeout)
+				if err != nil {
+					return err
+				}
+
+				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+				if err != nil {
+					return err
+				}
+
+				switch msgInHeader.Type {
+				case netapi.MsgTypeReply:
+					switch msgInHeader.SubType {
+					case netapi.ReqTypeAuth:
+						err = netapi.ParseReqResult(msgIn, &msgInReqResult)
+						if err != nil {
+							return err
 						}
 
-					case netapi.ReqResultStatusSuccessful:
-						{
-							authQuestionEncrypted, err = netapi.ParseRepAuthStageOne(msgIn)
-							if err != nil {
-								return err
-							}
+						switch msgInReqResult.Status {
+						case netapi.ReqResultStatusFailed:
+							return errors.New(msgInReqResult.Reason)
 
-							authQuestion, err = crypt.Decrypt(authQuestionEncrypted, key)
-							if err != nil {
-								return err
-							}
+						case netapi.ReqResultStatusSuccessful:
+							return nil
 
-							msgOut, err = netapi.BuildReqAuthStageTwo(authQuestion)
-							if err != nil {
-								return err
-							}
-
-							_, err = netmsg.Send(conn, msgOut, netTimeout)
-							if err != nil {
-								return err
-							}
-
-							msgIn, err = netmsg.Recv(conn, netTimeout)
-							if err != nil {
-								return err
-							}
-
-							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-							if err != nil {
-								return err
-							}
-
-							switch msgInHeader.Type {
-							case netapi.MsgTypeReply:
-								{
-									switch msgInHeader.SubType {
-									case netapi.ReqTypeAuth:
-										{
-											err = netapi.ParseReqResult(msgIn, &msgInReqResult)
-											if err != nil {
-												return err
-											}
-
-											switch msgInReqResult.Status {
-											case netapi.ReqResultStatusFailed:
-												{
-													return errors.New(msgInReqResult.Reason)
-												}
-
-											case netapi.ReqResultStatusSuccessful:
-												{
-													return nil
-												}
-
-											default:
-												{
-													return errors.New("Unsupported at this stage request result status was received")
-												}
-											}
-										}
-
-									default:
-										{
-											return errors.New("Unsupported at this stage reply was received")
-										}
-									}
-								}
-
-							default:
-								{
-									return errors.New("Unsupported message was received")
-								}
-							}
+						default:
+							return errors.New("Unsupported at this stage request result status was received")
 						}
 
 					default:
-						{
-							return errors.New("Unsupported at this stage request result status was received")
-						}
+						return errors.New("Unsupported at this stage reply was received")
 					}
+
+				default:
+					return errors.New("Unsupported message was received")
 				}
 
 			default:
-				{
-					return errors.New("Unsupported at this stage reply was received")
-				}
+				return errors.New("Unsupported at this stage request result status was received")
 			}
+
+		default:
+			return errors.New("Unsupported at this stage reply was received")
 		}
 
 	default:
-		{
-			return errors.New("Unsupported message was received")
-		}
+		return errors.New("Unsupported message was received")
 	}
 
 	return errors.New("Unknown error")

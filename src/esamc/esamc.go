@@ -784,59 +784,47 @@ func udsAskPassword(udsPath string) (string, error) {
 		for {
 			select {
 			case <-ctx.Done():
-				{
-					return "", errors.New("Interrupted")
-				}
+				return "", errors.New("Interrupted")
 
 			default:
-				{
-					msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
-					if err != nil {
-						if netmsg.IsTimeout(err) {
-							continue
-						}
-
-						if netmsg.IsEOF(err) {
-							return "", errors.New("Connection closed")
-						}
-
-						return "", err
+				msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
+				if err != nil {
+					if netmsg.IsTimeout(err) {
+						continue
 					}
 
-					err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-					if err != nil {
-						return "", err
+					if netmsg.IsEOF(err) {
+						return "", errors.New("Connection closed")
 					}
 
-					switch msgInHeader.Type {
-					case netapi.MsgTypeRequest:
-						{
-							switch msgInHeader.SubType {
-							case netapi.ReqTypePassKeyPassword:
-								{
-									password, err = netapi.ParseReqPassKeyPassword(msgIn)
-									if err != nil {
-										sendErrorReply(netapi.ReqResultReasonInvalidInputData)
-										return "", err
-									}
+					return "", err
+				}
 
-									sendSuccessfulReply()
+				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+				if err != nil {
+					return "", err
+				}
 
-									return password, nil
-								}
-
-							default:
-								{
-									sendErrorReply(netapi.ReqResultReasonKeyPasswordRequired)
-								}
-							}
+				switch msgInHeader.Type {
+				case netapi.MsgTypeRequest:
+					switch msgInHeader.SubType {
+					case netapi.ReqTypePassKeyPassword:
+						password, err = netapi.ParseReqPassKeyPassword(msgIn)
+						if err != nil {
+							sendErrorReply(netapi.ReqResultReasonInvalidInputData)
+							return "", err
 						}
+
+						sendSuccessfulReply()
+
+						return password, nil
 
 					default:
-						{
-							return "", errors.New("Unexpected message received")
-						}
+						sendErrorReply(netapi.ReqResultReasonKeyPasswordRequired)
 					}
+
+				default:
+					return "", errors.New("Unexpected message received")
 				}
 			}
 		}
@@ -847,24 +835,20 @@ func udsAskPassword(udsPath string) (string, error) {
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return "", errors.New("Interrupted")
-			}
+			return "", errors.New("Interrupted")
 
 		default:
-			{
-				udsConn, err = udsListener.Accept()
+			udsConn, err = udsListener.Accept()
+			if err != nil {
+				if netmsg.IsTemporary(err) {
+					log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
+				}
+			} else {
+				password, err = udsConnHandler(udsConn)
 				if err != nil {
-					if netmsg.IsTemporary(err) {
-						log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
-					}
+					log.WithFields(log.Fields{"details": err}).Errorln("Key password required")
 				} else {
-					password, err = udsConnHandler(udsConn)
-					if err != nil {
-						log.WithFields(log.Fields{"details": err}).Errorln("Key password required")
-					} else {
-						return password, nil
-					}
+					return password, nil
 				}
 			}
 		}
@@ -885,22 +869,18 @@ func udsLoop(ctx context.Context, listener net.Listener, dirConnSettings *data.D
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				waitConn.Wait()
-				return
-			}
+			waitConn.Wait()
+			return
 
 		default:
-			{
-				udsConn, err = listener.Accept()
-				if err != nil {
-					if netmsg.IsTemporary(err) {
-						log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
-					}
-				} else {
-					waitConn.Add(1)
-					go udsConnHandler(ctx, udsConn, dirConnSettings, authUserCache, nodesCache, &waitConn)
+			udsConn, err = listener.Accept()
+			if err != nil {
+				if netmsg.IsTemporary(err) {
+					log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
 				}
+			} else {
+				waitConn.Add(1)
+				go udsConnHandler(ctx, udsConn, dirConnSettings, authUserCache, nodesCache, &waitConn)
 			}
 		}
 	}
@@ -937,198 +917,178 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return
-			}
+			return
 
 		default:
-			{
-				requireSendErrorReply = true
-				reasonSendErrorReply = netapi.ReqResultReasonInternalError
+			requireSendErrorReply = true
+			reasonSendErrorReply = netapi.ReqResultReasonInternalError
 
-				msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
-				if err != nil {
-					if netmsg.IsTimeout(err) {
-						//log.Println("Timeout interrupt")
-						continue
+			msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
+			if err != nil {
+				if netmsg.IsTimeout(err) {
+					//log.Println("Timeout interrupt")
+					continue
+				} else {
+					if netmsg.IsEOF(err) {
+						//log.Println("Connection closed")
 					} else {
-						if netmsg.IsEOF(err) {
-							//log.Println("Connection closed")
-						} else {
-							log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
-						}
-						return
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
 					}
+					return
 				}
+			}
 
-				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+			err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+				continue
+			}
+
+			switch msgInHeader.Type {
+			case netapi.MsgTypeRequest:
+				switch msgInHeader.SubType {
+				case netapi.ReqTypeFindInNodesCache:
+					processFindInNodesCache := func() error {
+						defer sendErrorReply()
+
+						var (
+							nodeFilter data.NodeAuth
+							nodesList  []data.NodeAuth
+							fullMatch  bool
+						)
+
+						err = netapi.ParseReqFindInNodesCache(msgIn, &nodeFilter, &fullMatch)
+						if err != nil {
+							return err
+						}
+
+						nodesCache.RLock()
+						nodesList = nodesCache.Get()
+
+						nodesList, _ = filterNodeAuthList(nodesList, &nodeFilter, fullMatch)
+
+						msgOut, err = netapi.BuildRepFindInNodesCache(nodesList)
+						nodesCache.RUnlock()
+
+						if err != nil {
+							return err
+						}
+
+						requireSendErrorReply = false
+
+						_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
+					}
+
+					err = processFindInNodesCache()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+					}
+
+					continue
+
+				case netapi.ReqTypeGetDirConnSettings:
+					processGetDirConnSettings := func() error {
+						defer sendErrorReply()
+
+						var err error
+
+						msgOut, err = netapi.BuildRepGetDirConnSettings(dirConnSettings)
+						if err != nil {
+							return err
+						}
+
+						requireSendErrorReply = false
+
+						_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
+					}
+
+					err = processGetDirConnSettings()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+					}
+
+					continue
+
+				case netapi.ReqTypeGetAuthUserData:
+					processGetAuthUserData := func() error {
+						defer sendErrorReply()
+
+						var (
+							err          error
+							authUserData data.UserAuth
+						)
+
+						authUserData = authUserCache.Get()
+						msgOut, err = netapi.BuildRepGetAuthUserData(&authUserData)
+						if err != nil {
+							return err
+						}
+
+						requireSendErrorReply = false
+
+						_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
+					}
+
+					err = processGetAuthUserData()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+					}
+
+					continue
+
+				default:
+					log.Errorln("Unsupported at this stage request was received")
+
+					reasonSendErrorReply = netapi.ReqResultReasonUnsupportedReq
+					sendErrorReply()
+
 					continue
 				}
 
-				switch msgInHeader.Type {
-				case netapi.MsgTypeRequest:
-					{
-						switch msgInHeader.SubType {
-						case netapi.ReqTypeFindInNodesCache:
-							{
-								processFindInNodesCache := func() error {
-									defer sendErrorReply()
+			case netapi.MsgTypeReply:
+				log.Errorln("Message type 'reply' is not expected at this stage")
 
-									var (
-										nodeFilter data.NodeAuth
-										nodesList  []data.NodeAuth
-										fullMatch  bool
-									)
-
-									err = netapi.ParseReqFindInNodesCache(msgIn, &nodeFilter, &fullMatch)
-									if err != nil {
-										return err
-									}
-
-									nodesCache.RLock()
-									nodesList = nodesCache.Get()
-
-									nodesList, _ = filterNodeAuthList(nodesList, &nodeFilter, fullMatch)
-
-									msgOut, err = netapi.BuildRepFindInNodesCache(nodesList)
-									nodesCache.RUnlock()
-
-									if err != nil {
-										return err
-									}
-
-									requireSendErrorReply = false
-
-									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processFindInNodesCache()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-								}
-
-								continue
-							}
-
-						case netapi.ReqTypeGetDirConnSettings:
-							{
-								processGetDirConnSettings := func() error {
-									defer sendErrorReply()
-
-									var err error
-
-									msgOut, err = netapi.BuildRepGetDirConnSettings(dirConnSettings)
-									if err != nil {
-										return err
-									}
-
-									requireSendErrorReply = false
-
-									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processGetDirConnSettings()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-								}
-
-								continue
-							}
-
-						case netapi.ReqTypeGetAuthUserData:
-							{
-								processGetAuthUserData := func() error {
-									defer sendErrorReply()
-
-									var (
-										err          error
-										authUserData data.UserAuth
-									)
-
-									authUserData = authUserCache.Get()
-									msgOut, err = netapi.BuildRepGetAuthUserData(&authUserData)
-									if err != nil {
-										return err
-									}
-
-									requireSendErrorReply = false
-
-									_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processGetAuthUserData()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-								}
-
-								continue
-							}
-
-						default:
-							{
-								log.Errorln("Unsupported at this stage request was received")
-
-								reasonSendErrorReply = netapi.ReqResultReasonUnsupportedReq
-								sendErrorReply()
-
-								continue
-							}
-						}
-					}
-
-				case netapi.MsgTypeReply:
-					{
-						log.Errorln("Message type 'reply' is not expected at this stage")
-
-						msgOut, err = netapi.BuildUnsupportedMsg()
-						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
-						}
-
-						continue
-					}
-
-				case netapi.MsgTypeNotice:
-					{
-						log.Errorln("Message type 'notice' is not expected at this stage")
-
-						msgOut, err = netapi.BuildUnsupportedMsg()
-						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
-						}
-
-						continue
-					}
-
-				default:
-					{
-						log.Errorln("Unsupported message was received")
-
-						msgOut, err = netapi.BuildUnsupportedMsg()
-						if err == nil {
-							_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
-						}
-
-						continue
-					}
+				msgOut, err = netapi.BuildUnsupportedMsg()
+				if err == nil {
+					_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
 				}
+
+				continue
+
+			case netapi.MsgTypeNotice:
+				log.Errorln("Message type 'notice' is not expected at this stage")
+
+				msgOut, err = netapi.BuildUnsupportedMsg()
+				if err == nil {
+					_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
+				}
+
+				continue
+
+			default:
+				log.Errorln("Unsupported message was received")
+
+				msgOut, err = netapi.BuildUnsupportedMsg()
+				if err == nil {
+					_, _ = netmsg.Send(conn, msgOut, opts.NetTimeout)
+				}
+
+				continue
 			}
 		}
 	}
@@ -1165,148 +1125,231 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return
-			}
+			return
 
 		default:
-			{
-				freeLoopResources()
+			freeLoopResources()
 
-				dirConn, err = tls.DialWithDialer(&net.Dialer{Timeout: opts.NetTimeout}, "tcp", loginContext.DirAddr+":"+loginContext.DirPort, &loginContext.TLSConfig)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to connect to Director")
-					break
-				}
+			dirConn, err = tls.DialWithDialer(&net.Dialer{Timeout: opts.NetTimeout}, "tcp", loginContext.DirAddr+":"+loginContext.DirPort, &loginContext.TLSConfig)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to connect to Director")
+				break
+			}
 
-				dirConnAllocated = true
+			dirConnAllocated = true
 
-				err = requests.Auth(dirConn, &loginContext.ESAMPubKey, loginContext.Key, false, opts.NetTimeout)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Login failed")
-					break
-				}
+			err = requests.Auth(dirConn, &loginContext.ESAMPubKey, loginContext.Key, false, opts.NetTimeout)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Login failed")
+				break
+			}
 
-				log.Println("Login successful")
+			log.Println("Login successful")
 
-				noMsgTimer = time.After(opts.NoMsgThresholdTime)
-				noopTimer = time.After(opts.NoopNoticePeriod)
-				updateNodesCacheTimer = time.After(0)
-				time.Sleep(1 * time.Millisecond)
+			noMsgTimer = time.After(opts.NoMsgThresholdTime)
+			noopTimer = time.After(opts.NoopNoticePeriod)
+			updateNodesCacheTimer = time.After(0)
+			time.Sleep(1 * time.Millisecond)
 
-			authLoop:
-				for {
+		authLoop:
+			for {
+				var (
+					msgIn       []byte
+					msgOut      []byte
+					msgInHeader netapi.MsgHeader
+				)
+
+				sendReqListUsers := func(netTimeout time.Duration) error {
 					var (
-						msgIn       []byte
-						msgOut      []byte
-						msgInHeader netapi.MsgHeader
+						err        error
+						userFilter data.User
 					)
 
-					sendReqListUsers := func(netTimeout time.Duration) error {
-						var (
-							err        error
-							userFilter data.User
-						)
-
-						msgOut, err = netapi.BuildReqListUsers(&userFilter)
-						if err != nil {
-							return err
-						}
-
-						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
-						if err != nil {
-							return err
-						}
-
-						return nil
+					msgOut, err = netapi.BuildReqListUsers(&userFilter)
+					if err != nil {
+						return err
 					}
 
-					sendReqListNodes := func(netTimeout time.Duration) error {
-						var (
-							err        error
-							nodeFilter data.Node
-						)
-
-						msgOut, err = netapi.BuildReqListNodes(&nodeFilter)
-						if err != nil {
-							return err
-						}
-
-						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
-						if err != nil {
-							return err
-						}
-
-						return nil
+					_, err = netmsg.Send(dirConn, msgOut, netTimeout)
+					if err != nil {
+						return err
 					}
 
-					sendNoop := func(netTimeout time.Duration) error {
-						var err error
+					return nil
+				}
 
-						msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
-						if err != nil {
-							return err
-						}
+				sendReqListNodes := func(netTimeout time.Duration) error {
+					var (
+						err        error
+						nodeFilter data.Node
+					)
 
-						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
-						if err != nil {
-							return err
-						}
-
-						return nil
+					msgOut, err = netapi.BuildReqListNodes(&nodeFilter)
+					if err != nil {
+						return err
 					}
 
-					updateNodesCache := func() {
-						if len(nodesListDB) > 0 && len(usersListDB) > 0 {
-							log.Println("Update nodes cache")
+					_, err = netmsg.Send(dirConn, msgOut, netTimeout)
+					if err != nil {
+						return err
+					}
 
-							updateNodesCacheTimer = time.After(opts.UpdateNodesCachePeriod)
+					return nil
+				}
 
-							err = nodesCache.Update(nodesListDB, usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+				sendNoop := func(netTimeout time.Duration) error {
+					var err error
+
+					msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
+					if err != nil {
+						return err
+					}
+
+					_, err = netmsg.Send(dirConn, msgOut, netTimeout)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				}
+
+				updateNodesCache := func() {
+					if len(nodesListDB) > 0 && len(usersListDB) > 0 {
+						log.Println("Update nodes cache")
+
+						updateNodesCacheTimer = time.After(opts.UpdateNodesCachePeriod)
+
+						err = nodesCache.Update(nodesListDB, usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+						if err != nil {
+							log.WithFields(log.Fields{"details": err}).Errorln("Failed to update nodes cache")
+						} else {
+							log.Println("Nodes cache update successful")
+							log.Println("Save nodes cache to file")
+
+							err = nodesCache.ToFile()
 							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to update nodes cache")
+								log.WithFields(log.Fields{"details": err}).Errorln("Failed to save nodes cache to file")
 							} else {
-								log.Println("Nodes cache update successful")
-								log.Println("Save nodes cache to file")
-
-								err = nodesCache.ToFile()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Failed to save nodes cache to file")
-								} else {
-									log.Println("Nodes cache successfully saved to file")
-								}
+								log.Println("Nodes cache successfully saved to file")
 							}
 						}
 					}
+				}
 
-					select {
-					case <-ctx.Done():
-						{
-							return
-						}
+				select {
+				case <-ctx.Done():
+					return
 
-					case <-noMsgTimer:
-						{
-							log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - reconnect")
+				case <-noMsgTimer:
+					log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - reconnect")
+					break authLoop
+
+				case <-noopTimer:
+					noopTimer = time.After(opts.NoopNoticePeriod)
+
+					err = sendNoop(opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
+						break authLoop
+					}
+
+				case <-updateNodesCacheTimer:
+					updateNodesCacheTimer = time.After(opts.UpdateNodesCachePeriod)
+
+					log.Println("Send requests to refresh nodes cache")
+
+					err = sendReqListUsers(opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
+						break authLoop
+					}
+
+					err = sendReqListNodes(opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
+						break authLoop
+					}
+
+					log.Println("Successfully sent nodes cache update requests")
+
+					usersListDB = []data.UserDB{}
+					nodesListDB = []data.NodeDB{}
+
+				default:
+					msgIn, err = netmsg.Recv(dirConn, opts.NetTimeout)
+					if err != nil {
+						if netmsg.IsTimeout(err) {
+							//log.Println("Timeout interrupt")
+							continue
+						} else {
+							if netmsg.IsEOF(err) {
+								//log.Println("Connection closed")
+							} else {
+								log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
+							}
 							break authLoop
 						}
+					}
 
-					case <-noopTimer:
-						{
-							noopTimer = time.After(opts.NoopNoticePeriod)
+					err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+						break authLoop
+					}
 
-							err = sendNoop(opts.NetTimeout)
+					switch msgInHeader.Type {
+					case netapi.MsgTypeReply:
+						noMsgTimer = time.After(opts.NoMsgThresholdTime)
+
+						switch msgInHeader.SubType {
+						case netapi.ReqTypeListUsers:
+							usersListDB, err = netapi.ParseRepListUsers(msgIn)
 							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
 								break authLoop
 							}
+
+							updateNodesCache()
+
+							log.Println("Update auth user cache")
+
+							err = authUserCache.Update(usersListDB, &loginContext.ESAMPubKey, &loginContext.VerifyKey)
+							if err != nil {
+								log.WithFields(log.Fields{"details": err}).Errorln("Failed to update auth user data")
+							} else {
+								log.Println("Auth user cache update successful")
+								log.Println("Save auth user cache to file")
+
+								err = authUserCache.ToFile()
+								if err != nil {
+									log.WithFields(log.Fields{"details": err}).Errorln("Failed to save auth user cache to file")
+								} else {
+									log.Println("Auth user cache successfully saved to file")
+								}
+							}
+
+						case netapi.ReqTypeListNodes:
+							nodesListDB, err = netapi.ParseRepListNodes(msgIn)
+							if err != nil {
+								break authLoop
+							}
+
+							updateNodesCache()
+
+						default:
+							log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage reply was received")
+							continue
 						}
 
-					case <-updateNodesCacheTimer:
-						{
-							updateNodesCacheTimer = time.After(opts.UpdateNodesCachePeriod)
+					case netapi.MsgTypeNotice:
+						noMsgTimer = time.After(opts.NoMsgThresholdTime)
 
-							log.Println("Send requests to refresh nodes cache")
+						switch msgInHeader.SubType {
+						case netapi.NoticeTypeNoop:
+							//log.Println("NOOP")
+							continue
+
+						case netapi.NoticeTypeUpdatedUsers:
+							log.Println("Send requests to get nodes cache")
 
 							err = sendReqListUsers(opts.NetTimeout)
 							if err != nil {
@@ -1314,144 +1357,27 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 								break authLoop
 							}
 
+							log.Println("Successfully sent requests to get nodes cache")
+
+						case netapi.NoticeTypeUpdatedNodes:
+							log.Println("Send requests to get nodes cache")
+
 							err = sendReqListNodes(opts.NetTimeout)
 							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
+								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of nodes")
 								break authLoop
 							}
 
-							log.Println("Successfully sent nodes cache update requests")
+							log.Println("Successfully sent requests to get nodes cache")
 
-							usersListDB = []data.UserDB{}
-							nodesListDB = []data.NodeDB{}
+						default:
+							log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage notice was received")
+							continue
 						}
 
 					default:
-						{
-							msgIn, err = netmsg.Recv(dirConn, opts.NetTimeout)
-							if err != nil {
-								if netmsg.IsTimeout(err) {
-									//log.Println("Timeout interrupt")
-									continue
-								} else {
-									if netmsg.IsEOF(err) {
-										//log.Println("Connection closed")
-									} else {
-										log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
-									}
-									break authLoop
-								}
-							}
-
-							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
-								break authLoop
-							}
-
-							switch msgInHeader.Type {
-							case netapi.MsgTypeReply:
-								{
-									noMsgTimer = time.After(opts.NoMsgThresholdTime)
-
-									switch msgInHeader.SubType {
-									case netapi.ReqTypeListUsers:
-										{
-											usersListDB, err = netapi.ParseRepListUsers(msgIn)
-											if err != nil {
-												break authLoop
-											}
-
-											updateNodesCache()
-
-											log.Println("Update auth user cache")
-
-											err = authUserCache.Update(usersListDB, &loginContext.ESAMPubKey, &loginContext.VerifyKey)
-											if err != nil {
-												log.WithFields(log.Fields{"details": err}).Errorln("Failed to update auth user data")
-											} else {
-												log.Println("Auth user cache update successful")
-												log.Println("Save auth user cache to file")
-
-												err = authUserCache.ToFile()
-												if err != nil {
-													log.WithFields(log.Fields{"details": err}).Errorln("Failed to save auth user cache to file")
-												} else {
-													log.Println("Auth user cache successfully saved to file")
-												}
-											}
-										}
-
-									case netapi.ReqTypeListNodes:
-										{
-											nodesListDB, err = netapi.ParseRepListNodes(msgIn)
-											if err != nil {
-												break authLoop
-											}
-
-											updateNodesCache()
-										}
-
-									default:
-										{
-											log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage reply was received")
-											continue
-										}
-									}
-								}
-
-							case netapi.MsgTypeNotice:
-								{
-									noMsgTimer = time.After(opts.NoMsgThresholdTime)
-
-									switch msgInHeader.SubType {
-									case netapi.NoticeTypeNoop:
-										{
-											//log.Println("NOOP")
-											continue
-										}
-
-									case netapi.NoticeTypeUpdatedUsers:
-										{
-											log.Println("Send requests to get nodes cache")
-
-											err = sendReqListUsers(opts.NetTimeout)
-											if err != nil {
-												log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
-												break authLoop
-											}
-
-											log.Println("Successfully sent requests to get nodes cache")
-										}
-
-									case netapi.NoticeTypeUpdatedNodes:
-										{
-											log.Println("Send requests to get nodes cache")
-
-											err = sendReqListNodes(opts.NetTimeout)
-											if err != nil {
-												log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of nodes")
-												break authLoop
-											}
-
-											log.Println("Successfully sent requests to get nodes cache")
-										}
-
-									default:
-										{
-											log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage notice was received")
-											continue
-										}
-									}
-								}
-
-							default:
-								{
-									log.WithFields(log.Fields{"details": err}).Errorln("Unsupported message was received")
-									continue
-								}
-							}
-						}
+						log.WithFields(log.Fields{"details": err}).Errorln("Unsupported message was received")
+						continue
 					}
 				}
 			}

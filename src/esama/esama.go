@@ -293,140 +293,189 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return
-			}
+			return
 
 		default:
-			{
-				freeLoopResources()
+			freeLoopResources()
 
-				dirConn, err = tls.Dial("tcp", loginContext.DirAddr+":"+loginContext.DirPort, &loginContext.TLSConfig)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to connect to Director")
-					break
-				}
+			dirConn, err = tls.Dial("tcp", loginContext.DirAddr+":"+loginContext.DirPort, &loginContext.TLSConfig)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to connect to Director")
+				break
+			}
 
-				dirConnAllocated = true
+			dirConnAllocated = true
 
-				err = requests.Auth(dirConn, &loginContext.ESAMPubKey, loginContext.Key, false, opts.NetTimeout)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Login failed")
+			err = requests.Auth(dirConn, &loginContext.ESAMPubKey, loginContext.Key, false, opts.NetTimeout)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Login failed")
 
-					if !accessRequestIsSended {
-						log.Println("Send access request")
-						err = sendAccessReq(globData, loginContext)
-						if err != nil {
-							log.WithFields(log.Fields{"details": err}).Errorln("Failed to send access request")
-						} else {
-							log.Println("Successfully sent access request")
-						}
-
-						accessRequestIsSended = true
+				if !accessRequestIsSended {
+					log.Println("Send access request")
+					err = sendAccessReq(globData, loginContext)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send access request")
+					} else {
+						log.Println("Successfully sent access request")
 					}
 
-					break
+					accessRequestIsSended = true
 				}
 
-				log.Println("Login successful")
+				break
+			}
 
-				noMsgTimer = time.After(opts.NoMsgThresholdTime)
-				noopTimer = time.After(opts.NoopNoticePeriod)
-				updateUsersCacheTimer = time.After(0)
-				time.Sleep(1 * time.Millisecond)
+			log.Println("Login successful")
 
-			authLoop:
-				for {
+			noMsgTimer = time.After(opts.NoMsgThresholdTime)
+			noopTimer = time.After(opts.NoopNoticePeriod)
+			updateUsersCacheTimer = time.After(0)
+			time.Sleep(1 * time.Millisecond)
+
+		authLoop:
+			for {
+				var (
+					msgIn       []byte
+					msgOut      []byte
+					msgInHeader netapi.MsgHeader
+				)
+
+				sendReqListUsers := func(netTimeout time.Duration) error {
 					var (
-						msgIn       []byte
-						msgOut      []byte
-						msgInHeader netapi.MsgHeader
+						err        error
+						userFilter data.User
 					)
 
-					sendReqListUsers := func(netTimeout time.Duration) error {
-						var (
-							err        error
-							userFilter data.User
-						)
-
-						msgOut, err = netapi.BuildReqListUsers(&userFilter)
-						if err != nil {
-							return err
-						}
-
-						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
-						if err != nil {
-							return err
-						}
-
-						return nil
+					msgOut, err = netapi.BuildReqListUsers(&userFilter)
+					if err != nil {
+						return err
 					}
 
-					sendNoop := func(netTimeout time.Duration) error {
-						var err error
-
-						msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
-						if err != nil {
-							return err
-						}
-
-						_, err = netmsg.Send(dirConn, msgOut, netTimeout)
-						if err != nil {
-							return err
-						}
-
-						return nil
+					_, err = netmsg.Send(dirConn, msgOut, netTimeout)
+					if err != nil {
+						return err
 					}
 
-					updateUsersCache := func() {
-						if len(usersListDB) > 0 {
-							log.Println("Update users cache")
+					return nil
+				}
 
-							updateUsersCacheTimer = time.After(opts.UpdateUsersListPeriod)
+				sendNoop := func(netTimeout time.Duration) error {
+					var err error
 
-							err = usersCache.Update(usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
-							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to update users cache")
-							} else {
-								log.Println("Users cache update successful")
-								select {
-								case globData.DataEvents <- true:
-								default:
-									{
-										log.Errorln("Failed to send data event")
-									}
-								}
+					msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
+					if err != nil {
+						return err
+					}
+
+					_, err = netmsg.Send(dirConn, msgOut, netTimeout)
+					if err != nil {
+						return err
+					}
+
+					return nil
+				}
+
+				updateUsersCache := func() {
+					if len(usersListDB) > 0 {
+						log.Println("Update users cache")
+
+						updateUsersCacheTimer = time.After(opts.UpdateUsersListPeriod)
+
+						err = usersCache.Update(usersListDB, &loginContext.VerifyKey, opts.CPUUtilizationFactor)
+						if err != nil {
+							log.WithFields(log.Fields{"details": err}).Errorln("Failed to update users cache")
+						} else {
+							log.Println("Users cache update successful")
+							select {
+							case globData.DataEvents <- true:
+							default:
+								log.Errorln("Failed to send data event")
 							}
 						}
 					}
+				}
 
-					select {
-					case <-ctx.Done():
-						{
-							return
-						}
+				select {
+				case <-ctx.Done():
+					return
 
-					case <-noMsgTimer:
-						{
-							log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - reconnect")
+				case <-noMsgTimer:
+					log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - reconnect")
+					break authLoop
+
+				case <-noopTimer:
+					noopTimer = time.After(opts.NoopNoticePeriod)
+
+					err = sendNoop(opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
+						break authLoop
+					}
+
+				case <-updateUsersCacheTimer:
+					updateUsersCacheTimer = time.After(opts.UpdateUsersListPeriod)
+
+					log.Println("Send requests to refresh users cache")
+
+					err = sendReqListUsers(opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
+						break authLoop
+					}
+
+					log.Println("Successfully sent users cache update requests")
+
+					usersListDB = []data.UserDB{}
+
+				default:
+					msgIn, err = netmsg.Recv(dirConn, opts.NetTimeout)
+					if err != nil {
+						if netmsg.IsTimeout(err) {
+							//log.Println("Timeout interrupt")
+							continue
+						} else {
+							if netmsg.IsEOF(err) {
+								//log.Println("Connection closed")
+							} else {
+								log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
+							}
 							break authLoop
 						}
+					}
 
-					case <-noopTimer:
-						{
-							noopTimer = time.After(opts.NoopNoticePeriod)
+					err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+						break authLoop
+					}
 
-							err = sendNoop(opts.NetTimeout)
+					switch msgInHeader.Type {
+					case netapi.MsgTypeReply:
+						noMsgTimer = time.After(opts.NoMsgThresholdTime)
+
+						switch msgInHeader.SubType {
+						case netapi.ReqTypeListUsers:
+							usersListDB, err = netapi.ParseRepListUsers(msgIn)
 							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
 								break authLoop
 							}
+
+							updateUsersCache()
+
+						default:
+							log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage reply was received")
+							continue
 						}
 
-					case <-updateUsersCacheTimer:
-						{
-							updateUsersCacheTimer = time.After(opts.UpdateUsersListPeriod)
+					case netapi.MsgTypeNotice:
+						noMsgTimer = time.After(opts.NoMsgThresholdTime)
 
+						switch msgInHeader.SubType {
+						case netapi.NoticeTypeNoop:
+							//log.Println("NOOP")
+							continue
+
+						case netapi.NoticeTypeUpdatedUsers:
 							log.Println("Send requests to refresh users cache")
 
 							err = sendReqListUsers(opts.NetTimeout)
@@ -437,99 +486,16 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 
 							log.Println("Successfully sent users cache update requests")
 
-							usersListDB = []data.UserDB{}
+						case netapi.NoticeTypeUpdatedNodes:
+
+						default:
+							log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage notice was received")
+							continue
 						}
 
 					default:
-						{
-							msgIn, err = netmsg.Recv(dirConn, opts.NetTimeout)
-							if err != nil {
-								if netmsg.IsTimeout(err) {
-									//log.Println("Timeout interrupt")
-									continue
-								} else {
-									if netmsg.IsEOF(err) {
-										//log.Println("Connection closed")
-									} else {
-										log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
-									}
-									break authLoop
-								}
-							}
-
-							err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
-								break authLoop
-							}
-
-							switch msgInHeader.Type {
-							case netapi.MsgTypeReply:
-								{
-									noMsgTimer = time.After(opts.NoMsgThresholdTime)
-
-									switch msgInHeader.SubType {
-									case netapi.ReqTypeListUsers:
-										{
-											usersListDB, err = netapi.ParseRepListUsers(msgIn)
-											if err != nil {
-												break authLoop
-											}
-
-											updateUsersCache()
-										}
-
-									default:
-										{
-											log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage reply was received")
-											continue
-										}
-									}
-								}
-
-							case netapi.MsgTypeNotice:
-								{
-									noMsgTimer = time.After(opts.NoMsgThresholdTime)
-
-									switch msgInHeader.SubType {
-									case netapi.NoticeTypeNoop:
-										{
-											//log.Println("NOOP")
-											continue
-										}
-
-									case netapi.NoticeTypeUpdatedUsers:
-										{
-											log.Println("Send requests to refresh users cache")
-
-											err = sendReqListUsers(opts.NetTimeout)
-											if err != nil {
-												log.WithFields(log.Fields{"details": err}).Errorln("Failed to send request to get list of users")
-												break authLoop
-											}
-
-											log.Println("Successfully sent users cache update requests")
-										}
-
-									case netapi.NoticeTypeUpdatedNodes:
-										{
-										}
-
-									default:
-										{
-											log.WithFields(log.Fields{"details": err}).Errorln("Unsupported at this stage notice was received")
-											continue
-										}
-									}
-								}
-
-							default:
-								{
-									log.WithFields(log.Fields{"details": err}).Errorln("Unsupported message was received")
-									continue
-								}
-							}
-						}
+						log.WithFields(log.Fields{"details": err}).Errorln("Unsupported message was received")
+						continue
 					}
 				}
 			}
@@ -555,39 +521,33 @@ func usersSetupLoop(ctx context.Context, globData *globDataType, usersCache *cac
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return
-			}
+			return
 
 		case <-globData.DataEvents:
-			{
-				usersCache.RLock()
-				usersList = make([]data.UserAuth, len(usersCache.Get()))
-				copy(usersList, usersCache.Get())
-				usersCache.RUnlock()
+			usersCache.RLock()
+			usersList = make([]data.UserAuth, len(usersCache.Get()))
+			copy(usersList, usersCache.Get())
+			usersCache.RUnlock()
 
-				err = usersSetup(usersList)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
-				}
-
-				usersSetupTimer = time.After(opts.UsersSetupPeriod)
+			err = usersSetup(usersList)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
 			}
+
+			usersSetupTimer = time.After(opts.UsersSetupPeriod)
 
 		case <-usersSetupTimer:
-			{
-				usersCache.RLock()
-				usersList = make([]data.UserAuth, len(usersCache.Get()))
-				copy(usersList, usersCache.Get())
-				usersCache.RUnlock()
+			usersCache.RLock()
+			usersList = make([]data.UserAuth, len(usersCache.Get()))
+			copy(usersList, usersCache.Get())
+			usersCache.RUnlock()
 
-				err = usersSetup(usersList)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
-				}
-
-				usersSetupTimer = time.After(opts.UsersSetupPeriod)
+			err = usersSetup(usersList)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to setup users")
 			}
+
+			usersSetupTimer = time.After(opts.UsersSetupPeriod)
 		}
 	}
 }
@@ -623,64 +583,58 @@ func usersSetup(usersList []data.UserAuth) error {
 
 			switch usersList[index].State {
 			case data.UserStateDisabled:
-				{
-					err = setup.UserAbsent(usersList[index].Name, &setup.UserAbsentOpts{Force: true, Remove: true})
-					if err != nil {
-						return err
-					}
+				err = setup.UserAbsent(usersList[index].Name, &setup.UserAbsentOpts{Force: true, Remove: true})
+				if err != nil {
+					return err
 				}
 
 			case data.UserStateSuspended:
-				{
-					var userOpts setup.UserPresentOpts
+				var userOpts setup.UserPresentOpts
 
-					userOpts.ExpireDate = "-1"
-					userOpts.Gid = opts.UsersGroup
-					userOpts.Password = "*"
-					userOpts.Shell = "/bin/false"
-					userOpts.Groups = []string{" "}
+				userOpts.ExpireDate = "-1"
+				userOpts.Gid = opts.UsersGroup
+				userOpts.Password = "*"
+				userOpts.Shell = "/bin/false"
+				userOpts.Groups = []string{" "}
 
-					err = setup.UserPresent(usersList[index].Name, &userOpts)
-					if err != nil {
-						return err
-					}
+				err = setup.UserPresent(usersList[index].Name, &userOpts)
+				if err != nil {
+					return err
+				}
 
-					err = setup.AuthorizedKeyAbsent(usersList[index].Name, nil, true)
-					if err != nil {
-						return err
-					}
+				err = setup.AuthorizedKeyAbsent(usersList[index].Name, nil, true)
+				if err != nil {
+					return err
 				}
 
 			case data.UserStateEnabled:
-				{
-					var userOpts setup.UserPresentOpts
+				var userOpts setup.UserPresentOpts
 
-					userOpts.ExpireDate = " "
-					userOpts.Gid = opts.UsersGroup
-					userOpts.Password = usersList[index].PasswordHash
-					userOpts.Shell = opts.UserShell
-					if usersList[index].PasswordHash != "" && usersList[index].ElevatePrivileges == true {
-						var availableGroups []string
+				userOpts.ExpireDate = " "
+				userOpts.Gid = opts.UsersGroup
+				userOpts.Password = usersList[index].PasswordHash
+				userOpts.Shell = opts.UserShell
+				if usersList[index].PasswordHash != "" && usersList[index].ElevatePrivileges == true {
+					var availableGroups []string
 
-						availableGroups, err = misc.LeaveAvailableGroups(opts.ElevatePrivilegesGroups)
-						if err != nil {
-							return err
-						}
-
-						userOpts.Groups = availableGroups
-					} else {
-						userOpts.Groups = []string{" "}
-					}
-
-					err = setup.UserPresent(usersList[index].Name, &userOpts)
+					availableGroups, err = misc.LeaveAvailableGroups(opts.ElevatePrivilegesGroups)
 					if err != nil {
 						return err
 					}
 
-					err = setup.AuthorizedKeyPresent(usersList[index].Name, &types.AuthorizedKey{Key: usersList[index].SSHPubKey, Options: []string{""}, Comment: ""}, true)
-					if err != nil {
-						return err
-					}
+					userOpts.Groups = availableGroups
+				} else {
+					userOpts.Groups = []string{" "}
+				}
+
+				err = setup.UserPresent(usersList[index].Name, &userOpts)
+				if err != nil {
+					return err
+				}
+
+				err = setup.AuthorizedKeyPresent(usersList[index].Name, &types.AuthorizedKey{Key: usersList[index].SSHPubKey, Options: []string{""}, Comment: ""}, true)
+				if err != nil {
+					return err
 				}
 			}
 

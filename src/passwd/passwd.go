@@ -100,14 +100,10 @@ func sha512CompareHash(password string, hash string) bool {
 func CalcHash(password string, algo string) (string, error) {
 	switch algo {
 	case PasswdHashAlgoBCrypt:
-		{
-			return bcryptCalcHash(password)
-		}
+		return bcryptCalcHash(password)
 
 	case PasswdHashAlgoSHA512:
-		{
-			return sha512CalcHash(password)
-		}
+		return sha512CalcHash(password)
 	}
 
 	return "", errors.New("Unsupported password hash algorithm")
@@ -116,14 +112,10 @@ func CalcHash(password string, algo string) (string, error) {
 func CompareHash(password string, hash string, algo string) bool {
 	switch algo {
 	case PasswdHashAlgoBCrypt:
-		{
-			return bcryptCompareHash(password, hash)
-		}
+		return bcryptCompareHash(password, hash)
 
 	case PasswdHashAlgoSHA512:
-		{
-			return sha512CompareHash(password, hash)
-		}
+		return sha512CompareHash(password, hash)
 	}
 
 	return false

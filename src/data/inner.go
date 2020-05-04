@@ -190,19 +190,13 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 		} else {
 			switch structDataFieldRValue.Kind() {
 			case reflect.String:
-				{
-					fieldData = []byte(structDataFieldRValue.String())
-				}
+				fieldData = []byte(structDataFieldRValue.String())
 
 			case reflect.Bool:
-				{
-					fieldData = []byte(strconv.FormatBool(structDataFieldRValue.Bool()))
-				}
+				fieldData = []byte(strconv.FormatBool(structDataFieldRValue.Bool()))
 
 			default:
-				{
-					return errors.New("Unsupported field type")
-				}
+				return errors.New("Unsupported field type")
 			}
 		}
 
@@ -358,19 +352,13 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 		} else {
 			switch structDataFieldRValue.Kind() {
 			case reflect.String:
-				{
-					fieldData = []byte(structDataFieldRValue.String())
-				}
+				fieldData = []byte(structDataFieldRValue.String())
 
 			case reflect.Bool:
-				{
-					fieldData = []byte(strconv.FormatBool(structDataFieldRValue.Bool()))
-				}
+				fieldData = []byte(strconv.FormatBool(structDataFieldRValue.Bool()))
 
 			default:
-				{
-					return errors.New("Unsupported field type")
-				}
+				return errors.New("Unsupported field type")
 			}
 		}
 

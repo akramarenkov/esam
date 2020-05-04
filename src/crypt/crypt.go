@@ -63,27 +63,23 @@ func GetMaxTextSizeByKey(keyIn interface{}) (uint, error) {
 
 	switch keyReflectValue.Elem().Type().String() {
 	case "rsa.PrivateKey":
-		{
-			key, castOk = keyIn.(*rsa.PrivateKey)
-			if castOk != true {
-				return 0, errors.New("Failed to assertion inputed key as RSA private key")
-			}
-
-			maxTextSize = (key.N.BitLen() / 8) - (2 * hashSize / 8) - (2)
+		key, castOk = keyIn.(*rsa.PrivateKey)
+		if castOk != true {
+			return 0, errors.New("Failed to assertion inputed key as RSA private key")
 		}
+
+		maxTextSize = (key.N.BitLen() / 8) - (2 * hashSize / 8) - (2)
+
 	case "rsa.PublicKey":
-		{
-			pubKey, castOk = keyIn.(*rsa.PublicKey)
-			if castOk != true {
-				return 0, errors.New("Failed to assertion inputed key as RSA public key")
-			}
+		pubKey, castOk = keyIn.(*rsa.PublicKey)
+		if castOk != true {
+			return 0, errors.New("Failed to assertion inputed key as RSA public key")
+		}
 
-			maxTextSize = (pubKey.N.BitLen() / 8) - (2 * hashSize / 8) - (2)
-		}
+		maxTextSize = (pubKey.N.BitLen() / 8) - (2 * hashSize / 8) - (2)
+
 	default:
-		{
-			return 0, errors.New("Input variable was not RSA private or public key")
-		}
+		return 0, errors.New("Input variable was not RSA private or public key")
 	}
 
 	if maxTextSize < 1 {

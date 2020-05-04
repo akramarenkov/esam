@@ -422,149 +422,121 @@ func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.Wai
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				return
-			}
+			return
 
 		case sessionEvent = <-globData.SessionsEvents:
-			{
-				switch sessionEvent.Event {
-				case SessionEventStarted:
-					{
-						sessionDataMap[sessionEvent.sessionData] = sessionEvent.sessionData
-					}
+			switch sessionEvent.Event {
+			case SessionEventStarted:
+				sessionDataMap[sessionEvent.sessionData] = sessionEvent.sessionData
 
-				case SessionEventEnded:
-					{
-						delete(sessionDataMap, sessionEvent.sessionData)
-					}
+			case SessionEventEnded:
+				delete(sessionDataMap, sessionEvent.sessionData)
 
-				default:
-					{
-						log.Errorln("Unsupported session event received")
-					}
-				}
+			default:
+				log.Errorln("Unsupported session event received")
 			}
 
 		case dataEvent = <-globData.DataEvents:
-			{
-				var dataNotice int
+			var dataNotice int
 
-				dataEventMap[time.Now()] = dataEvent
-				dataNotice = DataNoticeUnknown
+			dataEventMap[time.Now()] = dataEvent
+			dataNotice = DataNoticeUnknown
 
-				switch dataEvent.Event {
-				case DataEventAddUser, DataEventUpdateUser, DataEventChangePassword, DataEventDelUser:
-					{
-						dataNotice = DataNoticeUpdatedUsers
-					}
+			switch dataEvent.Event {
+			case DataEventAddUser, DataEventUpdateUser, DataEventChangePassword, DataEventDelUser:
+				dataNotice = DataNoticeUpdatedUsers
 
-				case DataEventAddNode, DataEventUpdateNode, DataEventDelNode:
-					{
-						dataNotice = DataNoticeUpdatedNodes
-					}
-				}
+			case DataEventAddNode, DataEventUpdateNode, DataEventDelNode:
+				dataNotice = DataNoticeUpdatedNodes
+			}
 
-				if dataNotice != DataNoticeUnknown {
-					for _, sessionData := range sessionDataMap {
-						/* For send data change notices to sessions used non-blocking io to prevent deadlocks */
-						select {
-						case sessionData.DataChangeNotice <- dataNotice:
-						default:
-							{
-								log.Errorln("Failed to send data change notice")
-							}
-						}
+			if dataNotice != DataNoticeUnknown {
+				for _, sessionData := range sessionDataMap {
+					/* For send data change notices to sessions used non-blocking io to prevent deadlocks */
+					select {
+					case sessionData.DataChangeNotice <- dataNotice:
+					default:
+						log.Errorln("Failed to send data change notice")
 					}
 				}
 			}
 
 		case <-sessionCloserTimer:
-			{
-				sessionCloserTimer = time.After(opts.SessionCloserPeriod)
+			sessionCloserTimer = time.After(opts.SessionCloserPeriod)
 
-				for dataEventTime, dataEventValue := range dataEventMap {
-					if time.Since(dataEventTime) >= opts.DataEventLifeTime {
-						delete(dataEventMap, dataEventTime)
+			for dataEventTime, dataEventValue := range dataEventMap {
+				if time.Since(dataEventTime) >= opts.DataEventLifeTime {
+					delete(dataEventMap, dataEventTime)
+				}
+
+				for _, sessionData := range sessionDataMap {
+					var (
+						userEventOldData data.User
+						userEventNewData data.User
+						userSubjectData  data.User
+						nodeEventOldData data.Node
+						nodeSubjectData  data.Node
+
+						castEventOldDataOk bool
+						castEventNewDataOk bool
+						castSubjectDataOk  bool
+					)
+
+					if sessionData.AuthContext == nil {
+						log.Errorln("Session auth context turned out to be nil")
+						continue
 					}
 
-					for _, sessionData := range sessionDataMap {
-						var (
-							userEventOldData data.User
-							userEventNewData data.User
-							userSubjectData  data.User
-							nodeEventOldData data.Node
-							nodeSubjectData  data.Node
+					switch dataEventValue.Event {
+					case DataEventUpdateUser:
+						userEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.User)
+						userEventNewData, castEventNewDataOk = dataEventValue.NewData.(data.User)
+						userSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.User)
 
-							castEventOldDataOk bool
-							castEventNewDataOk bool
-							castSubjectDataOk  bool
-						)
-
-						if sessionData.AuthContext == nil {
-							log.Errorln("Session auth context turned out to be nil")
-							continue
+						if castEventOldDataOk && castEventNewDataOk && castSubjectDataOk {
+							if userSubjectData.ESAMPubKey.Equal(&userEventOldData.ESAMPubKey) {
+								sessionData.Terminate()
+								if userEventNewData.State != data.UserStateEnabled {
+									/* Increases reliable, but requires access synchronization
+									   sessionData.AuthContext.SubjectType = auth.SubjectUnknown
+									*/
+									sessionData.CloseConn()
+								} else {
+									delete(dataEventMap, dataEventTime)
+								}
+							}
 						}
 
-						switch dataEventValue.Event {
-						case DataEventUpdateUser:
-							{
-								userEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.User)
-								userEventNewData, castEventNewDataOk = dataEventValue.NewData.(data.User)
-								userSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.User)
+					case DataEventDelUser:
+						userEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.User)
+						userSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.User)
 
-								if castEventOldDataOk && castEventNewDataOk && castSubjectDataOk {
-									if userSubjectData.ESAMPubKey.Equal(&userEventOldData.ESAMPubKey) {
-										sessionData.Terminate()
-										if userEventNewData.State != data.UserStateEnabled {
-											/* Increases reliable, but requires access synchronization
-											   sessionData.AuthContext.SubjectType = auth.SubjectUnknown
-											*/
-											sessionData.CloseConn()
-										} else {
-											delete(dataEventMap, dataEventTime)
-										}
-									}
-								}
+						if castEventOldDataOk && castSubjectDataOk {
+							if userSubjectData.ESAMPubKey.Equal(&userEventOldData.ESAMPubKey) {
+								sessionData.Terminate()
+								sessionData.CloseConn()
 							}
+						}
 
-						case DataEventDelUser:
-							{
-								userEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.User)
-								userSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.User)
+					case DataEventUpdateNode:
+						nodeEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.Node)
+						nodeSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.Node)
 
-								if castEventOldDataOk && castSubjectDataOk {
-									if userSubjectData.ESAMPubKey.Equal(&userEventOldData.ESAMPubKey) {
-										sessionData.Terminate()
-										sessionData.CloseConn()
-									}
-								}
+						if castEventOldDataOk && castSubjectDataOk {
+							if nodeSubjectData.ESAMPubKey.Equal(&nodeEventOldData.ESAMPubKey) {
+								sessionData.Terminate()
+								delete(dataEventMap, dataEventTime)
 							}
+						}
 
-						case DataEventUpdateNode:
-							{
-								nodeEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.Node)
-								nodeSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.Node)
+					case DataEventDelNode:
+						nodeEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.Node)
+						nodeSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.Node)
 
-								if castEventOldDataOk && castSubjectDataOk {
-									if nodeSubjectData.ESAMPubKey.Equal(&nodeEventOldData.ESAMPubKey) {
-										sessionData.Terminate()
-										delete(dataEventMap, dataEventTime)
-									}
-								}
-							}
-
-						case DataEventDelNode:
-							{
-								nodeEventOldData, castEventOldDataOk = dataEventValue.OldData.(data.Node)
-								nodeSubjectData, castSubjectDataOk = sessionData.AuthContext.SubjectData.(data.Node)
-
-								if castEventOldDataOk && castSubjectDataOk {
-									if nodeSubjectData.ESAMPubKey.Equal(&nodeEventOldData.ESAMPubKey) {
-										sessionData.Terminate()
-										sessionData.CloseConn()
-									}
-								}
+						if castEventOldDataOk && castSubjectDataOk {
+							if nodeSubjectData.ESAMPubKey.Equal(&nodeEventOldData.ESAMPubKey) {
+								sessionData.Terminate()
+								sessionData.CloseConn()
 							}
 						}
 					}
@@ -586,22 +558,18 @@ func tlsLoop(ctx context.Context, listener net.Listener, globData *globDataType,
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				waitConn.Wait()
-				return
-			}
+			waitConn.Wait()
+			return
 
 		default:
-			{
-				tlsConn, err = listener.Accept()
-				if err != nil {
-					if netmsg.IsTemporary(err) {
-						log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept TLS connection")
-					}
-				} else {
-					waitConn.Add(1)
-					go tlsConnHandler(ctx, tlsConn, globData, &waitConn)
+			tlsConn, err = listener.Accept()
+			if err != nil {
+				if netmsg.IsTemporary(err) {
+					log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept TLS connection")
 				}
+			} else {
+				waitConn.Add(1)
+				go tlsConnHandler(ctx, tlsConn, globData, &waitConn)
 			}
 		}
 	}
@@ -621,22 +589,18 @@ func udsLoop(ctx context.Context, listener net.Listener, globData *globDataType,
 	for {
 		select {
 		case <-ctx.Done():
-			{
-				waitConn.Wait()
-				return
-			}
+			waitConn.Wait()
+			return
 
 		default:
-			{
-				udsConn, err = listener.Accept()
-				if err != nil {
-					if netmsg.IsTemporary(err) {
-						log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
-					}
-				} else {
-					waitConn.Add(1)
-					go udsConnHandler(ctx, udsConn, globData, &waitConn)
+			udsConn, err = listener.Accept()
+			if err != nil {
+				if netmsg.IsTemporary(err) {
+					log.WithFields(log.Fields{"details": err}).Errorln("Failed to accept UDS connection")
 				}
+			} else {
+				waitConn.Add(1)
+				go udsConnHandler(ctx, udsConn, globData, &waitConn)
 			}
 		}
 	}
@@ -710,234 +674,220 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 
 	switch msgInHeader.Type {
 	case netapi.MsgTypeRequest:
-		{
-			switch msgInHeader.SubType {
-			case netapi.ReqTypeAddAccessReq:
-				{
-					processAccessReq := func() error {
-						defer sendErrorReply()
-						defer sendSuccessfulReply()
+		switch msgInHeader.SubType {
+		case netapi.ReqTypeAddAccessReq:
+			processAccessReq := func() error {
+				defer sendErrorReply()
+				defer sendSuccessfulReply()
 
-						var (
-							err              error
-							accessReq        data.AccessReq
-							accessReqSecret  string
-							accessReqListLen uint
-							accessReqDB      data.AccessReqDB
-						)
+				var (
+					err              error
+					accessReq        data.AccessReq
+					accessReqSecret  string
+					accessReqListLen uint
+					accessReqDB      data.AccessReqDB
+				)
 
-						err = netapi.ParseReqAddAccessReq(msgIn, &accessReq, &accessReqSecret)
-						if err != nil {
-							return err
-						}
-
-						if subtle.ConstantTimeCompare([]byte(accessReqSecret), []byte(globData.AccessReqSecret)) != 1 {
-							return errors.New("Access request unauthenticated")
-						}
-
-						err = accessReq.Normalize(data.ToleratesEmptyFieldsNo)
-						if err != nil {
-							return err
-						}
-
-						err = accessReq.Test(data.ToleratesEmptyFieldsNo)
-						if err != nil {
-							return err
-						}
-
-						accessReqListLen, err = globData.DB.GetAccessReqCount()
-						if err != nil {
-							return err
-						}
-
-						if accessReqListLen >= opts.AccessReqListLimit {
-							return errors.New("Access request limit reached")
-						}
-
-						accessReqDB.AccessReq = accessReq
-						accessReqDB.Addr = misc.ExtractAddr(conn.RemoteAddr().String())
-						accessReqDB.Time = time.Now()
-
-						err = globData.DB.AddAccessReq(&accessReqDB)
-						if err != nil {
-							return err
-						}
-
-						requireSendErrorReply = false
-
-						return nil
-					}
-
-					err = processAccessReq()
-					if err != nil {
-						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-					}
-
-					return
+				err = netapi.ParseReqAddAccessReq(msgIn, &accessReq, &accessReqSecret)
+				if err != nil {
+					return err
 				}
 
-			case netapi.ReqTypeAuth:
-				{
-					processAuth := func() (*sessionDataType, error) {
-						defer sendErrorReply()
-						defer sendSuccessfulReply()
-
-						var (
-							err               error
-							sessionData       *sessionDataType
-							subjectESAMPubKey data.ESAMPubKey
-
-							maxCryptTextSize      uint
-							authQuestion          []byte
-							authQuestionEncrypted []byte
-							authAnswer            []byte
-						)
-
-						sessionData = new(sessionDataType)
-
-						sessionData.NoticesNotRequiredByClient, err = netapi.ParseReqAuthStageOne(msgIn, &subjectESAMPubKey)
-						if err != nil {
-							return nil, err
-						}
-
-						err = subjectESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-						if err != nil {
-							return nil, err
-						}
-
-						err = subjectESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-						if err != nil {
-							return nil, err
-						}
-
-						/*
-						   - определение Subject по предоставленному ключу
-						   - генерирование authQuestion
-						   - отправка ответного сообщения с вопросом
-						   - проверка ответа
-						*/
-
-						sessionData.AuthContext, err = auth.IdentifySubject(&subjectESAMPubKey, &(globData.DB))
-						if err != nil {
-							return nil, err
-						}
-
-						sessionData.PubKey, err = keysconv.PubKeyInPEMToRSA(subjectESAMPubKey)
-						if err != nil {
-							return nil, err
-						}
-
-						maxCryptTextSize, err = crypt.GetMaxTextSizeByKey(sessionData.PubKey)
-						if err != nil {
-							return nil, err
-						}
-
-						if maxCryptTextSize < opts.MinAuthQuestionSize {
-							return nil, errors.New("Maximum size of the encrypted text for the specified key is less than the minimum")
-						}
-
-						authQuestion, err = crypt.RandBytes(opts.MinAuthQuestionSize)
-						if err != nil {
-							return nil, err
-						}
-
-						authQuestionEncrypted, err = crypt.Encrypt(authQuestion, sessionData.PubKey)
-						if err != nil {
-							return nil, err
-						}
-
-						msgOut, err = netapi.BuildRepAuthStageOne(authQuestionEncrypted)
-						if err != nil {
-							return nil, err
-						}
-
-						_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
-						if err != nil {
-							return nil, err
-						}
-
-						msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
-						if err != nil {
-							return nil, err
-						}
-
-						authAnswer, err = netapi.ParseReqAuthStageTwo(msgIn)
-						if err != nil {
-							return nil, err
-						}
-
-						if subtle.ConstantTimeCompare(authAnswer, authQuestion) == 1 {
-							requireSendErrorReply = false
-
-							return sessionData, nil
-						}
-
-						return nil, errors.New("Unknown error")
-					}
-
-					var sessionData *sessionDataType = nil
-
-					sessionData, err = processAuth()
-					if err != nil {
-						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-						return
-					}
-
-					if sessionData == nil {
-						log.Errorln("Session data was not defined at auth process")
-						return
-					}
-
-					if sessionData.AuthContext == nil {
-						log.Errorln("Auth context was not defined at auth process")
-						return
-					}
-
-					deferCloseConnNotRequired = true
-
-					sessionData.Conn = conn
-					sessionData.Context, sessionData.Terminate = context.WithCancel(ctx)
-					sessionData.DataChangeNotice = make(chan int, opts.DataEventChanCapacity)
-
-					globData.SessionsEvents <- sessionEventType{Event: SessionEventStarted, sessionData: sessionData}
-
-					generalLoop(globData, sessionData)
-
-					globData.SessionsEvents <- sessionEventType{Event: SessionEventEnded, sessionData: sessionData}
-
-					close(sessionData.DataChangeNotice)
-					sessionData.CloseConn()
-
-					//log.Println("Session is over")
-
-					return
+				if subtle.ConstantTimeCompare([]byte(accessReqSecret), []byte(globData.AccessReqSecret)) != 1 {
+					return errors.New("Access request unauthenticated")
 				}
 
-			default:
-				{
-					log.Errorln("Unsupported at this stage request was received")
-					return
+				err = accessReq.Normalize(data.ToleratesEmptyFieldsNo)
+				if err != nil {
+					return err
 				}
+
+				err = accessReq.Test(data.ToleratesEmptyFieldsNo)
+				if err != nil {
+					return err
+				}
+
+				accessReqListLen, err = globData.DB.GetAccessReqCount()
+				if err != nil {
+					return err
+				}
+
+				if accessReqListLen >= opts.AccessReqListLimit {
+					return errors.New("Access request limit reached")
+				}
+
+				accessReqDB.AccessReq = accessReq
+				accessReqDB.Addr = misc.ExtractAddr(conn.RemoteAddr().String())
+				accessReqDB.Time = time.Now()
+
+				err = globData.DB.AddAccessReq(&accessReqDB)
+				if err != nil {
+					return err
+				}
+
+				requireSendErrorReply = false
+
+				return nil
 			}
+
+			err = processAccessReq()
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+			}
+
+			return
+
+		case netapi.ReqTypeAuth:
+			processAuth := func() (*sessionDataType, error) {
+				defer sendErrorReply()
+				defer sendSuccessfulReply()
+
+				var (
+					err               error
+					sessionData       *sessionDataType
+					subjectESAMPubKey data.ESAMPubKey
+
+					maxCryptTextSize      uint
+					authQuestion          []byte
+					authQuestionEncrypted []byte
+					authAnswer            []byte
+				)
+
+				sessionData = new(sessionDataType)
+
+				sessionData.NoticesNotRequiredByClient, err = netapi.ParseReqAuthStageOne(msgIn, &subjectESAMPubKey)
+				if err != nil {
+					return nil, err
+				}
+
+				err = subjectESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+				if err != nil {
+					return nil, err
+				}
+
+				err = subjectESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+				if err != nil {
+					return nil, err
+				}
+
+				/*
+				   - определение Subject по предоставленному ключу
+				   - генерирование authQuestion
+				   - отправка ответного сообщения с вопросом
+				   - проверка ответа
+				*/
+
+				sessionData.AuthContext, err = auth.IdentifySubject(&subjectESAMPubKey, &(globData.DB))
+				if err != nil {
+					return nil, err
+				}
+
+				sessionData.PubKey, err = keysconv.PubKeyInPEMToRSA(subjectESAMPubKey)
+				if err != nil {
+					return nil, err
+				}
+
+				maxCryptTextSize, err = crypt.GetMaxTextSizeByKey(sessionData.PubKey)
+				if err != nil {
+					return nil, err
+				}
+
+				if maxCryptTextSize < opts.MinAuthQuestionSize {
+					return nil, errors.New("Maximum size of the encrypted text for the specified key is less than the minimum")
+				}
+
+				authQuestion, err = crypt.RandBytes(opts.MinAuthQuestionSize)
+				if err != nil {
+					return nil, err
+				}
+
+				authQuestionEncrypted, err = crypt.Encrypt(authQuestion, sessionData.PubKey)
+				if err != nil {
+					return nil, err
+				}
+
+				msgOut, err = netapi.BuildRepAuthStageOne(authQuestionEncrypted)
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = netmsg.Send(conn, msgOut, opts.NetTimeout)
+				if err != nil {
+					return nil, err
+				}
+
+				msgIn, err = netmsg.Recv(conn, opts.NetTimeout)
+				if err != nil {
+					return nil, err
+				}
+
+				authAnswer, err = netapi.ParseReqAuthStageTwo(msgIn)
+				if err != nil {
+					return nil, err
+				}
+
+				if subtle.ConstantTimeCompare(authAnswer, authQuestion) == 1 {
+					requireSendErrorReply = false
+
+					return sessionData, nil
+				}
+
+				return nil, errors.New("Unknown error")
+			}
+
+			var sessionData *sessionDataType = nil
+
+			sessionData, err = processAuth()
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+				return
+			}
+
+			if sessionData == nil {
+				log.Errorln("Session data was not defined at auth process")
+				return
+			}
+
+			if sessionData.AuthContext == nil {
+				log.Errorln("Auth context was not defined at auth process")
+				return
+			}
+
+			deferCloseConnNotRequired = true
+
+			sessionData.Conn = conn
+			sessionData.Context, sessionData.Terminate = context.WithCancel(ctx)
+			sessionData.DataChangeNotice = make(chan int, opts.DataEventChanCapacity)
+
+			globData.SessionsEvents <- sessionEventType{Event: SessionEventStarted, sessionData: sessionData}
+
+			generalLoop(globData, sessionData)
+
+			globData.SessionsEvents <- sessionEventType{Event: SessionEventEnded, sessionData: sessionData}
+
+			close(sessionData.DataChangeNotice)
+			sessionData.CloseConn()
+
+			//log.Println("Session is over")
+
+			return
+
+		default:
+			log.Errorln("Unsupported at this stage request was received")
+			return
 		}
 
 	case netapi.MsgTypeReply:
-		{
-			log.Errorln("Message type 'reply' is not expected at this stage")
-			return
-		}
+		log.Errorln("Message type 'reply' is not expected at this stage")
+		return
 
 	case netapi.MsgTypeNotice:
-		{
-			log.Errorln("Message type 'notice' is not expected at this stage")
-			return
-		}
+		log.Errorln("Message type 'notice' is not expected at this stage")
+		return
 
 	default:
-		{
-			log.Errorln("Unsupported message was received")
-			return
-		}
+		log.Errorln("Unsupported message was received")
+		return
 	}
 
 	log.Errorln("Unknown error at the beginning of the connection process")
@@ -1055,1061 +1005,1009 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	for {
 		select {
 		case <-sessionData.Context.Done():
-			{
+			return
+
+		case <-noMsgTimer:
+			if !sessionData.NoticesNotRequiredByClient {
+				log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - close connection")
 				return
 			}
 
-		case <-noMsgTimer:
-			{
-				if !sessionData.NoticesNotRequiredByClient {
-					log.WithFields(log.Fields{"details": err}).Errorln("Messages were missing more than the threshold time - close connection")
+		case <-noopTimer:
+			noopTimer = time.After(opts.NoopNoticePeriod)
+
+			if !sessionData.NoticesNotRequiredByClient {
+				err = sendNoop(opts.NetTimeout)
+				if err != nil {
+					log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
 					return
 				}
 			}
 
-		case <-noopTimer:
-			{
-				noopTimer = time.After(opts.NoopNoticePeriod)
-
-				if !sessionData.NoticesNotRequiredByClient {
-					err = sendNoop(opts.NetTimeout)
+		case dataChangeNotice, chanReady := <-sessionData.DataChangeNotice:
+			if !sessionData.NoticesNotRequiredByClient && chanReady {
+				switch dataChangeNotice {
+				case DataNoticeUpdatedUsers:
+					err = sendNotice(netapi.NoticeTypeUpdatedUsers, opts.NetTimeout)
 					if err != nil {
-						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send noop notice")
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send notice")
 						return
 					}
-				}
-			}
 
-		case dataChangeNotice, chanReady := <-sessionData.DataChangeNotice:
-			{
-				if !sessionData.NoticesNotRequiredByClient && chanReady {
-					switch dataChangeNotice {
-					case DataNoticeUpdatedUsers:
-						{
-							err = sendNotice(netapi.NoticeTypeUpdatedUsers, opts.NetTimeout)
-							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send notice")
-								return
-							}
-						}
-
-					case DataNoticeUpdatedNodes:
-						{
-							err = sendNotice(netapi.NoticeTypeUpdatedNodes, opts.NetTimeout)
-							if err != nil {
-								log.WithFields(log.Fields{"details": err}).Errorln("Failed to send notice")
-								return
-							}
-						}
-
-					default:
-						{
-							log.Errorln("Unsupported data event received")
-						}
+				case DataNoticeUpdatedNodes:
+					err = sendNotice(netapi.NoticeTypeUpdatedNodes, opts.NetTimeout)
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to send notice")
+						return
 					}
+
+				default:
+					log.Errorln("Unsupported data event received")
 				}
 			}
 
 		default:
-			{
-				requireSendErrorReply = true
-				reasonSendErrorReply = netapi.ReqResultReasonInternalError
+			requireSendErrorReply = true
+			reasonSendErrorReply = netapi.ReqResultReasonInternalError
 
-				msgIn, err = netmsg.Recv(sessionData.Conn, opts.NetTimeout)
-				if err != nil {
-					if netmsg.IsTimeout(err) {
-						//log.Println("Timeout interrupt")
-						continue
-					} else {
-						if netmsg.IsEOF(err) {
-							//log.Println("Connection closed")
-						} else {
-							log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
-						}
-						return
-					}
-				}
-
-				err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
-				if err != nil {
-					log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+			msgIn, err = netmsg.Recv(sessionData.Conn, opts.NetTimeout)
+			if err != nil {
+				if netmsg.IsTimeout(err) {
+					//log.Println("Timeout interrupt")
 					continue
+				} else {
+					if netmsg.IsEOF(err) {
+						//log.Println("Connection closed")
+					} else {
+						log.WithFields(log.Fields{"details": err}).Errorln("Failed to receive message")
+					}
+					return
 				}
-
-				switch msgInHeader.Type {
-				case netapi.MsgTypeRequest:
-					{
-						noMsgTimer = time.After(opts.NoMsgThresholdTime)
-
-						switch msgInHeader.SubType {
-						case netapi.ReqTypeListAccessReqs:
-							{
-								processListAccessReqs := func() error {
-									defer sendErrorReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										filter data.AccessReqDB
-										list   []data.AccessReqDB
-									)
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									err = netapi.ParseReqListAccessReqs(msgIn, &filter)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Normalize(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Test(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									list, err = globData.DB.ListAccessReqs(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("Access request not found")
-									}
-
-									requireSendErrorReply = false
-
-									msgOut, err = netapi.BuildRepListAccessReqs(list)
-									if err != nil {
-										return err
-									}
-
-									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processListAccessReqs()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeDelAccessReq:
-							{
-								processDelAccessReq := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										targetESAMPubKey data.ESAMPubKey
-										filter           data.AccessReqDB
-										list             []data.AccessReqDB
-									)
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									err = netapi.ParseReqDelAccessReq(msgIn, &targetESAMPubKey)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД на наличие такого запроса
-									filter.ESAMPubKey = targetESAMPubKey
-									list, err = globData.DB.ListAccessReqs(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("Access request not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity access requests - integrity violation")
-									}
-
-									// Если такой запрос присутствует - удаление этого запроса
-									err = globData.DB.DelAccessReq(targetESAMPubKey)
-									if err != nil {
-										return err
-									}
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processDelAccessReq()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeAddUser:
-							{
-								processAddUser := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										newUser data.UserDB
-										filter  data.User
-										list    []data.UserDB
-									)
-
-									err = netapi.ParseReqAddUser(msgIn, &newUser)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUser.Normalize()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUser.Test()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newUser, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Запрос к БД на наличие такого пользователя
-									filter.ESAMPubKey = newUser.ESAMPubKey
-									list, err = globData.DB.ListUsers(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) > 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
-										return errors.New("User already exist")
-									}
-
-									// Если такого пользователя нет - добавление пользователя в БД
-									err = globData.DB.AddUser(&newUser)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventAddUser, NewData: newUser.User})
-
-									requireSendErrorReply = false
-
-									globData.DB.DelAccessReq(newUser.ESAMPubKey)
-
-									return nil
-								}
-
-								err = processAddUser()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeUpdateUser:
-							{
-								processUpdateUser := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										targetESAMPubKey data.ESAMPubKey
-										newUser          data.UserDB
-										filter           data.User
-										list             []data.UserDB
-									)
-
-									err = netapi.ParseReqUpdateUser(msgIn, &targetESAMPubKey, &newUser)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUser.Normalize()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUser.Test()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД на наличие такого пользователя
-									filter.ESAMPubKey = targetESAMPubKey
-									list, err = globData.DB.ListUsers(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("User not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newUser, list[0], msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Если такой пользователь присутствует - обновление данных пользователя в БД
-									err = globData.DB.UpdateUser(&filter, &newUser)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventUpdateUser, OldData: list[0].User, NewData: newUser.User})
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processUpdateUser()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeChangePassword:
-							{
-								processChangePassword := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										castOk        bool
-										accessGranted bool
-
-										password         string
-										passwordHash     string
-										passwordHashSign []byte
-										sessionUserData  data.User
-										filter           data.User
-										list             []data.UserDB
-										newUserData      *data.UserDB
-									)
-
-									password, passwordHash, passwordHashSign, err = netapi.ParseReqChangePassword(msgIn)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									if passwd.CompareHash(password, passwordHash, opts2.PasswdHashAlgo) == false {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = passwd.CheckDifficulty(password, &opts2.PasswdDifficulty)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonPasswordTooSimple
-										return err
-									}
-
-									sessionUserData, castOk = sessionData.AuthContext.SubjectData.(data.User)
-									if !castOk {
-										return errors.New("Failed to cast subject data to user data")
-									}
-
-									// Запрос к БД на наличие такого пользователя
-									filter.ESAMPubKey = sessionUserData.ESAMPubKey
-									list, err = globData.DB.ListUsers(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("User not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
-									}
-
-									newUserData, err = list[0].Copy()
-									if err != nil {
-										return err
-									}
-
-									newUserData.User.PasswordHash = passwordHash
-									newUserData.UserSign.PasswordHashSign = passwordHashSign
-
-									err = newUserData.Normalize()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUserData.Test()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newUserData.Verify(map[string]bool{"PasswordHash": true})
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, (*newUserData), list[0], msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Если такой пользователь присутствует - обновление данных пользователя в БД
-									err = globData.DB.UpdateUser(&filter, newUserData)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventChangePassword, OldData: list[0].User})
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processChangePassword()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeListUsers:
-							{
-								processListUsers := func() error {
-									defer sendErrorReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										filter data.User
-										list   []data.UserDB
-									)
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									err = netapi.ParseReqListUsers(msgIn, &filter)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Normalize(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Test(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД
-									list, err = globData.DB.ListUsers(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("User not found")
-									}
-
-									requireSendErrorReply = false
-
-									msgOut, err = netapi.BuildRepListUsers(list)
-									if err != nil {
-										return err
-									}
-
-									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processListUsers()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeDelUser:
-							{
-								processDelUser := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										targetESAMPubKey data.ESAMPubKey
-										filter           data.User
-										list             []data.UserDB
-									)
-
-									err = netapi.ParseReqDelUser(msgIn, &targetESAMPubKey)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД на наличие такого пользователя
-									filter.ESAMPubKey = targetESAMPubKey
-									list, err = globData.DB.ListUsers(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("User not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity user - integrity violation")
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, list[0], msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Если такой пользователь присутствует - удаление этого пользователя
-									err = globData.DB.DelUser(targetESAMPubKey)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventDelUser, OldData: list[0].User})
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processDelUser()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeAddNode:
-							{
-								processAddNode := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										newNode data.NodeDB
-										filter  data.Node
-										list    []data.NodeDB
-									)
-
-									err = netapi.ParseReqAddNode(msgIn, &newNode)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newNode.Normalize()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newNode.Test()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newNode, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Запрос к БД на наличие такого управляемого узла
-									filter.ESAMPubKey = newNode.ESAMPubKey
-									list, err = globData.DB.ListNodes(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) > 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
-										return errors.New("Node already exist")
-									}
-
-									// Если такого управляемого узла нет - добавление управляемого узла в БД
-									err = globData.DB.AddNode(&newNode)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventAddNode, NewData: newNode.Node})
-
-									requireSendErrorReply = false
-
-									globData.DB.DelAccessReq(newNode.ESAMPubKey)
-
-									return nil
-								}
-
-								err = processAddNode()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeUpdateNode:
-							{
-								processUpdateNode := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										targetESAMPubKey data.ESAMPubKey
-										newNode          data.NodeDB
-										filter           data.Node
-										list             []data.NodeDB
-									)
-
-									err = netapi.ParseReqUpdateNode(msgIn, &targetESAMPubKey, &newNode)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newNode.Normalize()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = newNode.Test()
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД на наличие такого управляемого узла
-									filter.ESAMPubKey = targetESAMPubKey
-									list, err = globData.DB.ListNodes(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("Node not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity nodes - integrity violation")
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Если такой управляемый узел присутствует - обновление данных управляемого узла в БД
-									err = globData.DB.UpdateNode(&filter, &newNode)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventUpdateNode, OldData: list[0].Node, NewData: newNode.Node})
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processUpdateNode()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeListNodes:
-							{
-								processListNodes := func() error {
-									defer sendErrorReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										filter data.Node
-										list   []data.NodeDB
-									)
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									err = netapi.ParseReqListNodes(msgIn, &filter)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Normalize(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = filter.Test(data.ToleratesEmptyFieldsYes)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД
-									list, err = globData.DB.ListNodes(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("Node not found")
-									}
-
-									requireSendErrorReply = false
-
-									msgOut, err = netapi.BuildRepListNodes(list)
-									if err != nil {
-										return err
-									}
-
-									_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-									if err != nil {
-										return err
-									}
-
-									return nil
-								}
-
-								err = processListNodes()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						case netapi.ReqTypeDelNode:
-							{
-								processDelNode := func() error {
-									defer sendErrorReply()
-									defer sendSuccessfulReply()
-
-									var (
-										err           error
-										accessGranted bool
-
-										targetESAMPubKey data.ESAMPubKey
-										filter           data.Node
-										list             []data.NodeDB
-									)
-
-									err = netapi.ParseReqDelNode(msgIn, &targetESAMPubKey)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
-									if err != nil {
-										reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
-										return err
-									}
-
-									// Запрос к БД на наличие такого управляемого узла
-									filter.ESAMPubKey = targetESAMPubKey
-									list, err = globData.DB.ListNodes(&filter)
-									if err != nil {
-										return err
-									}
-
-									if len(list) == 0 {
-										reasonSendErrorReply = netapi.ReqResultReasonNotFound
-										return errors.New("Node not found")
-									}
-
-									if len(list) > 1 {
-										return errors.New("Provided ESAM pub key found in multiplicity node - integrity violation")
-									}
-
-									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, list[0], msgInHeader.SubType)
-									if err != nil {
-										return err
-									}
-
-									if accessGranted == false {
-										reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
-										return errors.New(netapi.ReqResultReasonAccessDenied)
-									}
-
-									// Если такой управляемый узел присутствует - удаление этого управляемого узла
-									err = globData.DB.DelNode(targetESAMPubKey)
-									if err != nil {
-										return err
-									}
-
-									sendDataEvent(dataEventType{Event: DataEventDelNode, OldData: list[0].Node})
-
-									requireSendErrorReply = false
-
-									return nil
-								}
-
-								err = processDelNode()
-								if err != nil {
-									log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
-									continue
-								}
-							}
-
-						default:
-							{
-								log.Errorln("Unsupported at this stage request was received")
-
-								reasonSendErrorReply = netapi.ReqResultReasonUnsupportedReq
-								sendErrorReply()
-
-								continue
-							}
+			}
+
+			err = netapi.ParseMsgHeader(msgIn, &msgInHeader)
+			if err != nil {
+				log.WithFields(log.Fields{"details": err}).Errorln("Failed to parse message header")
+				continue
+			}
+
+			switch msgInHeader.Type {
+			case netapi.MsgTypeRequest:
+				noMsgTimer = time.After(opts.NoMsgThresholdTime)
+
+				switch msgInHeader.SubType {
+				case netapi.ReqTypeListAccessReqs:
+					processListAccessReqs := func() error {
+						defer sendErrorReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							filter data.AccessReqDB
+							list   []data.AccessReqDB
+						)
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
 						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						err = netapi.ParseReqListAccessReqs(msgIn, &filter)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Normalize(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Test(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						list, err = globData.DB.ListAccessReqs(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("Access request not found")
+						}
+
+						requireSendErrorReply = false
+
+						msgOut, err = netapi.BuildRepListAccessReqs(list)
+						if err != nil {
+							return err
+						}
+
+						_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
 					}
 
-				case netapi.MsgTypeReply:
-					{
-						log.Errorln("Message type 'reply' is not expected at this stage")
-
-						msgOut, err = netapi.BuildUnsupportedMsg()
-						if err == nil {
-							_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-						}
-
+					err = processListAccessReqs()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
 						continue
 					}
 
-				case netapi.MsgTypeNotice:
-					{
-						noMsgTimer = time.After(opts.NoMsgThresholdTime)
+				case netapi.ReqTypeDelAccessReq:
+					processDelAccessReq := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
 
-						switch msgInHeader.SubType {
-						case netapi.NoticeTypeNoop:
-							{
-								//log.Println("NOOP")
-								continue
-							}
-						default:
-							{
-								log.Errorln("Unsupported at this stage notice was received")
+						var (
+							err           error
+							accessGranted bool
 
-								msgOut, err = netapi.BuildUnsupportedMsg()
-								if err == nil {
-									_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-								}
+							targetESAMPubKey data.ESAMPubKey
+							filter           data.AccessReqDB
+							list             []data.AccessReqDB
+						)
 
-								continue
-							}
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
 						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						err = netapi.ParseReqDelAccessReq(msgIn, &targetESAMPubKey)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД на наличие такого запроса
+						filter.ESAMPubKey = targetESAMPubKey
+						list, err = globData.DB.ListAccessReqs(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("Access request not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity access requests - integrity violation")
+						}
+
+						// Если такой запрос присутствует - удаление этого запроса
+						err = globData.DB.DelAccessReq(targetESAMPubKey)
+						if err != nil {
+							return err
+						}
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processDelAccessReq()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeAddUser:
+					processAddUser := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							newUser data.UserDB
+							filter  data.User
+							list    []data.UserDB
+						)
+
+						err = netapi.ParseReqAddUser(msgIn, &newUser)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUser.Normalize()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUser.Test()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newUser, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Запрос к БД на наличие такого пользователя
+						filter.ESAMPubKey = newUser.ESAMPubKey
+						list, err = globData.DB.ListUsers(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) > 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
+							return errors.New("User already exist")
+						}
+
+						// Если такого пользователя нет - добавление пользователя в БД
+						err = globData.DB.AddUser(&newUser)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventAddUser, NewData: newUser.User})
+
+						requireSendErrorReply = false
+
+						globData.DB.DelAccessReq(newUser.ESAMPubKey)
+
+						return nil
+					}
+
+					err = processAddUser()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeUpdateUser:
+					processUpdateUser := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							targetESAMPubKey data.ESAMPubKey
+							newUser          data.UserDB
+							filter           data.User
+							list             []data.UserDB
+						)
+
+						err = netapi.ParseReqUpdateUser(msgIn, &targetESAMPubKey, &newUser)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUser.Normalize()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUser.Test()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД на наличие такого пользователя
+						filter.ESAMPubKey = targetESAMPubKey
+						list, err = globData.DB.ListUsers(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("User not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newUser, list[0], msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Если такой пользователь присутствует - обновление данных пользователя в БД
+						err = globData.DB.UpdateUser(&filter, &newUser)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventUpdateUser, OldData: list[0].User, NewData: newUser.User})
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processUpdateUser()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeChangePassword:
+					processChangePassword := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							castOk        bool
+							accessGranted bool
+
+							password         string
+							passwordHash     string
+							passwordHashSign []byte
+							sessionUserData  data.User
+							filter           data.User
+							list             []data.UserDB
+							newUserData      *data.UserDB
+						)
+
+						password, passwordHash, passwordHashSign, err = netapi.ParseReqChangePassword(msgIn)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						if passwd.CompareHash(password, passwordHash, opts2.PasswdHashAlgo) == false {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = passwd.CheckDifficulty(password, &opts2.PasswdDifficulty)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonPasswordTooSimple
+							return err
+						}
+
+						sessionUserData, castOk = sessionData.AuthContext.SubjectData.(data.User)
+						if !castOk {
+							return errors.New("Failed to cast subject data to user data")
+						}
+
+						// Запрос к БД на наличие такого пользователя
+						filter.ESAMPubKey = sessionUserData.ESAMPubKey
+						list, err = globData.DB.ListUsers(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("User not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity users - integrity violation")
+						}
+
+						newUserData, err = list[0].Copy()
+						if err != nil {
+							return err
+						}
+
+						newUserData.User.PasswordHash = passwordHash
+						newUserData.UserSign.PasswordHashSign = passwordHashSign
+
+						err = newUserData.Normalize()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUserData.Test()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newUserData.Verify(map[string]bool{"PasswordHash": true})
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, (*newUserData), list[0], msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Если такой пользователь присутствует - обновление данных пользователя в БД
+						err = globData.DB.UpdateUser(&filter, newUserData)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventChangePassword, OldData: list[0].User})
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processChangePassword()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeListUsers:
+					processListUsers := func() error {
+						defer sendErrorReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							filter data.User
+							list   []data.UserDB
+						)
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						err = netapi.ParseReqListUsers(msgIn, &filter)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Normalize(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Test(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД
+						list, err = globData.DB.ListUsers(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("User not found")
+						}
+
+						requireSendErrorReply = false
+
+						msgOut, err = netapi.BuildRepListUsers(list)
+						if err != nil {
+							return err
+						}
+
+						_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
+					}
+
+					err = processListUsers()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeDelUser:
+					processDelUser := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							targetESAMPubKey data.ESAMPubKey
+							filter           data.User
+							list             []data.UserDB
+						)
+
+						err = netapi.ParseReqDelUser(msgIn, &targetESAMPubKey)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД на наличие такого пользователя
+						filter.ESAMPubKey = targetESAMPubKey
+						list, err = globData.DB.ListUsers(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("User not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity user - integrity violation")
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, list[0], msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Если такой пользователь присутствует - удаление этого пользователя
+						err = globData.DB.DelUser(targetESAMPubKey)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventDelUser, OldData: list[0].User})
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processDelUser()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeAddNode:
+					processAddNode := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							newNode data.NodeDB
+							filter  data.Node
+							list    []data.NodeDB
+						)
+
+						err = netapi.ParseReqAddNode(msgIn, &newNode)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newNode.Normalize()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newNode.Test()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, newNode, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Запрос к БД на наличие такого управляемого узла
+						filter.ESAMPubKey = newNode.ESAMPubKey
+						list, err = globData.DB.ListNodes(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) > 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonAlreadyExist
+							return errors.New("Node already exist")
+						}
+
+						// Если такого управляемого узла нет - добавление управляемого узла в БД
+						err = globData.DB.AddNode(&newNode)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventAddNode, NewData: newNode.Node})
+
+						requireSendErrorReply = false
+
+						globData.DB.DelAccessReq(newNode.ESAMPubKey)
+
+						return nil
+					}
+
+					err = processAddNode()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeUpdateNode:
+					processUpdateNode := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							targetESAMPubKey data.ESAMPubKey
+							newNode          data.NodeDB
+							filter           data.Node
+							list             []data.NodeDB
+						)
+
+						err = netapi.ParseReqUpdateNode(msgIn, &targetESAMPubKey, &newNode)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newNode.Normalize()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = newNode.Test()
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД на наличие такого управляемого узла
+						filter.ESAMPubKey = targetESAMPubKey
+						list, err = globData.DB.ListNodes(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("Node not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity nodes - integrity violation")
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Если такой управляемый узел присутствует - обновление данных управляемого узла в БД
+						err = globData.DB.UpdateNode(&filter, &newNode)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventUpdateNode, OldData: list[0].Node, NewData: newNode.Node})
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processUpdateNode()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeListNodes:
+					processListNodes := func() error {
+						defer sendErrorReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							filter data.Node
+							list   []data.NodeDB
+						)
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						err = netapi.ParseReqListNodes(msgIn, &filter)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Normalize(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = filter.Test(data.ToleratesEmptyFieldsYes)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД
+						list, err = globData.DB.ListNodes(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("Node not found")
+						}
+
+						requireSendErrorReply = false
+
+						msgOut, err = netapi.BuildRepListNodes(list)
+						if err != nil {
+							return err
+						}
+
+						_, err = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+						if err != nil {
+							return err
+						}
+
+						return nil
+					}
+
+					err = processListNodes()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
+					}
+
+				case netapi.ReqTypeDelNode:
+					processDelNode := func() error {
+						defer sendErrorReply()
+						defer sendSuccessfulReply()
+
+						var (
+							err           error
+							accessGranted bool
+
+							targetESAMPubKey data.ESAMPubKey
+							filter           data.Node
+							list             []data.NodeDB
+						)
+
+						err = netapi.ParseReqDelNode(msgIn, &targetESAMPubKey)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Normalize(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						err = targetESAMPubKey.Test(data.ToleratesEmptyFieldsNo)
+						if err != nil {
+							reasonSendErrorReply = netapi.ReqResultReasonInvalidInputData
+							return err
+						}
+
+						// Запрос к БД на наличие такого управляемого узла
+						filter.ESAMPubKey = targetESAMPubKey
+						list, err = globData.DB.ListNodes(&filter)
+						if err != nil {
+							return err
+						}
+
+						if len(list) == 0 {
+							reasonSendErrorReply = netapi.ReqResultReasonNotFound
+							return errors.New("Node not found")
+						}
+
+						if len(list) > 1 {
+							return errors.New("Provided ESAM pub key found in multiplicity node - integrity violation")
+						}
+
+						accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, list[0], msgInHeader.SubType)
+						if err != nil {
+							return err
+						}
+
+						if accessGranted == false {
+							reasonSendErrorReply = netapi.ReqResultReasonAccessDenied
+							return errors.New(netapi.ReqResultReasonAccessDenied)
+						}
+
+						// Если такой управляемый узел присутствует - удаление этого управляемого узла
+						err = globData.DB.DelNode(targetESAMPubKey)
+						if err != nil {
+							return err
+						}
+
+						sendDataEvent(dataEventType{Event: DataEventDelNode, OldData: list[0].Node})
+
+						requireSendErrorReply = false
+
+						return nil
+					}
+
+					err = processDelNode()
+					if err != nil {
+						log.WithFields(log.Fields{"details": err}).Errorln("Request " + msgInHeader.SubType + " processing error")
+						continue
 					}
 
 				default:
-					{
-						log.Errorln("Unsupported message was received")
+					log.Errorln("Unsupported at this stage request was received")
 
-						msgOut, err = netapi.BuildUnsupportedMsg()
-						if err == nil {
-							_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
-						}
+					reasonSendErrorReply = netapi.ReqResultReasonUnsupportedReq
+					sendErrorReply()
 
-						continue
-					}
+					continue
 				}
+
+			case netapi.MsgTypeReply:
+				log.Errorln("Message type 'reply' is not expected at this stage")
+
+				msgOut, err = netapi.BuildUnsupportedMsg()
+				if err == nil {
+					_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+				}
+
+				continue
+
+			case netapi.MsgTypeNotice:
+				noMsgTimer = time.After(opts.NoMsgThresholdTime)
+
+				switch msgInHeader.SubType {
+				case netapi.NoticeTypeNoop:
+					//log.Println("NOOP")
+					continue
+				default:
+					log.Errorln("Unsupported at this stage notice was received")
+
+					msgOut, err = netapi.BuildUnsupportedMsg()
+					if err == nil {
+						_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+					}
+
+					continue
+				}
+
+			default:
+				log.Errorln("Unsupported message was received")
+
+				msgOut, err = netapi.BuildUnsupportedMsg()
+				if err == nil {
+					_, _ = netmsg.Send(sessionData.Conn, msgOut, opts.NetTimeout)
+				}
+
+				continue
 			}
 		}
 	}

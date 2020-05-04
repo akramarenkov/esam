@@ -235,262 +235,228 @@ func IdentifySubject(subjectESAMPubKey *data.ESAMPubKey, db *db.Desc) (*Context,
 func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldObject interface{}, reqType string) (bool, error) {
 	switch reqType {
 	case netapi.ReqTypeAddAccessReq:
-		{
-			return true, nil
-		}
+		return true, nil
 
 	case netapi.ReqTypeAuth:
-		{
+		return true, nil
+
+	case netapi.ReqTypeListAccessReqs:
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
+		}
+
+		return listAccessReqsAccessRightsMap[authContext.SubjectType], nil
+
+	case netapi.ReqTypeDelAccessReq:
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
+		}
+
+		return delAccessReqAccessRightsMap[authContext.SubjectType], nil
+
+	case netapi.ReqTypeAddUser:
+		var (
+			newObjectUser data.UserDB
+			castOk        bool
+		)
+
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
+		}
+
+		if newObject == nil {
+			return false, errors.New("New object can't be nil")
+		}
+
+		newObjectUser, castOk = newObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast new object to user data")
+		}
+
+		return addUserAccessRightsMap[authContext.SubjectType][newObjectUser.User.Role], nil
+
+	case netapi.ReqTypeUpdateUser:
+		var (
+			newObjectUser data.UserDB
+			oldObjectUser data.UserDB
+			subjectUser   data.User
+
+			castOk bool
+		)
+
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
+		}
+
+		if newObject == nil {
+			return false, errors.New("New object can't be nil")
+		}
+
+		if oldObject == nil {
+			return false, errors.New("Old object can't be nil")
+		}
+
+		newObjectUser, castOk = newObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast new object to user data")
+		}
+
+		oldObjectUser, castOk = oldObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast old object to user data")
+		}
+
+		if authContext.SubjectType == SubjectUDS {
 			return true, nil
 		}
 
-	case netapi.ReqTypeListAccessReqs:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return listAccessReqsAccessRightsMap[authContext.SubjectType], nil
+		/* subjectUser for SubjectUDS not defined */
+		subjectUser, castOk = authContext.SubjectData.(data.User)
+		if !castOk {
+			return false, errors.New("Failed to cast subject data to user data")
 		}
 
-	case netapi.ReqTypeDelAccessReq:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return delAccessReqAccessRightsMap[authContext.SubjectType], nil
-		}
-
-	case netapi.ReqTypeAddUser:
-		{
-			var (
-				newObjectUser data.UserDB
-				castOk        bool
-			)
-
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			if newObject == nil {
-				return false, errors.New("New object can't be nil")
-			}
-
-			newObjectUser, castOk = newObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast new object to user data")
-			}
-
-			return addUserAccessRightsMap[authContext.SubjectType][newObjectUser.User.Role], nil
-		}
-
-	case netapi.ReqTypeUpdateUser:
-		{
-			var (
-				newObjectUser data.UserDB
-				oldObjectUser data.UserDB
-				subjectUser   data.User
-
-				castOk bool
-			)
-
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			if newObject == nil {
-				return false, errors.New("New object can't be nil")
-			}
-
-			if oldObject == nil {
-				return false, errors.New("Old object can't be nil")
-			}
-
-			newObjectUser, castOk = newObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast new object to user data")
-			}
-
-			oldObjectUser, castOk = oldObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast old object to user data")
-			}
-
-			if authContext.SubjectType == SubjectUDS {
+		if oldObjectUser.User.ESAMPubKey.Equal(&subjectUser.ESAMPubKey) == true {
+			if authContext.SubjectType == SubjectOwner {
 				return true, nil
 			}
-
-			/* subjectUser for SubjectUDS not defined */
-			subjectUser, castOk = authContext.SubjectData.(data.User)
-			if !castOk {
-				return false, errors.New("Failed to cast subject data to user data")
-			}
-
-			if oldObjectUser.User.ESAMPubKey.Equal(&subjectUser.ESAMPubKey) == true {
-				if authContext.SubjectType == SubjectOwner {
-					return true, nil
-				}
-			}
-
-			return addUserAccessRightsMap[authContext.SubjectType][newObjectUser.User.Role] && addUserAccessRightsMap[authContext.SubjectType][oldObjectUser.User.Role], nil
 		}
 
+		return addUserAccessRightsMap[authContext.SubjectType][newObjectUser.User.Role] && addUserAccessRightsMap[authContext.SubjectType][oldObjectUser.User.Role], nil
+
 	case netapi.ReqTypeChangePassword:
-		{
-			var (
-				newObjectUser data.UserDB
-				oldObjectUser data.UserDB
-				subjectUser   data.User
+		var (
+			newObjectUser data.UserDB
+			oldObjectUser data.UserDB
+			subjectUser   data.User
 
-				castOk bool
-			)
+			castOk bool
+		)
 
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
+		}
 
-			if newObject == nil {
-				return false, errors.New("New object can't be nil")
-			}
+		if newObject == nil {
+			return false, errors.New("New object can't be nil")
+		}
 
-			if oldObject == nil {
-				return false, errors.New("Old object can't be nil")
-			}
+		if oldObject == nil {
+			return false, errors.New("Old object can't be nil")
+		}
 
-			newObjectUser, castOk = newObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast new object to user data")
-			}
+		newObjectUser, castOk = newObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast new object to user data")
+		}
 
-			oldObjectUser, castOk = oldObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast old object to user data")
-			}
+		oldObjectUser, castOk = oldObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast old object to user data")
+		}
 
-			if authContext.SubjectType == SubjectUDS {
-				return false, errors.New("Authentication required but used UDS-connection")
-			}
+		if authContext.SubjectType == SubjectUDS {
+			return false, errors.New("Authentication required but used UDS-connection")
+		}
 
-			/* subjectUser for SubjectUDS not defined */
-			subjectUser, castOk = authContext.SubjectData.(data.User)
-			if !castOk {
-				return false, errors.New("Failed to cast subject data to user data")
-			}
+		/* subjectUser for SubjectUDS not defined */
+		subjectUser, castOk = authContext.SubjectData.(data.User)
+		if !castOk {
+			return false, errors.New("Failed to cast subject data to user data")
+		}
 
-			if oldObjectUser.User.ESAMPubKey.Equal(&subjectUser.ESAMPubKey) == true {
-				if oldObjectUser.EqualWithIgnoreFields(&newObjectUser, map[string]bool{"PasswordHash": true, "PasswordHashSign": true}) == true {
-					/* Additional checks for security reasons, because there is no 100% trust to EqualWithIgnoreFields function */
-					if oldObjectUser.User.Role == newObjectUser.User.Role {
-						if oldObjectUser.User.ElevatePrivileges == newObjectUser.User.ElevatePrivileges {
-							return changePasswordAccessRightsMap[authContext.SubjectType], nil
-						}
+		if oldObjectUser.User.ESAMPubKey.Equal(&subjectUser.ESAMPubKey) == true {
+			if oldObjectUser.EqualWithIgnoreFields(&newObjectUser, map[string]bool{"PasswordHash": true, "PasswordHashSign": true}) == true {
+				/* Additional checks for security reasons, because there is no 100% trust to EqualWithIgnoreFields function */
+				if oldObjectUser.User.Role == newObjectUser.User.Role {
+					if oldObjectUser.User.ElevatePrivileges == newObjectUser.User.ElevatePrivileges {
+						return changePasswordAccessRightsMap[authContext.SubjectType], nil
 					}
 				}
 			}
-
-			return false, errors.New("Unexpected behavior")
 		}
+
+		return false, errors.New("Unexpected behavior")
 
 	case netapi.ReqTypeListUsers:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return listUsersAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return listUsersAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeGetAuthUserData:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return getAuthUserDataAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return getAuthUserDataAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeDelUser:
-		{
-			var (
-				oldObjectUser data.UserDB
-				castOk        bool
-			)
+		var (
+			oldObjectUser data.UserDB
+			castOk        bool
+		)
 
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			if oldObject == nil {
-				return false, errors.New("Old object can't be nil")
-			}
-
-			oldObjectUser, castOk = oldObject.(data.UserDB)
-			if !castOk {
-				return false, errors.New("Failed to cast old object to user data")
-			}
-
-			return addUserAccessRightsMap[authContext.SubjectType][oldObjectUser.User.Role], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		if oldObject == nil {
+			return false, errors.New("Old object can't be nil")
+		}
+
+		oldObjectUser, castOk = oldObject.(data.UserDB)
+		if !castOk {
+			return false, errors.New("Failed to cast old object to user data")
+		}
+
+		return addUserAccessRightsMap[authContext.SubjectType][oldObjectUser.User.Role], nil
 
 	case netapi.ReqTypeAddNode:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return addNodeAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return addNodeAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeUpdateNode:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return addNodeAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return addNodeAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeListNodes:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return listNodesAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return listNodesAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeFindInNodesCache:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return findInNodesCacheAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return findInNodesCacheAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeDelNode:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return addNodeAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return addNodeAccessRightsMap[authContext.SubjectType], nil
 
 	case netapi.ReqTypeGetDirConnSettings:
-		{
-			if authContext == nil {
-				return false, errors.New("Auth context can't be nil")
-			}
-
-			return getDirConnSettingsAccessRightsMap[authContext.SubjectType], nil
+		if authContext == nil {
+			return false, errors.New("Auth context can't be nil")
 		}
+
+		return getDirConnSettingsAccessRightsMap[authContext.SubjectType], nil
 
 	default:
-		{
-			return false, errors.New("Unsupported request type")
-		}
+		return false, errors.New("Unsupported request type")
 	}
 
 	return false, errors.New("Unexpected behavior")

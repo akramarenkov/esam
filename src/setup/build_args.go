@@ -63,71 +63,59 @@ func buildArgs(structIn interface{}) ([]string, error) {
 
 		switch fieldRV.Kind() {
 		case reflect.String:
-			{
-				fieldValue = fieldRV.String()
+			fieldValue = fieldRV.String()
 
-				if fieldOpt != "" && fieldValue != "" {
-					if fieldValue == " " {
-						fieldValue = ""
-					}
-
-					args = append(args, fieldOpt)
-					args = append(args, fieldValue)
+			if fieldOpt != "" && fieldValue != "" {
+				if fieldValue == " " {
+					fieldValue = ""
 				}
+
+				args = append(args, fieldOpt)
+				args = append(args, fieldValue)
 			}
 
 		case reflect.Array, reflect.Slice:
-			{
-				if fieldRV.Len() > 0 {
-					switch fieldRV.Type().Elem().Kind() {
-					case reflect.String:
-						{
-							if fieldRV.Len() == 1 && fieldRV.Index(0).String() == " " {
-								if fieldOpt != "" {
-									args = append(args, fieldOpt)
-									args = append(args, "")
-								}
-							} else {
-								for jndex := 0; jndex < fieldRV.Len(); jndex++ {
-									var fieldSubValue string
+			if fieldRV.Len() > 0 {
+				switch fieldRV.Type().Elem().Kind() {
+				case reflect.String:
+					if fieldRV.Len() == 1 && fieldRV.Index(0).String() == " " {
+						if fieldOpt != "" {
+							args = append(args, fieldOpt)
+							args = append(args, "")
+						}
+					} else {
+						for jndex := 0; jndex < fieldRV.Len(); jndex++ {
+							var fieldSubValue string
 
-									fieldSubValue = fieldRV.Index(jndex).String()
+							fieldSubValue = fieldRV.Index(jndex).String()
 
-									if fieldSubValue != "" {
-										if fieldValue == "" {
-											fieldValue = fieldSubValue
-										} else {
-											fieldValue = fieldValue + manyValuesDelimiter + fieldSubValue
-										}
-									}
-								}
-
-								if fieldOpt != "" && fieldValue != "" {
-									args = append(args, fieldOpt)
-									args = append(args, fieldValue)
+							if fieldSubValue != "" {
+								if fieldValue == "" {
+									fieldValue = fieldSubValue
+								} else {
+									fieldValue = fieldValue + manyValuesDelimiter + fieldSubValue
 								}
 							}
 						}
 
-					default:
-						{
-							return nil, errors.New("Unsupported field type")
+						if fieldOpt != "" && fieldValue != "" {
+							args = append(args, fieldOpt)
+							args = append(args, fieldValue)
 						}
 					}
+
+				default:
+					return nil, errors.New("Unsupported field type")
 				}
 			}
 
 		case reflect.Bool:
-			{
-				if fieldOpt != "" && fieldRV.Bool() {
-					args = append(args, fieldOpt)
-				}
+			if fieldOpt != "" && fieldRV.Bool() {
+				args = append(args, fieldOpt)
 			}
 
 		default:
-			{
-				return nil, errors.New("Unsupported field type")
-			}
+			return nil, errors.New("Unsupported field type")
 		}
 	}
 

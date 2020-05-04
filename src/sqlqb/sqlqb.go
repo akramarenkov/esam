@@ -157,28 +157,22 @@ func (qb *QB) WhereAndFromStruct(structIn interface{}) error {
 
 		switch fieldReflectValue.Kind() {
 		case reflect.Struct:
-			{
-				qb.callLevel++
-				err = qb.WhereAndFromStruct(fieldReflectValue.Interface())
-				qb.callLevel--
-				if err != nil {
-					return err
-				}
+			qb.callLevel++
+			err = qb.WhereAndFromStruct(fieldReflectValue.Interface())
+			qb.callLevel--
+			if err != nil {
+				return err
 			}
 
 		case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-			{
-				if fieldReflectValue.Len() > 0 {
-					fieldIsFull = true
-				} else {
-					fieldIsFull = false
-				}
+			if fieldReflectValue.Len() > 0 {
+				fieldIsFull = true
+			} else {
+				fieldIsFull = false
 			}
 
 		default:
-			{
-				fieldIsFull = false
-			}
+			fieldIsFull = false
 		}
 
 		fieldTag = field.Tag.Get(qb.tagKey)
@@ -364,28 +358,22 @@ func (qb *QB) SetWhereFromStruct(structIn interface{}, whereStruct interface{}, 
 
 		switch fieldReflectValue.Kind() {
 		case reflect.Struct:
-			{
-				qb.callLevel++
-				err = qb.SetWhereFromStruct(fieldReflectValue.Interface(), nil, setEmpty)
-				qb.callLevel--
-				if err != nil {
-					return err
-				}
+			qb.callLevel++
+			err = qb.SetWhereFromStruct(fieldReflectValue.Interface(), nil, setEmpty)
+			qb.callLevel--
+			if err != nil {
+				return err
 			}
 
 		case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-			{
-				if fieldReflectValue.Len() > 0 {
-					fieldIsFull = true
-				} else {
-					fieldIsFull = false
-				}
+			if fieldReflectValue.Len() > 0 {
+				fieldIsFull = true
+			} else {
+				fieldIsFull = false
 			}
 
 		default:
-			{
-				fieldIsFull = false
-			}
+			fieldIsFull = false
 		}
 
 		if setEmpty {
@@ -559,28 +547,22 @@ func (qb *QB) SelectListFromStruct(structIn interface{}, selectEmpty bool) error
 
 		switch fieldReflectValue.Kind() {
 		case reflect.Struct:
-			{
-				qb.callLevel++
-				err = qb.SelectListFromStruct(fieldReflectValue.Interface(), selectEmpty)
-				qb.callLevel--
-				if err != nil {
-					return err
-				}
+			qb.callLevel++
+			err = qb.SelectListFromStruct(fieldReflectValue.Interface(), selectEmpty)
+			qb.callLevel--
+			if err != nil {
+				return err
 			}
 
 		case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-			{
-				if fieldReflectValue.Len() > 0 {
-					fieldIsFull = true
-				} else {
-					fieldIsFull = false
-				}
+			if fieldReflectValue.Len() > 0 {
+				fieldIsFull = true
+			} else {
+				fieldIsFull = false
 			}
 
 		default:
-			{
-				fieldIsFull = false
-			}
+			fieldIsFull = false
 		}
 
 		if selectEmpty {
