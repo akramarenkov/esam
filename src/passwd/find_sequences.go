@@ -57,8 +57,10 @@ var (
 
 /* Speed doesn't care us */
 func revertRunes(runes []rune) []rune {
-	var out []rune
-	var runesLen int
+	var (
+		out      []rune
+		runesLen int
+	)
 
 	runesLen = len(runes)
 
@@ -72,9 +74,11 @@ func revertRunes(runes []rune) []rune {
 }
 
 func findSequences(password []rune, sequencesMinLength int) error {
-	var passwordLen int
-	var subString string
-	var subStringReverse string
+	var (
+		passwordLen      int
+		subString        string
+		subStringReverse string
+	)
 
 	passwordLen = len(password)
 

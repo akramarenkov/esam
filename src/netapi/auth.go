@@ -59,9 +59,11 @@ type reqAuthStageTwo struct {
 }
 
 func BuildReqAuthStageOne(esamPubKeyIn *data.ESAMPubKey, noticesNotRequired bool) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqAuthStageOne reqAuthStageOne
+	var (
+		err             error
+		req             []byte
+		reqAuthStageOne reqAuthStageOne
+	)
 
 	if esamPubKeyIn == nil {
 		return nil, errors.New("ESAM pub key is not defined")
@@ -81,8 +83,10 @@ func BuildReqAuthStageOne(esamPubKeyIn *data.ESAMPubKey, noticesNotRequired bool
 }
 
 func ParseReqAuthStageOne(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (bool, error) {
-	var err error
-	var reqAuthStageOne reqAuthStageOne
+	var (
+		err             error
+		reqAuthStageOne reqAuthStageOne
+	)
 
 	if esamPubKeyOut == nil {
 		return false, errors.New("ESAM pub key variable is not defined")
@@ -107,9 +111,11 @@ func ParseReqAuthStageOne(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) (bool, 
 }
 
 func BuildRepAuthStageOne(questionIn []byte) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repAuthStageOne repAuthStageOne
+	var (
+		err             error
+		rep             []byte
+		repAuthStageOne repAuthStageOne
+	)
 
 	repAuthStageOne.MsgHeader.Type = MsgTypeReply
 	repAuthStageOne.MsgHeader.SubType = ReqTypeAuth
@@ -126,8 +132,10 @@ func BuildRepAuthStageOne(questionIn []byte) ([]byte, error) {
 }
 
 func ParseRepAuthStageOne(jsonIn []byte) ([]byte, error) {
-	var err error
-	var repAuthStageOne repAuthStageOne
+	var (
+		err             error
+		repAuthStageOne repAuthStageOne
+	)
 
 	err = json.Unmarshal(jsonIn, &repAuthStageOne)
 	if err != nil {
@@ -151,9 +159,11 @@ func ParseRepAuthStageOne(jsonIn []byte) ([]byte, error) {
 }
 
 func BuildReqAuthStageTwo(answerIn []byte) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqAuthStageTwo reqAuthStageTwo
+	var (
+		err             error
+		req             []byte
+		reqAuthStageTwo reqAuthStageTwo
+	)
 
 	if len(answerIn) == 0 {
 		return nil, errors.New("Answer is not defined")
@@ -172,8 +182,10 @@ func BuildReqAuthStageTwo(answerIn []byte) ([]byte, error) {
 }
 
 func ParseReqAuthStageTwo(jsonIn []byte) ([]byte, error) {
-	var err error
-	var reqAuthStageTwo reqAuthStageTwo
+	var (
+		err             error
+		reqAuthStageTwo reqAuthStageTwo
+	)
 
 	err = json.Unmarshal(jsonIn, &reqAuthStageTwo)
 	if err != nil {

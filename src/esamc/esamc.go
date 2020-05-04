@@ -764,7 +764,9 @@ func udsAskPassword(udsPath string) (string, error) {
 		)
 
 		sendErrorReply := func(reason string) {
-			var err error
+			var (
+				err error
+			)
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
 			if err == nil {
@@ -773,7 +775,9 @@ func udsAskPassword(udsPath string) (string, error) {
 		}
 
 		sendSuccessfulReply := func() {
-			var err error
+			var (
+				err error
+			)
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
 			if err == nil {
@@ -923,7 +927,9 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 	)
 
 	sendErrorReply := func() {
-		var err error
+		var (
+			err error
+		)
 
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
@@ -975,9 +981,11 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 								processFindInNodesCache := func() error {
 									defer sendErrorReply()
 
-									var nodeFilter data.NodeAuth
-									var nodesList []data.NodeAuth
-									var fullMatch bool
+									var (
+										nodeFilter data.NodeAuth
+										nodesList  []data.NodeAuth
+										fullMatch  bool
+									)
 
 									err = netapi.ParseReqFindInNodesCache(msgIn, &nodeFilter, &fullMatch)
 									if err != nil {
@@ -1019,7 +1027,9 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 								processGetDirConnSettings := func() error {
 									defer sendErrorReply()
 
-									var err error
+									var (
+										err error
+									)
 
 									msgOut, err = netapi.BuildRepGetDirConnSettings(dirConnSettings)
 									if err != nil {
@@ -1049,8 +1059,10 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 								processGetAuthUserData := func() error {
 									defer sendErrorReply()
 
-									var err error
-									var authUserData data.UserAuth
+									var (
+										err          error
+										authUserData data.UserAuth
+									)
 
 									authUserData = authUserCache.Get()
 									msgOut, err = netapi.BuildRepGetAuthUserData(&authUserData)
@@ -1235,7 +1247,9 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 					}
 
 					sendNoop := func(netTimeout time.Duration) error {
-						var err error
+						var (
+							err error
+						)
 
 						msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
 						if err != nil {
@@ -1731,7 +1745,9 @@ func addUserHandler(c *cli.Context) error {
 	}
 
 	if setPassword {
-		var userPassword string
+		var (
+			userPassword string
+		)
 
 		userPassword, err = ui.ReadPassword("Enter a password:", misc.PasswordValidator)
 		if err != nil {
@@ -1844,7 +1860,9 @@ func updateUserHandler(c *cli.Context) error {
 	}
 
 	if setPassword {
-		var userPassword string
+		var (
+			userPassword string
+		)
 
 		userPassword, err = ui.ReadPassword("Enter a password:", misc.PasswordValidator)
 		if err != nil {
@@ -1885,8 +1903,10 @@ func updateUserHandler(c *cli.Context) error {
 	}
 
 	if c.String("sign-key") != "" {
-		var signKeyIsEncrypted bool
-		var signKeyPassword string
+		var (
+			signKeyIsEncrypted bool
+			signKeyPassword    string
+		)
 
 		signKeyIsEncrypted, err = keysconv.KeyIsEncrypted(c.String("sign-key"))
 		if err != nil {
@@ -2533,7 +2553,9 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
 			return nil, nil, err
 		}
 	} else {
-		var dirConnSettings data.DirConnSettings
+		var (
+			dirConnSettings data.DirConnSettings
+		)
 
 		getDirConnSettings := func() error {
 			var (

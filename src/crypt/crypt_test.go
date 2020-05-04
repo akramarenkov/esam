@@ -33,12 +33,14 @@ const (
 )
 
 func Test(t *testing.T) {
-	var err error
-	var key *rsa.PrivateKey
-	var data []byte
-	var signature []byte
-	var encData []byte
-	var decData []byte
+	var (
+		err       error
+		key       *rsa.PrivateKey
+		data      []byte
+		signature []byte
+		encData   []byte
+		decData   []byte
+	)
 
 	data = []byte("test message")
 	fmt.Printf("Data = %+v\n", string(data))

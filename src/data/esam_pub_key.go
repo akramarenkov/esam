@@ -40,7 +40,9 @@ import (
 type ESAMPubKey []byte
 
 func (key *ESAMPubKey) Copy() (*ESAMPubKey, error) {
-	var keyOut ESAMPubKey
+	var (
+		keyOut ESAMPubKey
+	)
 
 	if key == nil {
 		return nil, errors.New("Source key pointer can't be nil")
@@ -53,9 +55,11 @@ func (key *ESAMPubKey) Copy() (*ESAMPubKey, error) {
 }
 
 func (key *ESAMPubKey) Normalize(toleratesEmptyFields bool) error {
-	var err error
-	var keyInRSA *rsa.PublicKey
-	var keyNormalized ESAMPubKey
+	var (
+		err           error
+		keyInRSA      *rsa.PublicKey
+		keyNormalized ESAMPubKey
+	)
 
 	if key == nil {
 		return errors.New("Key pointer can't be nil")
@@ -81,7 +85,9 @@ func (key *ESAMPubKey) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (key *ESAMPubKey) Test(toleratesEmptyFields bool) error {
-	var err error
+	var (
+		err error
+	)
 
 	if key == nil {
 		return errors.New("Key pointer can't be nil")

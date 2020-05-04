@@ -32,14 +32,16 @@ import (
 )
 
 func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) ([]data.UserAuth, error) {
-	var err error
+	var (
+		err error
 
-	var usersList []data.UserAuth
-	var trustedData bool
+		usersList   []data.UserAuth
+		trustedData bool
 
-	var numberOfSteps int
-	var stepLength int
-	var waitCheck sync.WaitGroup
+		numberOfSteps int
+		stepLength    int
+		waitCheck     sync.WaitGroup
+	)
 
 	usersList = make([]data.UserAuth, len(usersListDB))
 
@@ -73,8 +75,10 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 	}
 
 	for stepIndex := 0; stepIndex < numberOfSteps; stepIndex++ {
-		var beginIndex int
-		var endIndex int
+		var (
+			beginIndex int
+			endIndex   int
+		)
 
 		beginIndex = stepIndex * stepLength
 
@@ -99,14 +103,16 @@ func MakeUserAuthList(usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, cor
 }
 
 func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, verifyKey *data.ESAMPubKey, coresRatio float32) ([]data.NodeAuth, error) {
-	var err error
+	var (
+		err error
 
-	var nodesList []data.NodeAuth
-	var trustedData bool
+		nodesList   []data.NodeAuth
+		trustedData bool
 
-	var numberOfSteps int
-	var stepLength int
-	var waitCheck sync.WaitGroup
+		numberOfSteps int
+		stepLength    int
+		waitCheck     sync.WaitGroup
+	)
 
 	nodesList = make([]data.NodeAuth, len(nodesListDB))
 
@@ -138,8 +144,10 @@ func MakeNodeAuthList(nodesListDB []data.NodeDB, usersListDB []data.UserDB, veri
 	}
 
 	for stepIndex := 0; stepIndex < numberOfSteps; stepIndex++ {
-		var beginIndex int
-		var endIndex int
+		var (
+			beginIndex int
+			endIndex   int
+		)
 
 		beginIndex = stepIndex * stepLength
 

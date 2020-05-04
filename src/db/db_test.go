@@ -67,9 +67,11 @@ func Test(t *testing.T) {
 
 	/* AccessReq */
 
-	var accessReqFilter data.AccessReqDB
-	var accessReqs []data.AccessReqDB
-	var newAccessReq data.AccessReqDB
+	var (
+		accessReqFilter data.AccessReqDB
+		accessReqs      []data.AccessReqDB
+		newAccessReq    data.AccessReqDB
+	)
 
 	newAccessReq = data.AccessReqDB{
 		data.AccessReq{
@@ -406,7 +408,9 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 	fmt.Printf("%v\n", users)
 
 	for _, user := range users {
-		var userFilter data.User
+		var (
+			userFilter data.User
+		)
 
 		userFilter.ESAMPubKey = user.ESAMPubKey
 
@@ -655,7 +659,10 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 	fmt.Printf("%v\n", nodes)
 
 	for _, node := range nodes {
-		var nodeFilter data.Node
+		var (
+			nodeFilter data.Node
+		)
+
 		nodeFilter.ESAMPubKey = node.ESAMPubKey
 
 		node.Name = node.Name + " updated"

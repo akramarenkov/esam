@@ -58,9 +58,11 @@ type reqAddAccessReq struct {
 }
 
 func BuildReqAddAccessReq(accessReqIn *data.AccessReq, secret string) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqAddAccessReq reqAddAccessReq
+	var (
+		err             error
+		req             []byte
+		reqAddAccessReq reqAddAccessReq
+	)
 
 	reqAddAccessReq.MsgHeader.Type = MsgTypeRequest
 	reqAddAccessReq.MsgHeader.SubType = ReqTypeAddAccessReq
@@ -76,8 +78,10 @@ func BuildReqAddAccessReq(accessReqIn *data.AccessReq, secret string) ([]byte, e
 }
 
 func ParseReqAddAccessReq(jsonIn []byte, accessReqOut *data.AccessReq, secret *string) error {
-	var err error
-	var reqAddAccessReq reqAddAccessReq
+	var (
+		err             error
+		reqAddAccessReq reqAddAccessReq
+	)
 
 	err = json.Unmarshal(jsonIn, &reqAddAccessReq)
 	if err != nil {
@@ -111,9 +115,11 @@ type reqListAccessReqs struct {
 }
 
 func BuildReqListAccessReqs(accessReqFilterIn *data.AccessReqDB) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqListAccessReqs reqListAccessReqs
+	var (
+		err               error
+		req               []byte
+		reqListAccessReqs reqListAccessReqs
+	)
 
 	reqListAccessReqs.MsgHeader.Type = MsgTypeRequest
 	reqListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
@@ -128,8 +134,10 @@ func BuildReqListAccessReqs(accessReqFilterIn *data.AccessReqDB) ([]byte, error)
 }
 
 func ParseReqListAccessReqs(jsonIn []byte, accessReqFilterOut *data.AccessReqDB) error {
-	var err error
-	var reqListAccessReqs reqListAccessReqs
+	var (
+		err               error
+		reqListAccessReqs reqListAccessReqs
+	)
 
 	err = json.Unmarshal(jsonIn, &reqListAccessReqs)
 	if err != nil {
@@ -158,9 +166,11 @@ type repListAccessReqs struct {
 }
 
 func BuildRepListAccessReqs(accessReqsIn []data.AccessReqDB) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repListAccessReqs repListAccessReqs
+	var (
+		err               error
+		rep               []byte
+		repListAccessReqs repListAccessReqs
+	)
 
 	repListAccessReqs.MsgHeader.Type = MsgTypeReply
 	repListAccessReqs.MsgHeader.SubType = ReqTypeListAccessReqs
@@ -177,8 +187,10 @@ func BuildRepListAccessReqs(accessReqsIn []data.AccessReqDB) ([]byte, error) {
 }
 
 func ParseRepListAccessReqs(jsonIn []byte) ([]data.AccessReqDB, error) {
-	var err error
-	var repListAccessReqs repListAccessReqs
+	var (
+		err               error
+		repListAccessReqs repListAccessReqs
+	)
 
 	err = json.Unmarshal(jsonIn, &repListAccessReqs)
 	if err != nil {
@@ -211,9 +223,11 @@ type reqDelAccessReq struct {
 }
 
 func BuildReqDelAccessReq(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqDelAccessReq reqDelAccessReq
+	var (
+		err             error
+		req             []byte
+		reqDelAccessReq reqDelAccessReq
+	)
 
 	reqDelAccessReq.MsgHeader.Type = MsgTypeRequest
 	reqDelAccessReq.MsgHeader.SubType = ReqTypeDelAccessReq
@@ -228,8 +242,10 @@ func BuildReqDelAccessReq(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 }
 
 func ParseReqDelAccessReq(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
-	var err error
-	var reqDelAccessReq reqDelAccessReq
+	var (
+		err             error
+		reqDelAccessReq reqDelAccessReq
+	)
 
 	err = json.Unmarshal(jsonIn, &reqDelAccessReq)
 	if err != nil {

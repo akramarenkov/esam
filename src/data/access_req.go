@@ -74,8 +74,10 @@ func (accessReq *AccessReq) TestSubject(toleratesEmptyFields bool) error {
 }
 
 func (accessReq *AccessReq) Copy() (*AccessReq, error) {
-	var err error
-	var accessReqOut *AccessReq
+	var (
+		err          error
+		accessReqOut *AccessReq
+	)
 
 	if accessReq == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -92,8 +94,10 @@ func (accessReq *AccessReq) Copy() (*AccessReq, error) {
 }
 
 func (accessReq *AccessReqDB) Copy() (*AccessReqDB, error) {
-	var err error
-	var accessReqOut *AccessReqDB
+	var (
+		err          error
+		accessReqOut *AccessReqDB
+	)
 
 	if accessReq == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -110,8 +114,10 @@ func (accessReq *AccessReqDB) Copy() (*AccessReqDB, error) {
 }
 
 func (accessReq *AccessReq) Normalize(toleratesEmptyFields bool) error {
-	var err error
-	var accessReqTmp *AccessReq
+	var (
+		err          error
+		accessReqTmp *AccessReq
+	)
 
 	if accessReq == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -136,7 +142,9 @@ func (accessReq *AccessReq) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (accessReq *AccessReq) Test(toleratesEmptyFields bool) error {
-	var err error
+	var (
+		err error
+	)
 
 	if accessReq == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -180,8 +188,10 @@ func (accessReq *AccessReqDB) Equal(accessReqTwo *AccessReqDB) bool {
 }
 
 func (accessReq AccessReq) String() string {
-	var err error
-	var out []byte
+	var (
+		err error
+		out []byte
+	)
 
 	out, err = yaml.Marshal(accessReq)
 	if err != nil {
@@ -192,7 +202,9 @@ func (accessReq AccessReq) String() string {
 }
 
 func (accessReq *AccessReq) FromString(data string) error {
-	var err error
+	var (
+		err error
+	)
 
 	err = yaml.Unmarshal([]byte(data), accessReq)
 	if err != nil {
@@ -203,8 +215,10 @@ func (accessReq *AccessReq) FromString(data string) error {
 }
 
 func (accessReq AccessReqDB) String() string {
-	var err error
-	var out []byte
+	var (
+		err error
+		out []byte
+	)
 
 	out, err = yaml.Marshal(accessReq)
 	if err != nil {
@@ -215,7 +229,9 @@ func (accessReq AccessReqDB) String() string {
 }
 
 func (accessReq *AccessReqDB) FromString(data string) error {
-	var err error
+	var (
+		err error
+	)
 
 	err = yaml.Unmarshal([]byte(data), accessReq)
 	if err != nil {

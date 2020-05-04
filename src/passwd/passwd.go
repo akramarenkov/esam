@@ -58,8 +58,10 @@ const (
 )
 
 func bcryptCalcHash(password string) (string, error) {
-	var err error
-	var hash []byte
+	var (
+		err  error
+		hash []byte
+	)
 
 	hash, err = bcrypt.GenerateFromPassword([]byte(password), opts.BCryptPasswdHashCost)
 	if err != nil {
@@ -82,8 +84,10 @@ func sha512CalcHash(password string) (string, error) {
 }
 
 func sha512CompareHash(password string, hash string) bool {
-	var crypter crypt.Crypter
-	var found bool
+	var (
+		crypter crypt.Crypter
+		found   bool
+	)
 
 	crypter, found = crypt.SHA512.CrypterFound(hash)
 	if found == false {
@@ -126,13 +130,15 @@ func CompareHash(password string, hash string, algo string) bool {
 }
 
 func CheckDifficulty(password string, diffOpt *DifficultyOpt) error {
-	var diffStat difficultyStat
-	var passwordAsRunes []rune
-	var identicalyMap map[rune]bool
-	var numberOfChecks uint
-	var numberOfSuccessfulChecks uint
-	var errorsStack []string
-	var resultError string
+	var (
+		diffStat                 difficultyStat
+		passwordAsRunes          []rune
+		identicalyMap            map[rune]bool
+		numberOfChecks           uint
+		numberOfSuccessfulChecks uint
+		errorsStack              []string
+		resultError              string
+	)
 
 	identicalyMap = make(map[rune]bool)
 	errorsStack = make([]string, 0)

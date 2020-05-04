@@ -35,12 +35,14 @@ import (
 )
 
 func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqAddAccessReq(accessReqIn, secret)
 	if err != nil {
@@ -83,15 +85,17 @@ func SendAccessReq(conn net.Conn, accessReqIn *data.AccessReq, secret string, ne
 }
 
 func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, noticesNotRequired bool, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
 
-	var authQuestionEncrypted []byte
-	var authQuestion []byte
+		authQuestionEncrypted []byte
+		authQuestion          []byte
+	)
 
 	msgOut, err = netapi.BuildReqAuthStageOne(esamPubKey, noticesNotRequired)
 	if err != nil {
@@ -230,13 +234,15 @@ func Auth(conn net.Conn, esamPubKey *data.ESAMPubKey, key *rsa.PrivateKey, notic
 }
 
 func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeout time.Duration) ([]data.AccessReqDB, error) {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
-	var accessReqOut []data.AccessReqDB
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+		accessReqOut   []data.AccessReqDB
+	)
 
 	msgOut, err = netapi.BuildReqListAccessReqs(accessReqFilterIn)
 	if err != nil {
@@ -284,12 +290,14 @@ func ListAccessReqs(conn net.Conn, accessReqFilterIn *data.AccessReqDB, netTimeo
 }
 
 func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqDelAccessReq(esamPubKey)
 	if err != nil {
@@ -332,12 +340,14 @@ func DelAccessReq(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Du
 }
 
 func AddUser(conn net.Conn, userIn *data.UserDB, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqAddUser(userIn)
 	if err != nil {
@@ -380,12 +390,14 @@ func AddUser(conn net.Conn, userIn *data.UserDB, netTimeout time.Duration) error
 }
 
 func UpdateUser(conn net.Conn, esamPubKey *data.ESAMPubKey, userIn *data.UserDB, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqUpdateUser(esamPubKey, userIn)
 	if err != nil {
@@ -428,12 +440,14 @@ func UpdateUser(conn net.Conn, esamPubKey *data.ESAMPubKey, userIn *data.UserDB,
 }
 
 func ChangePassword(conn net.Conn, password string, passwordHash string, passwordHashSign []byte, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqChangePassword(password, passwordHash, passwordHashSign)
 	if err != nil {
@@ -476,14 +490,16 @@ func ChangePassword(conn net.Conn, password string, passwordHash string, passwor
 }
 
 func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration) ([]data.UserDB, error) {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
-	var userFilter data.User
-	var usersOut []data.UserDB
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+		userFilter     data.User
+		usersOut       []data.UserDB
+	)
 
 	if userFilterIn != nil {
 		userFilter = (*userFilterIn)
@@ -535,14 +551,16 @@ func ListUsers(conn net.Conn, userFilterIn *data.User, netTimeout time.Duration)
 }
 
 func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
 
-	var userTmp data.UserAuth
+		userTmp data.UserAuth
+	)
 
 	msgOut, err = netapi.BuildSimpleReq(netapi.ReqTypeGetAuthUserData)
 	if err != nil {
@@ -592,12 +610,14 @@ func GetAuthUserData(conn net.Conn, userOut *data.UserAuth, netTimeout time.Dura
 }
 
 func DelUser(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqDelUser(esamPubKey)
 	if err != nil {
@@ -640,12 +660,14 @@ func DelUser(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 }
 
 func AddNode(conn net.Conn, nodeIn *data.NodeDB, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqAddNode(nodeIn)
 	if err != nil {
@@ -688,12 +710,14 @@ func AddNode(conn net.Conn, nodeIn *data.NodeDB, netTimeout time.Duration) error
 }
 
 func UpdateNode(conn net.Conn, esamPubKey *data.ESAMPubKey, nodeIn *data.NodeDB, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqUpdateNode(esamPubKey, nodeIn)
 	if err != nil {
@@ -736,14 +760,16 @@ func UpdateNode(conn net.Conn, esamPubKey *data.ESAMPubKey, nodeIn *data.NodeDB,
 }
 
 func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration) ([]data.NodeDB, error) {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
-	var nodeFilter data.Node
-	var nodesOut []data.NodeDB
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+		nodeFilter     data.Node
+		nodesOut       []data.NodeDB
+	)
 
 	if nodeFilterIn != nil {
 		nodeFilter = (*nodeFilterIn)
@@ -795,14 +821,16 @@ func ListNodes(conn net.Conn, nodeFilterIn *data.Node, netTimeout time.Duration)
 }
 
 func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool, netTimeout time.Duration) ([]data.NodeAuth, error) {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
-	var nodeFilter data.NodeAuth
-	var nodesOut []data.NodeAuth
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+		nodeFilter     data.NodeAuth
+		nodesOut       []data.NodeAuth
+	)
 
 	if nodeFilterIn != nil {
 		nodeFilter = (*nodeFilterIn)
@@ -854,12 +882,14 @@ func FindInNodesCache(conn net.Conn, nodeFilterIn *data.NodeAuth, fullMatch bool
 }
 
 func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqDelNode(esamPubKey)
 	if err != nil {
@@ -902,14 +932,16 @@ func DelNode(conn net.Conn, esamPubKey *data.ESAMPubKey, netTimeout time.Duratio
 }
 
 func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
 
-	var dirConnSettingsTmp data.DirConnSettings
+		dirConnSettingsTmp data.DirConnSettings
+	)
 
 	msgOut, err = netapi.BuildSimpleReq(netapi.ReqTypeGetDirConnSettings)
 	if err != nil {
@@ -959,12 +991,14 @@ func GetDirConnSettings(conn net.Conn, dirConnSettingsOut *data.DirConnSettings,
 }
 
 func PassKeyPassword(conn net.Conn, password string, netTimeout time.Duration) error {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
-	var msgInReqResult netapi.ReqResult
+		msgIn          []byte
+		msgOut         []byte
+		msgInHeader    netapi.MsgHeader
+		msgInReqResult netapi.ReqResult
+	)
 
 	msgOut, err = netapi.BuildReqPassKeyPassword(password)
 	if err != nil {

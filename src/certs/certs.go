@@ -27,11 +27,13 @@ import (
 )
 
 func LoadCertsBundle(bundlePath string) (*x509.CertPool, error) {
-	var err error
-	var certsPool *x509.CertPool
-	var bundleContent []byte
-	var pemBlock *pem.Block
-	var certs []*x509.Certificate
+	var (
+		err           error
+		certsPool     *x509.CertPool
+		bundleContent []byte
+		pemBlock      *pem.Block
+		certs         []*x509.Certificate
+	)
 
 	certsPool = x509.NewCertPool()
 

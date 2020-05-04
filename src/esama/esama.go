@@ -67,8 +67,10 @@ type globDataType struct {
 }
 
 func main() {
-	var err error
-	var app *cli.App
+	var (
+		err error
+		app *cli.App
+	)
 
 	log.SetFormatter(&log.JSONFormatter{})
 
@@ -166,7 +168,9 @@ func main() {
 }
 
 func genKeyHandler(c *cli.Context) error {
-	var err error
+	var (
+		err error
+	)
 
 	err = keysconv.GenAndSaveKeyPair(c.String("esam-key"), c.String("esam-pub-key"), opts.KeySize, "")
 	if err != nil {
@@ -180,11 +184,13 @@ func genKeyHandler(c *cli.Context) error {
 }
 
 func startHandler(c *cli.Context) error {
-	var err error
-	var globData globDataType
-	var loginContext *login.Context
-	var usersCache caches.UsersAuth
-	var waitLoops sync.WaitGroup
+	var (
+		err          error
+		globData     globDataType
+		loginContext *login.Context
+		usersCache   caches.UsersAuth
+		waitLoops    sync.WaitGroup
+	)
 
 	mainCtx, mainCancel := context.WithCancel(context.Background())
 
@@ -235,9 +241,11 @@ func startHandler(c *cli.Context) error {
 }
 
 func sendAccessReq(globData *globDataType, loginContext *login.Context) error {
-	var err error
-	var dirConn *tls.Conn
-	var accessReq data.AccessReq
+	var (
+		err       error
+		dirConn   *tls.Conn
+		accessReq data.AccessReq
+	)
 
 	dirConn, err = tls.Dial("tcp", loginContext.DirAddr+":"+loginContext.DirPort, &loginContext.TLSConfig)
 	if err != nil {
@@ -263,15 +271,17 @@ func sendAccessReq(globData *globDataType, loginContext *login.Context) error {
 func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *login.Context, usersCache *caches.UsersAuth, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var dirConn *tls.Conn
-	var dirConnAllocated bool
-	var updateUsersCacheTimer <-chan time.Time
-	var noMsgTimer <-chan time.Time
-	var noopTimer <-chan time.Time
-	var accessRequestIsSended bool
+	var (
+		err                   error
+		dirConn               *tls.Conn
+		dirConnAllocated      bool
+		updateUsersCacheTimer <-chan time.Time
+		noMsgTimer            <-chan time.Time
+		noopTimer             <-chan time.Time
+		accessRequestIsSended bool
 
-	var usersListDB []data.UserDB
+		usersListDB []data.UserDB
+	)
 
 	freeLoopResources := func() {
 		if dirConnAllocated {
@@ -329,13 +339,17 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 
 			authLoop:
 				for {
-					var msgIn []byte
-					var msgOut []byte
-					var msgInHeader netapi.MsgHeader
+					var (
+						msgIn       []byte
+						msgOut      []byte
+						msgInHeader netapi.MsgHeader
+					)
 
 					sendReqListUsers := func(netTimeout time.Duration) error {
-						var err error
-						var userFilter data.User
+						var (
+							err        error
+							userFilter data.User
+						)
 
 						msgOut, err = netapi.BuildReqListUsers(&userFilter)
 						if err != nil {
@@ -351,7 +365,9 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 					}
 
 					sendNoop := func(netTimeout time.Duration) error {
-						var err error
+						var (
+							err error
+						)
 
 						msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
 						if err != nil {
@@ -532,9 +548,11 @@ func dirConnLoop(ctx context.Context, globData *globDataType, loginContext *logi
 func usersSetupLoop(ctx context.Context, globData *globDataType, usersCache *caches.UsersAuth, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var usersSetupTimer <-chan time.Time
-	var usersList []data.UserAuth
+	var (
+		err             error
+		usersSetupTimer <-chan time.Time
+		usersList       []data.UserAuth
+	)
 
 	usersSetupTimer = time.After(opts.UsersSetupPeriod)
 
@@ -579,7 +597,9 @@ func usersSetupLoop(ctx context.Context, globData *globDataType, usersCache *cac
 }
 
 func usersSetup(usersList []data.UserAuth) error {
-	var err error
+	var (
+		err error
+	)
 
 	log.Println("Processing users setup")
 
@@ -596,7 +616,9 @@ func usersSetup(usersList []data.UserAuth) error {
 		log.Printf("Processing user: %v", usersList[index].Name)
 
 		processUser := func() error {
-			var err error
+			var (
+				err error
+			)
 
 			if usersList[index].TrustedData != types.True {
 				return errors.New("No trust in user data")
@@ -618,7 +640,9 @@ func usersSetup(usersList []data.UserAuth) error {
 
 			case data.UserStateSuspended:
 				{
-					var userOpts setup.UserPresentOpts
+					var (
+						userOpts setup.UserPresentOpts
+					)
 
 					userOpts.ExpireDate = "-1"
 					userOpts.Gid = opts.UsersGroup
@@ -639,14 +663,18 @@ func usersSetup(usersList []data.UserAuth) error {
 
 			case data.UserStateEnabled:
 				{
-					var userOpts setup.UserPresentOpts
+					var (
+						userOpts setup.UserPresentOpts
+					)
 
 					userOpts.ExpireDate = " "
 					userOpts.Gid = opts.UsersGroup
 					userOpts.Password = usersList[index].PasswordHash
 					userOpts.Shell = opts.UserShell
 					if usersList[index].PasswordHash != "" && usersList[index].ElevatePrivileges == true {
-						var availableGroups []string
+						var (
+							availableGroups []string
+						)
 
 						availableGroups, err = misc.LeaveAvailableGroups(opts.ElevatePrivilegesGroups)
 						if err != nil {
@@ -685,12 +713,14 @@ func usersSetup(usersList []data.UserAuth) error {
 }
 
 func cleanHandler(c *cli.Context) error {
-	var err error
-	var userNames []string
-	var targetGroup *user.Group
-	var targetUserNames []string
-	var targetUserNamesInYAML []byte
-	var deleteConfirm bool
+	var (
+		err                   error
+		userNames             []string
+		targetGroup           *user.Group
+		targetUserNames       []string
+		targetUserNamesInYAML []byte
+		deleteConfirm         bool
+	)
 
 	targetGroup, err = user.LookupGroup(opts.UsersGroup)
 	if err != nil {
@@ -707,7 +737,9 @@ func cleanHandler(c *cli.Context) error {
 	targetUserNames = make([]string, 0)
 
 	for _, userName := range userNames {
-		var targetUser *user.User
+		var (
+			targetUser *user.User
+		)
 
 		targetUser, err = user.Lookup(userName)
 		if err != nil {

@@ -129,7 +129,9 @@ func (user *User) TestState(toleratesEmptyFields bool) error {
 }
 
 func TemplateRoles() string {
-	var roles []string
+	var (
+		roles []string
+	)
 
 	roles = make([]string, 0)
 
@@ -143,7 +145,9 @@ func TemplateRoles() string {
 }
 
 func TemplateStates() string {
-	var states []string
+	var (
+		states []string
+	)
 
 	states = make([]string, 0)
 
@@ -157,8 +161,10 @@ func TemplateStates() string {
 }
 
 func (user *User) Copy() (*User, error) {
-	var err error
-	var userOut *User
+	var (
+		err     error
+		userOut *User
+	)
 
 	if user == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -175,8 +181,10 @@ func (user *User) Copy() (*User, error) {
 }
 
 func (user *UserDB) Copy() (*UserDB, error) {
-	var err error
-	var userOut *UserDB
+	var (
+		err     error
+		userOut *UserDB
+	)
 
 	if user == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -193,8 +201,10 @@ func (user *UserDB) Copy() (*UserDB, error) {
 }
 
 func (user *UserAuth) Copy() (*UserAuth, error) {
-	var err error
-	var userOut *UserAuth
+	var (
+		err     error
+		userOut *UserAuth
+	)
 
 	if user == nil {
 		return nil, errors.New("Source struct pointer can't be nil")
@@ -211,8 +221,10 @@ func (user *UserAuth) Copy() (*UserAuth, error) {
 }
 
 func (user *User) Normalize(toleratesEmptyFields bool) error {
-	var err error
-	var userTmp *User
+	var (
+		err     error
+		userTmp *User
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -246,8 +258,10 @@ func (user *User) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (user *UserDB) Normalize() error {
-	var err error
-	var userTmp *UserDB
+	var (
+		err     error
+		userTmp *UserDB
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -276,8 +290,10 @@ func (user *UserDB) Normalize() error {
 }
 
 func (user *UserAuth) Normalize(toleratesEmptyFields bool) error {
-	var err error
-	var userTmp *UserAuth
+	var (
+		err     error
+		userTmp *UserAuth
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -301,7 +317,9 @@ func (user *UserAuth) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (user *User) Test(toleratesEmptyFields bool) error {
-	var err error
+	var (
+		err error
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -341,7 +359,9 @@ func (user *User) Test(toleratesEmptyFields bool) error {
 }
 
 func (user *UserDB) Test() error {
-	var err error
+	var (
+		err error
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -360,7 +380,9 @@ func (user *UserDB) Test() error {
 }
 
 func (user *UserAuth) Test(toleratesEmptyFields bool) error {
-	var err error
+	var (
+		err error
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -401,8 +423,10 @@ func (user *UserDB) Equal(userTwo *UserDB) bool {
 }
 
 func (user *UserDB) Sign(key *rsa.PrivateKey, selfSignedFields map[string]bool) error {
-	var err error
-	var userTmp *UserDB
+	var (
+		err     error
+		userTmp *UserDB
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -428,7 +452,9 @@ func (user *UserDB) Sign(key *rsa.PrivateKey, selfSignedFields map[string]bool) 
 }
 
 func (user *UserDB) Verify(selfSignedFields map[string]bool) error {
-	var err error
+	var (
+		err error
+	)
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -444,9 +470,11 @@ func (user *UserDB) Verify(selfSignedFields map[string]bool) error {
 
 /* Ugly but worked and simple implementation */
 func (user *User) EqualWithIgnoreFields(userTwo *User, ignoreFields map[string]bool) bool {
-	var err error
-	var userTmp *User
-	var userTwoTmp *User
+	var (
+		err        error
+		userTmp    *User
+		userTwoTmp *User
+	)
 
 	if user == nil {
 		return false
@@ -475,9 +503,11 @@ func (user *User) EqualWithIgnoreFields(userTwo *User, ignoreFields map[string]b
 }
 
 func (user *UserDB) EqualWithIgnoreFields(userTwo *UserDB, ignoreFields map[string]bool) bool {
-	var err error
-	var userTmp *UserDB
-	var userTwoTmp *UserDB
+	var (
+		err        error
+		userTmp    *UserDB
+		userTwoTmp *UserDB
+	)
 
 	if user == nil {
 		return false
@@ -506,8 +536,10 @@ func (user *UserDB) EqualWithIgnoreFields(userTwo *UserDB, ignoreFields map[stri
 }
 
 func (user User) String() string {
-	var err error
-	var out []byte
+	var (
+		err error
+		out []byte
+	)
 
 	out, err = yaml.Marshal(user)
 	if err != nil {
@@ -518,7 +550,9 @@ func (user User) String() string {
 }
 
 func (user *User) FromString(data string) error {
-	var err error
+	var (
+		err error
+	)
 
 	err = yaml.Unmarshal([]byte(data), user)
 	if err != nil {
@@ -529,8 +563,10 @@ func (user *User) FromString(data string) error {
 }
 
 func (user UserAuth) String() string {
-	var err error
-	var out []byte
+	var (
+		err error
+		out []byte
+	)
 
 	out, err = yaml.Marshal(user)
 	if err != nil {
@@ -541,7 +577,9 @@ func (user UserAuth) String() string {
 }
 
 func (user *UserAuth) FromString(data string) error {
-	var err error
+	var (
+		err error
+	)
 
 	err = yaml.Unmarshal([]byte(data), user)
 	if err != nil {

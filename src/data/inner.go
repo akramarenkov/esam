@@ -48,18 +48,20 @@ Use constants:
 */
 
 func signStruct(structData interface{}, structSign interface{}, key *rsa.PrivateKey, selfSignedFields map[string]bool) error {
-	var err error
+	var (
+		err error
 
-	var signerESAMPubKey ESAMPubKey
+		signerESAMPubKey ESAMPubKey
 
-	var structDataRValue reflect.Value
-	var structSignRValue reflect.Value
-	var structDataFieldRValue reflect.Value
-	var structSignFieldRValue reflect.Value
-	var structDataField reflect.StructField
-	var structSignField reflect.StructField
-	var esamPubKeyFieldFound bool
-	var fieldsMatchingFound bool
+		structDataRValue      reflect.Value
+		structSignRValue      reflect.Value
+		structDataFieldRValue reflect.Value
+		structSignFieldRValue reflect.Value
+		structDataField       reflect.StructField
+		structSignField       reflect.StructField
+		esamPubKeyFieldFound  bool
+		fieldsMatchingFound   bool
+	)
 
 	if structData == nil {
 		return errors.New("Pointer to struct with data can't be nil")
@@ -175,7 +177,9 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 			}
 		}
 
-		var fieldData []byte
+		var (
+			fieldData []byte
+		)
 
 		fieldData = nil
 		if structDataField.Name == ESAMPubKeyFieldName {
@@ -223,18 +227,20 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 }
 
 func verifyStruct(structData interface{}, structSign interface{}, selfSignedFields map[string]bool) error {
-	var err error
+	var (
+		err error
 
-	var structDataRValue reflect.Value
-	var structSignRValue reflect.Value
-	var structDataFieldRValue reflect.Value
-	var structSignFieldRValue reflect.Value
-	var structDataField reflect.StructField
-	var structSignField reflect.StructField
-	var fieldsMatchingFound bool
+		structDataRValue      reflect.Value
+		structSignRValue      reflect.Value
+		structDataFieldRValue reflect.Value
+		structSignFieldRValue reflect.Value
+		structDataField       reflect.StructField
+		structSignField       reflect.StructField
+		fieldsMatchingFound   bool
 
-	var esamPubKeyInRSA *rsa.PublicKey
-	var signSubjectPubKeyInRSA *rsa.PublicKey
+		esamPubKeyInRSA        *rsa.PublicKey
+		signSubjectPubKeyInRSA *rsa.PublicKey
+	)
 
 	if structData == nil {
 		return errors.New("Pointer to struct with data can't be nil")
@@ -341,7 +347,9 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 			return errors.New("Not matching found between data field and sign field")
 		}
 
-		var fieldData []byte
+		var (
+			fieldData []byte
+		)
 
 		fieldData = nil
 		if structDataField.Name == ESAMPubKeyFieldName {
@@ -371,7 +379,9 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 		}
 
 		if fieldData != nil {
-			var verifyAsWellAsSelfSigned bool
+			var (
+				verifyAsWellAsSelfSigned bool
+			)
 
 			verifyAsWellAsSelfSigned = false
 
@@ -418,11 +428,13 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 }
 
 func zeroTwoStructsFields(one interface{}, two interface{}, fields map[string]bool) error {
-	var err error
-	var oneRValue reflect.Value
-	var twoRValue reflect.Value
-	var oneFieldRValue reflect.Value
-	var oneField reflect.StructField
+	var (
+		err            error
+		oneRValue      reflect.Value
+		twoRValue      reflect.Value
+		oneFieldRValue reflect.Value
+		oneField       reflect.StructField
+	)
 
 	if one == nil {
 		return errors.New("Struct pointer can't be nil")

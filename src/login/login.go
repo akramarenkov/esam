@@ -45,10 +45,12 @@ type Context struct {
 }
 
 func MakeContext(esamKeyPath string, dirAddr string, dirPort string, tlsCACertPath string, verifyKeyPath string, esamKeyPassword string) (*Context, error) {
-	var err error
-	var loginContext *Context
-	var tlsCAPool *x509.CertPool
-	var verifyKey *rsa.PublicKey
+	var (
+		err          error
+		loginContext *Context
+		tlsCAPool    *x509.CertPool
+		verifyKey    *rsa.PublicKey
+	)
 
 	if dirAddr == "" {
 		return nil, errors.New("Address to connect to Director was not defined")

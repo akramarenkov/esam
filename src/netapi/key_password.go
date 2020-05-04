@@ -38,9 +38,11 @@ type reqPassKeyPassword struct {
 }
 
 func BuildReqPassKeyPassword(password string) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqPassKeyPassword reqPassKeyPassword
+	var (
+		err                error
+		req                []byte
+		reqPassKeyPassword reqPassKeyPassword
+	)
 
 	reqPassKeyPassword.MsgHeader.Type = MsgTypeRequest
 	reqPassKeyPassword.MsgHeader.SubType = ReqTypePassKeyPassword
@@ -55,8 +57,10 @@ func BuildReqPassKeyPassword(password string) ([]byte, error) {
 }
 
 func ParseReqPassKeyPassword(jsonIn []byte) (string, error) {
-	var err error
-	var reqPassKeyPassword reqPassKeyPassword
+	var (
+		err                error
+		reqPassKeyPassword reqPassKeyPassword
+	)
 
 	err = json.Unmarshal(jsonIn, &reqPassKeyPassword)
 	if err != nil {

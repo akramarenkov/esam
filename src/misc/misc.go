@@ -37,8 +37,10 @@ import (
 )
 
 func ExtractAddr(fullAddr string) string {
-	var elements []string
-	var elementsLen int
+	var (
+		elements    []string
+		elementsLen int
+	)
 
 	elements = strings.Split(fullAddr, ":")
 	elementsLen = len(elements)
@@ -69,8 +71,10 @@ func SubCommandBashCompleter(c *cli.Context) {
 }
 
 func PasswordValidator(password interface{}) error {
-	var passwordAsString string
-	var castOk bool
+	var (
+		passwordAsString string
+		castOk           bool
+	)
 
 	passwordAsString, castOk = password.(string)
 	if !castOk {
@@ -81,8 +85,10 @@ func PasswordValidator(password interface{}) error {
 }
 
 func LeaveAvailableGroups(groups []string) ([]string, error) {
-	var err error
-	var availableGroups []string
+	var (
+		err             error
+		availableGroups []string
+	)
 
 	availableGroups = make([]string, 0)
 

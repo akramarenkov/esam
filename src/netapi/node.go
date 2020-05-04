@@ -317,8 +317,10 @@ func BuildReqFindInNodesCache(nodeFilterIn *data.NodeAuth, fullMatch bool) ([]by
 }
 
 func ParseReqFindInNodesCache(jsonIn []byte, nodeFilterOut *data.NodeAuth, fullMatchOut *bool) error {
-	var err error
-	var reqFindInNodesCache reqFindInNodesCache
+	var (
+		err                 error
+		reqFindInNodesCache reqFindInNodesCache
+	)
 
 	err = json.Unmarshal(jsonIn, &reqFindInNodesCache)
 	if err != nil {
@@ -351,9 +353,11 @@ type repFindInNodesCache struct {
 }
 
 func BuildRepFindInNodesCache(nodesIn []data.NodeAuth) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repFindInNodesCache repFindInNodesCache
+	var (
+		err                 error
+		rep                 []byte
+		repFindInNodesCache repFindInNodesCache
+	)
 
 	repFindInNodesCache.MsgHeader.Type = MsgTypeReply
 	repFindInNodesCache.MsgHeader.SubType = ReqTypeFindInNodesCache
@@ -370,8 +374,10 @@ func BuildRepFindInNodesCache(nodesIn []data.NodeAuth) ([]byte, error) {
 }
 
 func ParseRepFindInNodesCache(jsonIn []byte) ([]data.NodeAuth, error) {
-	var err error
-	var repFindInNodesCache repFindInNodesCache
+	var (
+		err                 error
+		repFindInNodesCache repFindInNodesCache
+	)
 
 	err = json.Unmarshal(jsonIn, &repFindInNodesCache)
 	if err != nil {
@@ -404,9 +410,11 @@ type reqDelNode struct {
 }
 
 func BuildReqDelNode(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqDelNode reqDelNode
+	var (
+		err        error
+		req        []byte
+		reqDelNode reqDelNode
+	)
 
 	reqDelNode.MsgHeader.Type = MsgTypeRequest
 	reqDelNode.MsgHeader.SubType = ReqTypeDelNode
@@ -421,8 +429,10 @@ func BuildReqDelNode(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 }
 
 func ParseReqDelNode(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
-	var err error
-	var reqDelNode reqDelNode
+	var (
+		err        error
+		reqDelNode reqDelNode
+	)
 
 	err = json.Unmarshal(jsonIn, &reqDelNode)
 	if err != nil {

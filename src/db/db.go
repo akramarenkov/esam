@@ -288,7 +288,9 @@ func (desc *Desc) ListAccessReqs(filter *data.AccessReqDB) ([]data.AccessReqDB, 
 
 	access_reqs := make([]data.AccessReqDB, 0)
 	for rows.Next() {
-		var access_req data.AccessReqDB
+		var (
+			access_req data.AccessReqDB
+		)
 
 		err = rows.StructScan(&access_req)
 		if err != nil {
@@ -400,7 +402,9 @@ func (desc *Desc) ListUsers(filter *data.User) ([]data.UserDB, error) {
 
 	users := make([]data.UserDB, 0)
 	for rows.Next() {
-		var user data.UserDB
+		var (
+			user data.UserDB
+		)
 
 		err = rows.StructScan(&user)
 		if err != nil {
@@ -512,7 +516,9 @@ func (desc *Desc) ListNodes(filter *data.Node) ([]data.NodeDB, error) {
 
 	nodes := make([]data.NodeDB, 0)
 	for rows.Next() {
-		var node data.NodeDB
+		var (
+			node data.NodeDB
+		)
 
 		err = rows.StructScan(&node)
 		if err != nil {

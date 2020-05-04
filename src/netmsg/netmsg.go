@@ -38,11 +38,13 @@ const (
 )
 
 func Recv(conn net.Conn, timeout time.Duration) ([]byte, error) {
-	var err error
-	var sizeString []byte
-	var sizeStringSize int
-	var msgSize uint64
-	var msg []byte
+	var (
+		err            error
+		sizeString     []byte
+		sizeStringSize int
+		msgSize        uint64
+		msg            []byte
+	)
 
 	sizeString = make([]byte, sizeStringMaxSize)
 
@@ -90,9 +92,11 @@ func Recv(conn net.Conn, timeout time.Duration) ([]byte, error) {
 }
 
 func Send(conn net.Conn, msg []byte, timeout time.Duration) (int, error) {
-	var err error
-	var writeLen int
-	var msgSum []byte
+	var (
+		err      error
+		writeLen int
+		msgSum   []byte
+	)
 
 	if len(msg) == 0 {
 		return writeLen, errors.New("Msg size is zero")
@@ -124,8 +128,10 @@ func Send(conn net.Conn, msg []byte, timeout time.Duration) (int, error) {
 }
 
 func IsTimeout(err error) bool {
-	var netErr net.Error
-	var castOk bool
+	var (
+		netErr net.Error
+		castOk bool
+	)
 
 	netErr, castOk = err.(net.Error)
 	if castOk {
@@ -146,8 +152,10 @@ func IsEOF(err error) bool {
 }
 
 func IsTemporary(err error) bool {
-	var netErr net.Error
-	var castOk bool
+	var (
+		netErr net.Error
+		castOk bool
+	)
 
 	netErr, castOk = err.(net.Error)
 	if castOk {

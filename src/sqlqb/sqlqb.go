@@ -37,8 +37,11 @@ type User struct {
   Role string `db:"role"`
 }
 
-var user User
-var qb sqlqb.QB
+var (
+ user User
+ qb sqlqb.QB
+
+)
 
 user = User{"somekey", "somename", "somerole"}
 

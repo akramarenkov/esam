@@ -124,8 +124,10 @@ func (session *sessionDataType) CloseConn() {
 }
 
 func main() {
-	var err error
-	var app *cli.App
+	var (
+		err error
+		app *cli.App
+	)
 
 	log.SetFormatter(&log.JSONFormatter{})
 
@@ -287,8 +289,10 @@ func main() {
 }
 
 func initDBHandler(c *cli.Context) error {
-	var err error
-	var db db.Desc
+	var (
+		err error
+		db  db.Desc
+	)
 
 	err = db.Connect(c.String("dbms-type"), c.String("dbms-addr"), c.String("dbms-port"), c.String("dbms-user"), c.String("dbms-password"), c.String("db-name"))
 	if err != nil {
@@ -314,15 +318,17 @@ func initDBHandler(c *cli.Context) error {
 }
 
 func startHandler(c *cli.Context) error {
-	var err error
-	var globData globDataType
+	var (
+		err      error
+		globData globDataType
 
-	var tlsConfig tls.Config
-	var tlsKeyPair tls.Certificate
-	var tlsListener net.Listener
-	var udsListener net.Listener
-	var waitSessions sync.WaitGroup
-	var waitSessionsManager sync.WaitGroup
+		tlsConfig           tls.Config
+		tlsKeyPair          tls.Certificate
+		tlsListener         net.Listener
+		udsListener         net.Listener
+		waitSessions        sync.WaitGroup
+		waitSessionsManager sync.WaitGroup
+	)
 
 	sessionsCtx, sessionsCancel := context.WithCancel(context.Background())
 	sessionsManagerCtx, sessionsManagerCancel := context.WithCancel(context.Background())
@@ -398,13 +404,15 @@ func startHandler(c *cli.Context) error {
 func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var sessionEvent sessionEventType
-	var dataEvent dataEventType
+	var (
+		sessionEvent sessionEventType
+		dataEvent    dataEventType
 
-	var sessionDataMap map[(*sessionDataType)](*sessionDataType)
-	var dataEventMap map[time.Time]dataEventType
+		sessionDataMap map[(*sessionDataType)](*sessionDataType)
+		dataEventMap   map[time.Time]dataEventType
 
-	var sessionCloserTimer <-chan time.Time
+		sessionCloserTimer <-chan time.Time
+	)
 
 	sessionDataMap = make(map[(*sessionDataType)](*sessionDataType))
 	dataEventMap = make(map[time.Time]dataEventType)
@@ -440,7 +448,9 @@ func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.Wai
 
 		case dataEvent = <-globData.DataEvents:
 			{
-				var dataNotice int
+				var (
+					dataNotice int
+				)
 
 				dataEventMap[time.Now()] = dataEvent
 				dataNotice = DataNoticeUnknown
@@ -481,15 +491,17 @@ func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.Wai
 					}
 
 					for _, sessionData := range sessionDataMap {
-						var userEventOldData data.User
-						var userEventNewData data.User
-						var userSubjectData data.User
-						var nodeEventOldData data.Node
-						var nodeSubjectData data.Node
+						var (
+							userEventOldData data.User
+							userEventNewData data.User
+							userSubjectData  data.User
+							nodeEventOldData data.Node
+							nodeSubjectData  data.Node
 
-						var castEventOldDataOk bool
-						var castEventNewDataOk bool
-						var castSubjectDataOk bool
+							castEventOldDataOk bool
+							castEventNewDataOk bool
+							castSubjectDataOk  bool
+						)
 
 						if sessionData.AuthContext == nil {
 							log.Errorln("Session auth context turned out to be nil")
@@ -567,9 +579,11 @@ func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.Wai
 func tlsLoop(ctx context.Context, listener net.Listener, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var tlsConn net.Conn
-	var waitConn sync.WaitGroup
+	var (
+		err      error
+		tlsConn  net.Conn
+		waitConn sync.WaitGroup
+	)
 
 	for {
 		select {
@@ -600,9 +614,11 @@ func tlsLoop(ctx context.Context, listener net.Listener, globData *globDataType,
 func udsLoop(ctx context.Context, listener net.Listener, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var udsConn net.Conn
-	var waitConn sync.WaitGroup
+	var (
+		err      error
+		udsConn  net.Conn
+		waitConn sync.WaitGroup
+	)
 
 	for {
 		select {
@@ -633,20 +649,24 @@ func udsLoop(ctx context.Context, listener net.Listener, globData *globDataType,
 func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var err error
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
+	var (
+		err         error
+		msgIn       []byte
+		msgOut      []byte
+		msgInHeader netapi.MsgHeader
 
-	var requireSendErrorReply bool
-	var reasonSendErrorReply string
-	var connStartTime time.Time
+		requireSendErrorReply bool
+		reasonSendErrorReply  string
+		connStartTime         time.Time
+	)
 
 	requireSendErrorReply = true
 	reasonSendErrorReply = netapi.ReqResultReasonEmpty
 	connStartTime = time.Now()
 
-	var deferCloseConnNotRequired bool
+	var (
+		deferCloseConnNotRequired bool
+	)
 
 	closeConn := func() {
 		if !deferCloseConnNotRequired {
@@ -657,7 +677,9 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 	defer closeConn()
 
 	sendErrorReply := func() {
-		var err error
+		var (
+			err error
+		)
 
 		if requireSendErrorReply {
 			time.Sleep(opts.DelayBeforeSendErrorReplyInUnAuthConn - time.Since(connStartTime))
@@ -670,7 +692,9 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 	}
 
 	sendSuccessfulReply := func() {
-		var err error
+		var (
+			err error
+		)
 
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
@@ -702,11 +726,13 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 						defer sendErrorReply()
 						defer sendSuccessfulReply()
 
-						var err error
-						var accessReq data.AccessReq
-						var accessReqSecret string
-						var accessReqListLen uint
-						var accessReqDB data.AccessReqDB
+						var (
+							err              error
+							accessReq        data.AccessReq
+							accessReqSecret  string
+							accessReqListLen uint
+							accessReqDB      data.AccessReqDB
+						)
 
 						err = netapi.ParseReqAddAccessReq(msgIn, &accessReq, &accessReqSecret)
 						if err != nil {
@@ -764,14 +790,16 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 						defer sendErrorReply()
 						defer sendSuccessfulReply()
 
-						var err error
-						var sessionData *sessionDataType
-						var subjectESAMPubKey data.ESAMPubKey
+						var (
+							err               error
+							sessionData       *sessionDataType
+							subjectESAMPubKey data.ESAMPubKey
 
-						var maxCryptTextSize uint
-						var authQuestion []byte
-						var authQuestionEncrypted []byte
-						var authAnswer []byte
+							maxCryptTextSize      uint
+							authQuestion          []byte
+							authQuestionEncrypted []byte
+							authAnswer            []byte
+						)
 
 						sessionData = new(sessionDataType)
 
@@ -855,7 +883,9 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 						return nil, errors.New("Unknown error")
 					}
 
-					var sessionData *sessionDataType = nil
+					var (
+						sessionData *sessionDataType = nil
+					)
 
 					sessionData, err = processAuth()
 					if err != nil {
@@ -928,7 +958,9 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 func udsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var udsSessionData *sessionDataType = nil
+	var (
+		udsSessionData *sessionDataType = nil
+	)
 
 	udsSessionData = &sessionDataType{
 		AuthContext: &auth.Context{
@@ -956,20 +988,24 @@ func udsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 }
 
 func generalLoop(globData *globDataType, sessionData *sessionDataType) {
-	var err error
+	var (
+		err error
 
-	var msgIn []byte
-	var msgOut []byte
-	var msgInHeader netapi.MsgHeader
+		msgIn       []byte
+		msgOut      []byte
+		msgInHeader netapi.MsgHeader
 
-	var noMsgTimer <-chan time.Time
-	var noopTimer <-chan time.Time
+		noMsgTimer <-chan time.Time
+		noopTimer  <-chan time.Time
 
-	var requireSendErrorReply bool
-	var reasonSendErrorReply string
+		requireSendErrorReply bool
+		reasonSendErrorReply  string
+	)
 
 	sendErrorReply := func() {
-		var err error
+		var (
+			err error
+		)
 
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
@@ -980,7 +1016,9 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendSuccessfulReply := func() {
-		var err error
+		var (
+			err error
+		)
 
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
@@ -991,7 +1029,9 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendNoop := func(netTimeout time.Duration) error {
-		var err error
+		var (
+			err error
+		)
 
 		msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
 		if err != nil {
@@ -1007,7 +1047,9 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendNotice := func(notice string, netTimeout time.Duration) error {
-		var err error
+		var (
+			err error
+		)
 
 		msgOut, err = netapi.BuildNotice(notice)
 		if err != nil {
@@ -1125,11 +1167,13 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 								processListAccessReqs := func() error {
 									defer sendErrorReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var filter data.AccessReqDB
-									var list []data.AccessReqDB
+										filter data.AccessReqDB
+										list   []data.AccessReqDB
+									)
 
 									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
 									if err != nil {
@@ -1197,12 +1241,14 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var targetESAMPubKey data.ESAMPubKey
-									var filter data.AccessReqDB
-									var list []data.AccessReqDB
+										targetESAMPubKey data.ESAMPubKey
+										filter           data.AccessReqDB
+										list             []data.AccessReqDB
+									)
 
 									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
 									if err != nil {
@@ -1272,12 +1318,14 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var newUser data.UserDB
-									var filter data.User
-									var list []data.UserDB
+										newUser data.UserDB
+										filter  data.User
+										list    []data.UserDB
+									)
 
 									err = netapi.ParseReqAddUser(msgIn, &newUser)
 									if err != nil {
@@ -1347,13 +1395,15 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var targetESAMPubKey data.ESAMPubKey
-									var newUser data.UserDB
-									var filter data.User
-									var list []data.UserDB
+										targetESAMPubKey data.ESAMPubKey
+										newUser          data.UserDB
+										filter           data.User
+										list             []data.UserDB
+									)
 
 									err = netapi.ParseReqUpdateUser(msgIn, &targetESAMPubKey, &newUser)
 									if err != nil {
@@ -1437,17 +1487,19 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var castOk bool
-									var accessGranted bool
+									var (
+										err           error
+										castOk        bool
+										accessGranted bool
 
-									var password string
-									var passwordHash string
-									var passwordHashSign []byte
-									var sessionUserData data.User
-									var filter data.User
-									var list []data.UserDB
-									var newUserData *data.UserDB
+										password         string
+										passwordHash     string
+										passwordHashSign []byte
+										sessionUserData  data.User
+										filter           data.User
+										list             []data.UserDB
+										newUserData      *data.UserDB
+									)
 
 									password, passwordHash, passwordHashSign, err = netapi.ParseReqChangePassword(msgIn)
 									if err != nil {
@@ -1548,11 +1600,13 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 								processListUsers := func() error {
 									defer sendErrorReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var filter data.User
-									var list []data.UserDB
+										filter data.User
+										list   []data.UserDB
+									)
 
 									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
 									if err != nil {
@@ -1621,12 +1675,14 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var targetESAMPubKey data.ESAMPubKey
-									var filter data.User
-									var list []data.UserDB
+										targetESAMPubKey data.ESAMPubKey
+										filter           data.User
+										list             []data.UserDB
+									)
 
 									err = netapi.ParseReqDelUser(msgIn, &targetESAMPubKey)
 									if err != nil {
@@ -1698,12 +1754,14 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var newNode data.NodeDB
-									var filter data.Node
-									var list []data.NodeDB
+										newNode data.NodeDB
+										filter  data.Node
+										list    []data.NodeDB
+									)
 
 									err = netapi.ParseReqAddNode(msgIn, &newNode)
 									if err != nil {
@@ -1773,13 +1831,15 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var targetESAMPubKey data.ESAMPubKey
-									var newNode data.NodeDB
-									var filter data.Node
-									var list []data.NodeDB
+										targetESAMPubKey data.ESAMPubKey
+										newNode          data.NodeDB
+										filter           data.Node
+										list             []data.NodeDB
+									)
 
 									err = netapi.ParseReqUpdateNode(msgIn, &targetESAMPubKey, &newNode)
 									if err != nil {
@@ -1862,11 +1922,13 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 								processListNodes := func() error {
 									defer sendErrorReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var filter data.Node
-									var list []data.NodeDB
+										filter data.Node
+										list   []data.NodeDB
+									)
 
 									accessGranted, err = auth.CheckSubjectAccessRights(sessionData.AuthContext, nil, nil, msgInHeader.SubType)
 									if err != nil {
@@ -1935,12 +1997,14 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 									defer sendErrorReply()
 									defer sendSuccessfulReply()
 
-									var err error
-									var accessGranted bool
+									var (
+										err           error
+										accessGranted bool
 
-									var targetESAMPubKey data.ESAMPubKey
-									var filter data.Node
-									var list []data.NodeDB
+										targetESAMPubKey data.ESAMPubKey
+										filter           data.Node
+										list             []data.NodeDB
+									)
 
 									err = netapi.ParseReqDelNode(msgIn, &targetESAMPubKey)
 									if err != nil {

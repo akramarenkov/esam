@@ -36,7 +36,9 @@ import (
 )
 
 func PEMIsEncrypted(data []byte) (bool, error) {
-	var pemBlock *pem.Block
+	var (
+		pemBlock *pem.Block
+	)
 
 	pemBlock, _ = pem.Decode(data)
 	if pemBlock == nil {
@@ -51,10 +53,12 @@ func PEMIsEncrypted(data []byte) (bool, error) {
 }
 
 func KeyInPEMToRSA(pemKey []byte, password string) (*rsa.PrivateKey, error) {
-	var err error
-	var keyPemBlock *pem.Block
-	var key *rsa.PrivateKey
-	var resultPemBytes []byte
+	var (
+		err            error
+		keyPemBlock    *pem.Block
+		key            *rsa.PrivateKey
+		resultPemBytes []byte
+	)
 
 	keyPemBlock, _ = pem.Decode(pemKey)
 	if keyPemBlock == nil || keyPemBlock.Type != "PRIVATE KEY" {
@@ -84,10 +88,12 @@ func KeyInPEMToRSA(pemKey []byte, password string) (*rsa.PrivateKey, error) {
 }
 
 func KeyInRSAToPEM(key *rsa.PrivateKey, password string) ([]byte, error) {
-	var err error
-	var keyInPKCS8 []byte
-	var keyBuffer *bytes.Buffer
-	var keyInBytes []byte
+	var (
+		err        error
+		keyInPKCS8 []byte
+		keyBuffer  *bytes.Buffer
+		keyInBytes []byte
+	)
 
 	keyInPKCS8, err = x509.MarshalPKCS8PrivateKey(key)
 	if err != nil {
@@ -119,9 +125,11 @@ func KeyInRSAToPEM(key *rsa.PrivateKey, password string) ([]byte, error) {
 }
 
 func PubKeyInPEMToRSA(pemPubKey []byte) (*rsa.PublicKey, error) {
-	var err error
-	var pubKeyPemBlock *pem.Block
-	var pubKey *rsa.PublicKey
+	var (
+		err            error
+		pubKeyPemBlock *pem.Block
+		pubKey         *rsa.PublicKey
+	)
 
 	pubKeyPemBlock, _ = pem.Decode(pemPubKey)
 	if pubKeyPemBlock == nil || pubKeyPemBlock.Type != "PUBLIC KEY" {
@@ -142,10 +150,12 @@ func PubKeyInPEMToRSA(pemPubKey []byte) (*rsa.PublicKey, error) {
 }
 
 func PubKeyInRSAToPEM(pubKey *rsa.PublicKey) ([]byte, error) {
-	var err error
-	var pubKeyInPKIX []byte
-	var pubKeyBuffer *bytes.Buffer
-	var pubKeyInBytes []byte
+	var (
+		err           error
+		pubKeyInPKIX  []byte
+		pubKeyBuffer  *bytes.Buffer
+		pubKeyInBytes []byte
+	)
 
 	pubKeyInPKIX, err = x509.MarshalPKIXPublicKey(pubKey)
 	if err != nil {
@@ -170,11 +180,13 @@ func PubKeyInRSAToPEM(pubKey *rsa.PublicKey) ([]byte, error) {
 }
 
 func GenAndSaveKeyPair(keyPath string, pubKeyPath string, bits int, password string) error {
-	var err error
-	var keyFile, pubKeyFile *os.File
-	var keyPair *rsa.PrivateKey
-	var keyInPem []byte
-	var pubKeyInPem []byte
+	var (
+		err                 error
+		keyFile, pubKeyFile *os.File
+		keyPair             *rsa.PrivateKey
+		keyInPem            []byte
+		pubKeyInPem         []byte
+	)
 
 	keyFile, err = os.OpenFile(keyPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
@@ -217,10 +229,12 @@ func GenAndSaveKeyPair(keyPath string, pubKeyPath string, bits int, password str
 }
 
 func KeyIsEncrypted(keyPath string) (bool, error) {
-	var err error
-	var keyFile *os.File
-	var keyFileContent []byte
-	var keyIsEncrypted bool
+	var (
+		err            error
+		keyFile        *os.File
+		keyFileContent []byte
+		keyIsEncrypted bool
+	)
 
 	keyFile, err = os.Open(keyPath)
 	if err != nil {
@@ -242,10 +256,12 @@ func KeyIsEncrypted(keyPath string) (bool, error) {
 }
 
 func LoadKeyFromFile(keyPath string, password string) (*rsa.PrivateKey, error) {
-	var err error
-	var keyFile *os.File
-	var keyFileContent []byte
-	var key *rsa.PrivateKey
+	var (
+		err            error
+		keyFile        *os.File
+		keyFileContent []byte
+		key            *rsa.PrivateKey
+	)
 
 	keyFile, err = os.Open(keyPath)
 	if err != nil {
@@ -267,10 +283,12 @@ func LoadKeyFromFile(keyPath string, password string) (*rsa.PrivateKey, error) {
 }
 
 func LoadPubKeyFromFile(pubKeyPath string) (*rsa.PublicKey, error) {
-	var err error
-	var pubKeyFile *os.File
-	var pubKeyFileContent []byte
-	var pubKey *rsa.PublicKey
+	var (
+		err               error
+		pubKeyFile        *os.File
+		pubKeyFileContent []byte
+		pubKey            *rsa.PublicKey
+	)
 
 	pubKeyFile, err = os.Open(pubKeyPath)
 	if err != nil {

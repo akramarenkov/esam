@@ -41,7 +41,9 @@ const (
 )
 
 func PrintError(message string, err error, args ...interface{}) (int, error) {
-	var details string
+	var (
+		details string
+	)
 
 	details = fmt.Sprintf(". Details: %v\n", err)
 
@@ -61,17 +63,19 @@ func PrintInfo(message string, args ...interface{}) (int, error) {
 }
 
 func Select(message string, list interface{}, selectedItem interface{}, pageSize int) error {
-	var err error
-	var castOk bool
+	var (
+		err    error
+		castOk bool
 
-	var listRValue reflect.Value
-	var selectedItemRValue reflect.Value
-	var selectedItemElemRValue reflect.Value
-	var stringMetodIsPresent bool
-	var listAsStrings []string
+		listRValue             reflect.Value
+		selectedItemRValue     reflect.Value
+		selectedItemElemRValue reflect.Value
+		stringMetodIsPresent   bool
+		listAsStrings          []string
 
-	var questions []*survey.Question
-	var answer string
+		questions []*survey.Question
+		answer    string
+	)
 
 	if list == nil {
 		return errors.New("List of items can't be nil")
@@ -194,13 +198,15 @@ func Select(message string, list interface{}, selectedItem interface{}, pageSize
 }
 
 func Edit(message string, editableData interface{}) error {
-	var err error
+	var (
+		err error
 
-	var editableDataRValue reflect.Value
-	var editableDataAsBytes []byte
-	var editableDataAsString string
+		editableDataRValue   reflect.Value
+		editableDataAsBytes  []byte
+		editableDataAsString string
 
-	var prompt *survey.Editor
+		prompt *survey.Editor
+	)
 
 	if editableData == nil {
 		return errors.New("Editable data can't be nil")
@@ -228,11 +234,13 @@ func Edit(message string, editableData interface{}) error {
 	}
 
 	Validator := func(valueIn interface{}) error {
-		var editableDataTmpRValue reflect.Value
-		var editableDataTmp interface{}
-		var valueInAsString string
-		var tester data.Tester
-		var castOk bool
+		var (
+			editableDataTmpRValue reflect.Value
+			editableDataTmp       interface{}
+			valueInAsString       string
+			tester                data.Tester
+			castOk                bool
+		)
 
 		editableDataTmpRValue = reflect.New(editableDataRValue.Elem().Type())
 
@@ -281,9 +289,11 @@ func Edit(message string, editableData interface{}) error {
 }
 
 func ReadPassword(message string, validator func(interface{}) error) (string, error) {
-	var err error
-	var prompt *survey.Password
-	var password string
+	var (
+		err      error
+		prompt   *survey.Password
+		password string
+	)
 
 	prompt = &survey.Password{
 		Message: message,
@@ -302,9 +312,11 @@ func ReadPassword(message string, validator func(interface{}) error) (string, er
 }
 
 func AskYesNo(message string) (bool, error) {
-	var err error
-	var prompt *survey.Confirm
-	var answer bool
+	var (
+		err    error
+		prompt *survey.Confirm
+		answer bool
+	)
 
 	prompt = &survey.Confirm{
 		Message: message,

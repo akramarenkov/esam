@@ -293,7 +293,9 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 				subjectUser   data.User
 			)
 
-			var castOk bool
+			var (
+				castOk bool
+			)
 
 			if authContext == nil {
 				return false, errors.New("Auth context can't be nil")
@@ -528,7 +530,9 @@ func CheckUserDataAuthenticity(user *data.UserDB, usersList []data.UserDB, verif
 		}
 
 		if userTmp.UserSign.SignSubject.Equal(verifyKey) == false {
-			var userOfNewLevelFound bool
+			var (
+				userOfNewLevelFound bool
+			)
 
 			userOfNewLevelFound = false
 			for index := range usersList {

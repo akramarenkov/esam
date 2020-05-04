@@ -173,7 +173,9 @@ func TestNoticeType(noticeType string) error {
 }
 
 func TestMsgSubType(subType string) error {
-	var errReqType, errNoticeType error
+	var (
+		errReqType, errNoticeType error
+	)
 
 	errReqType = TestReqType(subType)
 	errNoticeType = TestNoticeType(subType)
@@ -190,7 +192,9 @@ func TestMsgSubType(subType string) error {
 }
 
 func (msgHeader *MsgHeader) Test() error {
-	var err error
+	var (
+		err error
+	)
 
 	err = TestMsgType(msgHeader.Type)
 	if err != nil {
@@ -218,7 +222,9 @@ func TestReqResultStatus(reqResultStatus string) error {
 }
 
 func (reqResult *ReqResult) Test() error {
-	var err error
+	var (
+		err error
+	)
 
 	err = TestReqResultStatus(reqResult.Status)
 	if err != nil {
@@ -229,8 +235,10 @@ func (reqResult *ReqResult) Test() error {
 }
 
 func ParseMsgHeader(jsonIn []byte, msgHeaderOut *MsgHeader) error {
-	var err error
-	var msgHeaderWrapper msgHeaderWrapper
+	var (
+		err              error
+		msgHeaderWrapper msgHeaderWrapper
+	)
 
 	err = json.Unmarshal(jsonIn, &msgHeaderWrapper)
 	if err != nil {
@@ -248,8 +256,10 @@ func ParseMsgHeader(jsonIn []byte, msgHeaderOut *MsgHeader) error {
 }
 
 func ParseReqResult(jsonIn []byte, reqResultOut *ReqResult) error {
-	var err error
-	var reqResultWrapper reqResultWrapper
+	var (
+		err              error
+		reqResultWrapper reqResultWrapper
+	)
 
 	err = json.Unmarshal(jsonIn, &reqResultWrapper)
 	if err != nil {
@@ -273,9 +283,11 @@ type simpleReply struct {
 }
 
 func BuildUnsupportedMsg() ([]byte, error) {
-	var err error
-	var reply []byte
-	var simpleReply simpleReply
+	var (
+		err         error
+		reply       []byte
+		simpleReply simpleReply
+	)
 
 	simpleReply.Reply = "Unsupported message"
 
@@ -298,9 +310,11 @@ Suitable for:
 */
 /* For parse request use ParseMsgHeader */
 func BuildSimpleReq(reqType string) ([]byte, error) {
-	var err error
-	var req []byte
-	var msgHeaderWrapper msgHeaderWrapper
+	var (
+		err              error
+		req              []byte
+		msgHeaderWrapper msgHeaderWrapper
+	)
 
 	err = TestReqType(reqType)
 	if err != nil {
@@ -340,9 +354,11 @@ type repReqResult struct {
 }
 
 func BuildSimpleRep(reqType string, reqResultIn *ReqResult) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repReqResult repReqResult
+	var (
+		err          error
+		rep          []byte
+		repReqResult repReqResult
+	)
 
 	err = TestReqType(reqType)
 	if err != nil {
@@ -372,9 +388,11 @@ func BuildSimpleRep(reqType string, reqResultIn *ReqResult) ([]byte, error) {
 
 /* For parse notice use ParseMsgHeader */
 func BuildNotice(noticeType string) ([]byte, error) {
-	var err error
-	var notice []byte
-	var msgHeaderWrapper msgHeaderWrapper
+	var (
+		err              error
+		notice           []byte
+		msgHeaderWrapper msgHeaderWrapper
+	)
 
 	err = TestNoticeType(noticeType)
 	if err != nil {

@@ -83,9 +83,11 @@ type reqAddUser struct {
 }
 
 func BuildReqAddUser(userIn *data.UserDB) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqAddUser reqAddUser
+	var (
+		err        error
+		req        []byte
+		reqAddUser reqAddUser
+	)
 
 	reqAddUser.MsgHeader.Type = MsgTypeRequest
 	reqAddUser.MsgHeader.SubType = ReqTypeAddUser
@@ -100,8 +102,10 @@ func BuildReqAddUser(userIn *data.UserDB) ([]byte, error) {
 }
 
 func ParseReqAddUser(jsonIn []byte, userOut *data.UserDB) error {
-	var err error
-	var reqAddUser reqAddUser
+	var (
+		err        error
+		reqAddUser reqAddUser
+	)
 
 	err = json.Unmarshal(jsonIn, &reqAddUser)
 	if err != nil {
@@ -134,9 +138,11 @@ type reqUpdateUser struct {
 }
 
 func BuildReqUpdateUser(esamPubKeyIn *data.ESAMPubKey, userIn *data.UserDB) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqUpdateUser reqUpdateUser
+	var (
+		err           error
+		req           []byte
+		reqUpdateUser reqUpdateUser
+	)
 
 	reqUpdateUser.MsgHeader.Type = MsgTypeRequest
 	reqUpdateUser.MsgHeader.SubType = ReqTypeUpdateUser
@@ -152,8 +158,10 @@ func BuildReqUpdateUser(esamPubKeyIn *data.ESAMPubKey, userIn *data.UserDB) ([]b
 }
 
 func ParseReqUpdateUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey, userOut *data.UserDB) error {
-	var err error
-	var reqUpdateUser reqUpdateUser
+	var (
+		err           error
+		reqUpdateUser reqUpdateUser
+	)
 
 	err = json.Unmarshal(jsonIn, &reqUpdateUser)
 	if err != nil {
@@ -188,9 +196,11 @@ type reqChangePassword struct {
 }
 
 func BuildReqChangePassword(password string, passwordHash string, passwordHashSign []byte) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqChangePassword reqChangePassword
+	var (
+		err               error
+		req               []byte
+		reqChangePassword reqChangePassword
+	)
 
 	reqChangePassword.MsgHeader.Type = MsgTypeRequest
 	reqChangePassword.MsgHeader.SubType = ReqTypeChangePassword
@@ -207,8 +217,10 @@ func BuildReqChangePassword(password string, passwordHash string, passwordHashSi
 }
 
 func ParseReqChangePassword(jsonIn []byte) (string, string, []byte, error) {
-	var err error
-	var reqChangePassword reqChangePassword
+	var (
+		err               error
+		reqChangePassword reqChangePassword
+	)
 
 	err = json.Unmarshal(jsonIn, &reqChangePassword)
 	if err != nil {
@@ -237,9 +249,11 @@ type reqListUsers struct {
 }
 
 func BuildReqListUsers(userFilterIn *data.User) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqListUsers reqListUsers
+	var (
+		err          error
+		req          []byte
+		reqListUsers reqListUsers
+	)
 
 	reqListUsers.MsgHeader.Type = MsgTypeRequest
 	reqListUsers.MsgHeader.SubType = ReqTypeListUsers
@@ -254,8 +268,10 @@ func BuildReqListUsers(userFilterIn *data.User) ([]byte, error) {
 }
 
 func ParseReqListUsers(jsonIn []byte, userFilterOut *data.User) error {
-	var err error
-	var reqListUsers reqListUsers
+	var (
+		err          error
+		reqListUsers reqListUsers
+	)
 
 	err = json.Unmarshal(jsonIn, &reqListUsers)
 	if err != nil {
@@ -284,9 +300,11 @@ type repListUsers struct {
 }
 
 func BuildRepListUsers(usersIn []data.UserDB) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repListUsers repListUsers
+	var (
+		err          error
+		rep          []byte
+		repListUsers repListUsers
+	)
 
 	repListUsers.MsgHeader.Type = MsgTypeReply
 	repListUsers.MsgHeader.SubType = ReqTypeListUsers
@@ -303,8 +321,10 @@ func BuildRepListUsers(usersIn []data.UserDB) ([]byte, error) {
 }
 
 func ParseRepListUsers(jsonIn []byte) ([]data.UserDB, error) {
-	var err error
-	var repListUsers repListUsers
+	var (
+		err          error
+		repListUsers repListUsers
+	)
 
 	err = json.Unmarshal(jsonIn, &repListUsers)
 	if err != nil {
@@ -340,9 +360,11 @@ type repGetAuthUserData struct {
 }
 
 func BuildRepGetAuthUserData(userIn *data.UserAuth) ([]byte, error) {
-	var err error
-	var rep []byte
-	var repGetAuthUserData repGetAuthUserData
+	var (
+		err                error
+		rep                []byte
+		repGetAuthUserData repGetAuthUserData
+	)
 
 	repGetAuthUserData.MsgHeader.Type = MsgTypeReply
 	repGetAuthUserData.MsgHeader.SubType = ReqTypeGetAuthUserData
@@ -359,8 +381,10 @@ func BuildRepGetAuthUserData(userIn *data.UserAuth) ([]byte, error) {
 }
 
 func ParseRepGetAuthUserData(jsonIn []byte, userOut *data.UserAuth) error {
-	var err error
-	var repGetAuthUserData repGetAuthUserData
+	var (
+		err                error
+		repGetAuthUserData repGetAuthUserData
+	)
 
 	err = json.Unmarshal(jsonIn, &repGetAuthUserData)
 	if err != nil {
@@ -395,9 +419,11 @@ type reqDelUser struct {
 }
 
 func BuildReqDelUser(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
-	var err error
-	var req []byte
-	var reqDelUser reqDelUser
+	var (
+		err        error
+		req        []byte
+		reqDelUser reqDelUser
+	)
 
 	reqDelUser.MsgHeader.Type = MsgTypeRequest
 	reqDelUser.MsgHeader.SubType = ReqTypeDelUser
@@ -412,8 +438,10 @@ func BuildReqDelUser(esamPubKeyIn *data.ESAMPubKey) ([]byte, error) {
 }
 
 func ParseReqDelUser(jsonIn []byte, esamPubKeyOut *data.ESAMPubKey) error {
-	var err error
-	var reqDelUser reqDelUser
+	var (
+		err        error
+		reqDelUser reqDelUser
+	)
 
 	err = json.Unmarshal(jsonIn, &reqDelUser)
 	if err != nil {

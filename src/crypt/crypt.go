@@ -35,7 +35,9 @@ const (
 )
 
 func GetMaxTextSizeByBits(bits int) (uint, error) {
-	var maxTextSize int
+	var (
+		maxTextSize int
+	)
 
 	maxTextSize = (bits / 8) - (2 * hashSize / 8) - (2)
 
@@ -47,11 +49,13 @@ func GetMaxTextSizeByBits(bits int) (uint, error) {
 }
 
 func GetMaxTextSizeByKey(keyIn interface{}) (uint, error) {
-	var keyReflectValue reflect.Value
-	var key *rsa.PrivateKey
-	var pubKey *rsa.PublicKey
-	var castOk bool
-	var maxTextSize int
+	var (
+		keyReflectValue reflect.Value
+		key             *rsa.PrivateKey
+		pubKey          *rsa.PublicKey
+		castOk          bool
+		maxTextSize     int
+	)
 
 	keyReflectValue = reflect.ValueOf(keyIn)
 
@@ -92,8 +96,10 @@ func GetMaxTextSizeByKey(keyIn interface{}) (uint, error) {
 }
 
 func GenKey(bits int) (*rsa.PrivateKey, error) {
-	var err error
-	var key *rsa.PrivateKey
+	var (
+		err error
+		key *rsa.PrivateKey
+	)
 
 	_, err = GetMaxTextSizeByBits(bits)
 	if err != nil {
@@ -109,9 +115,11 @@ func GenKey(bits int) (*rsa.PrivateKey, error) {
 }
 
 func Sign(data []byte, key *rsa.PrivateKey) ([]byte, error) {
-	var err error
-	var hash [sha512.Size]byte
-	var sing []byte
+	var (
+		err  error
+		hash [sha512.Size]byte
+		sing []byte
+	)
 
 	hash = sha512.Sum512(data)
 
@@ -124,8 +132,10 @@ func Sign(data []byte, key *rsa.PrivateKey) ([]byte, error) {
 }
 
 func Verify(data []byte, pubKey *rsa.PublicKey, sign []byte) error {
-	var err error
-	var hash [sha512.Size]byte
+	var (
+		err  error
+		hash [sha512.Size]byte
+	)
 
 	hash = sha512.Sum512(data)
 
@@ -138,8 +148,10 @@ func Verify(data []byte, pubKey *rsa.PublicKey, sign []byte) error {
 }
 
 func Encrypt(data []byte, pubKey *rsa.PublicKey) ([]byte, error) {
-	var err error
-	var encryptedData []byte
+	var (
+		err           error
+		encryptedData []byte
+	)
 
 	encryptedData, err = rsa.EncryptOAEP(sha512.New(), rand.Reader, pubKey, data, nil)
 	if err != nil {
@@ -150,8 +162,10 @@ func Encrypt(data []byte, pubKey *rsa.PublicKey) ([]byte, error) {
 }
 
 func Decrypt(data []byte, key *rsa.PrivateKey) ([]byte, error) {
-	var err error
-	var decryptedData []byte
+	var (
+		err           error
+		decryptedData []byte
+	)
 
 	decryptedData, err = rsa.DecryptOAEP(sha512.New(), rand.Reader, key, data, nil)
 	if err != nil {
@@ -162,8 +176,10 @@ func Decrypt(data []byte, key *rsa.PrivateKey) ([]byte, error) {
 }
 
 func RandBytes(quantity uint) ([]byte, error) {
-	var err error
-	var randBytes []byte
+	var (
+		err       error
+		randBytes []byte
+	)
 
 	if quantity == 0 {
 		return nil, errors.New("Requested quantity of random bytes was zero")
