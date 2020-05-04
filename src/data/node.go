@@ -211,9 +211,7 @@ func (node *NodeAuth) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (node *Node) Test(toleratesEmptyFields bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if node == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -232,9 +230,7 @@ func (node *Node) Test(toleratesEmptyFields bool) error {
 }
 
 func (node *NodeDB) Test() error {
-	var (
-		err error
-	)
+	var err error
 
 	if node == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -253,9 +249,7 @@ func (node *NodeDB) Test() error {
 }
 
 func (node *NodeAuth) Test(toleratesEmptyFields bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if node == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -325,9 +319,7 @@ func (node *NodeDB) Sign(key *rsa.PrivateKey) error {
 }
 
 func (node *NodeDB) Verify() error {
-	var (
-		err error
-	)
+	var err error
 
 	if node == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -356,9 +348,7 @@ func (node Node) String() string {
 }
 
 func (node *Node) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), node)
 	if err != nil {
@@ -383,9 +373,7 @@ func (node NodeAuth) String() string {
 }
 
 func (node *NodeAuth) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), node)
 	if err != nil {

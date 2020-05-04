@@ -36,9 +36,7 @@ import (
 )
 
 func PEMIsEncrypted(data []byte) (bool, error) {
-	var (
-		pemBlock *pem.Block
-	)
+	var pemBlock *pem.Block
 
 	pemBlock, _ = pem.Decode(data)
 	if pemBlock == nil {

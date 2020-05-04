@@ -174,7 +174,8 @@ func TestNoticeType(noticeType string) error {
 
 func TestMsgSubType(subType string) error {
 	var (
-		errReqType, errNoticeType error
+		errReqType    error
+		errNoticeType error
 	)
 
 	errReqType = TestReqType(subType)
@@ -192,9 +193,7 @@ func TestMsgSubType(subType string) error {
 }
 
 func (msgHeader *MsgHeader) Test() error {
-	var (
-		err error
-	)
+	var err error
 
 	err = TestMsgType(msgHeader.Type)
 	if err != nil {
@@ -222,9 +221,7 @@ func TestReqResultStatus(reqResultStatus string) error {
 }
 
 func (reqResult *ReqResult) Test() error {
-	var (
-		err error
-	)
+	var err error
 
 	err = TestReqResultStatus(reqResult.Status)
 	if err != nil {

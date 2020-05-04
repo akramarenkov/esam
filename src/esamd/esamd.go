@@ -448,9 +448,7 @@ func sessionsManager(ctx context.Context, globData *globDataType, wait *sync.Wai
 
 		case dataEvent = <-globData.DataEvents:
 			{
-				var (
-					dataNotice int
-				)
+				var dataNotice int
 
 				dataEventMap[time.Now()] = dataEvent
 				dataNotice = DataNoticeUnknown
@@ -664,9 +662,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 	reasonSendErrorReply = netapi.ReqResultReasonEmpty
 	connStartTime = time.Now()
 
-	var (
-		deferCloseConnNotRequired bool
-	)
+	var deferCloseConnNotRequired bool
 
 	closeConn := func() {
 		if !deferCloseConnNotRequired {
@@ -677,9 +673,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 	defer closeConn()
 
 	sendErrorReply := func() {
-		var (
-			err error
-		)
+		var err error
 
 		if requireSendErrorReply {
 			time.Sleep(opts.DelayBeforeSendErrorReplyInUnAuthConn - time.Since(connStartTime))
@@ -692,9 +686,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 	}
 
 	sendSuccessfulReply := func() {
-		var (
-			err error
-		)
+		var err error
 
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
@@ -883,9 +875,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 						return nil, errors.New("Unknown error")
 					}
 
-					var (
-						sessionData *sessionDataType = nil
-					)
+					var sessionData *sessionDataType = nil
 
 					sessionData, err = processAuth()
 					if err != nil {
@@ -958,9 +948,7 @@ func tlsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, 
 func udsConnHandler(ctx context.Context, conn net.Conn, globData *globDataType, wait *sync.WaitGroup) {
 	defer wait.Done()
 
-	var (
-		udsSessionData *sessionDataType = nil
-	)
+	var udsSessionData *sessionDataType = nil
 
 	udsSessionData = &sessionDataType{
 		AuthContext: &auth.Context{
@@ -1003,9 +991,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	)
 
 	sendErrorReply := func() {
-		var (
-			err error
-		)
+		var err error
 
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
@@ -1016,9 +1002,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendSuccessfulReply := func() {
-		var (
-			err error
-		)
+		var err error
 
 		if !requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
@@ -1029,9 +1013,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendNoop := func(netTimeout time.Duration) error {
-		var (
-			err error
-		)
+		var err error
 
 		msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
 		if err != nil {
@@ -1047,9 +1029,7 @@ func generalLoop(globData *globDataType, sessionData *sessionDataType) {
 	}
 
 	sendNotice := func(notice string, netTimeout time.Duration) error {
-		var (
-			err error
-		)
+		var err error
 
 		msgOut, err = netapi.BuildNotice(notice)
 		if err != nil {

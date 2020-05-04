@@ -41,9 +41,7 @@ const (
 )
 
 func PrintError(message string, err error, args ...interface{}) (int, error) {
-	var (
-		details string
-	)
+	var details string
 
 	details = fmt.Sprintf(". Details: %v\n", err)
 

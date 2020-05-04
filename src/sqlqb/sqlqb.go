@@ -40,7 +40,6 @@ type User struct {
 var (
  user User
  qb sqlqb.QB
-
 )
 
 user = User{"somekey", "somename", "somerole"}

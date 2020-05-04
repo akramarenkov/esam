@@ -142,9 +142,7 @@ func (accessReq *AccessReq) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (accessReq *AccessReq) Test(toleratesEmptyFields bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if accessReq == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -202,9 +200,7 @@ func (accessReq AccessReq) String() string {
 }
 
 func (accessReq *AccessReq) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), accessReq)
 	if err != nil {
@@ -229,9 +225,7 @@ func (accessReq AccessReqDB) String() string {
 }
 
 func (accessReq *AccessReqDB) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), accessReq)
 	if err != nil {

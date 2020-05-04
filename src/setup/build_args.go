@@ -89,9 +89,7 @@ func buildArgs(structIn interface{}) ([]string, error) {
 								}
 							} else {
 								for jndex := 0; jndex < fieldRV.Len(); jndex++ {
-									var (
-										fieldSubValue string
-									)
+									var fieldSubValue string
 
 									fieldSubValue = fieldRV.Index(jndex).String()
 

@@ -35,9 +35,7 @@ const (
 )
 
 func GetMaxTextSizeByBits(bits int) (uint, error) {
-	var (
-		maxTextSize int
-	)
+	var maxTextSize int
 
 	maxTextSize = (bits / 8) - (2 * hashSize / 8) - (2)
 

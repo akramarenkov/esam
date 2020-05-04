@@ -177,9 +177,7 @@ func signStruct(structData interface{}, structSign interface{}, key *rsa.Private
 			}
 		}
 
-		var (
-			fieldData []byte
-		)
+		var fieldData []byte
 
 		fieldData = nil
 		if structDataField.Name == ESAMPubKeyFieldName {
@@ -347,9 +345,7 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 			return errors.New("Not matching found between data field and sign field")
 		}
 
-		var (
-			fieldData []byte
-		)
+		var fieldData []byte
 
 		fieldData = nil
 		if structDataField.Name == ESAMPubKeyFieldName {
@@ -379,9 +375,7 @@ func verifyStruct(structData interface{}, structSign interface{}, selfSignedFiel
 		}
 
 		if fieldData != nil {
-			var (
-				verifyAsWellAsSelfSigned bool
-			)
+			var verifyAsWellAsSelfSigned bool
 
 			verifyAsWellAsSelfSigned = false
 

@@ -291,9 +291,7 @@ func CheckSubjectAccessRights(authContext *Context, newObject interface{}, oldOb
 				newObjectUser data.UserDB
 				oldObjectUser data.UserDB
 				subjectUser   data.User
-			)
 
-			var (
 				castOk bool
 			)
 
@@ -530,9 +528,7 @@ func CheckUserDataAuthenticity(user *data.UserDB, usersList []data.UserDB, verif
 		}
 
 		if userTmp.UserSign.SignSubject.Equal(verifyKey) == false {
-			var (
-				userOfNewLevelFound bool
-			)
+			var userOfNewLevelFound bool
 
 			userOfNewLevelFound = false
 			for index := range usersList {

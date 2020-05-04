@@ -764,9 +764,7 @@ func udsAskPassword(udsPath string) (string, error) {
 		)
 
 		sendErrorReply := func(reason string) {
-			var (
-				err error
-			)
+			var err error
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reason})
 			if err == nil {
@@ -775,9 +773,7 @@ func udsAskPassword(udsPath string) (string, error) {
 		}
 
 		sendSuccessfulReply := func() {
-			var (
-				err error
-			)
+			var err error
 
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusSuccessful, netapi.ReqResultReasonEmpty})
 			if err == nil {
@@ -885,6 +881,7 @@ func udsLoop(ctx context.Context, listener net.Listener, dirConnSettings *data.D
 		udsConn  net.Conn
 		waitConn sync.WaitGroup
 	)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -927,9 +924,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 	)
 
 	sendErrorReply := func() {
-		var (
-			err error
-		)
+		var err error
 
 		if requireSendErrorReply {
 			msgOut, err = netapi.BuildSimpleRep(msgInHeader.SubType, &netapi.ReqResult{netapi.ReqResultStatusFailed, reasonSendErrorReply})
@@ -1027,9 +1022,7 @@ func udsConnHandler(ctx context.Context, conn net.Conn, dirConnSettings *data.Di
 								processGetDirConnSettings := func() error {
 									defer sendErrorReply()
 
-									var (
-										err error
-									)
+									var err error
 
 									msgOut, err = netapi.BuildRepGetDirConnSettings(dirConnSettings)
 									if err != nil {
@@ -1208,6 +1201,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 						msgOut      []byte
 						msgInHeader netapi.MsgHeader
 					)
+
 					sendReqListUsers := func(netTimeout time.Duration) error {
 						var (
 							err        error
@@ -1247,9 +1241,7 @@ func dirConnLoop(ctx context.Context, loginContext *login.Context, authUserCache
 					}
 
 					sendNoop := func(netTimeout time.Duration) error {
-						var (
-							err error
-						)
+						var err error
 
 						msgOut, err = netapi.BuildNotice(netapi.NoticeTypeNoop)
 						if err != nil {
@@ -1745,9 +1737,7 @@ func addUserHandler(c *cli.Context) error {
 	}
 
 	if setPassword {
-		var (
-			userPassword string
-		)
+		var userPassword string
 
 		userPassword, err = ui.ReadPassword("Enter a password:", misc.PasswordValidator)
 		if err != nil {
@@ -1860,9 +1850,7 @@ func updateUserHandler(c *cli.Context) error {
 	}
 
 	if setPassword {
-		var (
-			userPassword string
-		)
+		var userPassword string
 
 		userPassword, err = ui.ReadPassword("Enter a password:", misc.PasswordValidator)
 		if err != nil {
@@ -2553,9 +2541,7 @@ func connectToDirectorOnOneTry(udsPath string, dirUDSPath string) (net.Conn, *lo
 			return nil, nil, err
 		}
 	} else {
-		var (
-			dirConnSettings data.DirConnSettings
-		)
+		var dirConnSettings data.DirConnSettings
 
 		getDirConnSettings := func() error {
 			var (

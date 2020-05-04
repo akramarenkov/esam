@@ -90,9 +90,7 @@ func ListNames() ([]string, error) {
 }
 
 func ValidateName(name string) error {
-	var (
-		nameAsRunes []rune
-	)
+	var nameAsRunes []rune
 
 	nameAsRunes = []rune(name)
 
@@ -105,9 +103,7 @@ func ValidateName(name string) error {
 	}
 
 	for _, char := range nameAsRunes {
-		var (
-			charIsValid bool
-		)
+		var charIsValid bool
 
 		for _, validChar := range validUserNameCharacters {
 			if char == validChar {

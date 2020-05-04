@@ -129,9 +129,7 @@ func (user *User) TestState(toleratesEmptyFields bool) error {
 }
 
 func TemplateRoles() string {
-	var (
-		roles []string
-	)
+	var roles []string
 
 	roles = make([]string, 0)
 
@@ -145,9 +143,7 @@ func TemplateRoles() string {
 }
 
 func TemplateStates() string {
-	var (
-		states []string
-	)
+	var states []string
 
 	states = make([]string, 0)
 
@@ -317,9 +313,7 @@ func (user *UserAuth) Normalize(toleratesEmptyFields bool) error {
 }
 
 func (user *User) Test(toleratesEmptyFields bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -359,9 +353,7 @@ func (user *User) Test(toleratesEmptyFields bool) error {
 }
 
 func (user *UserDB) Test() error {
-	var (
-		err error
-	)
+	var err error
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -380,9 +372,7 @@ func (user *UserDB) Test() error {
 }
 
 func (user *UserAuth) Test(toleratesEmptyFields bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -452,9 +442,7 @@ func (user *UserDB) Sign(key *rsa.PrivateKey, selfSignedFields map[string]bool) 
 }
 
 func (user *UserDB) Verify(selfSignedFields map[string]bool) error {
-	var (
-		err error
-	)
+	var err error
 
 	if user == nil {
 		return errors.New("Struct pointer can't be nil")
@@ -550,9 +538,7 @@ func (user User) String() string {
 }
 
 func (user *User) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), user)
 	if err != nil {
@@ -577,9 +563,7 @@ func (user UserAuth) String() string {
 }
 
 func (user *UserAuth) FromString(data string) error {
-	var (
-		err error
-	)
+	var err error
 
 	err = yaml.Unmarshal([]byte(data), user)
 	if err != nil {

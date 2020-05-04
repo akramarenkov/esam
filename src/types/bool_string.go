@@ -55,9 +55,7 @@ func TestBoolString(boolString string, toleratesEmptyFields bool) error {
 }
 
 func TemplateBoolString() string {
-	var (
-		list []string
-	)
+	var list []string
 
 	list = make([]string, 0)
 

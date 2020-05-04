@@ -108,9 +108,7 @@ func (cache *UserAuth) ToFile() error {
 func (cache *UserAuth) Update(usersListDB []data.UserDB, userESAMPubKey *data.ESAMPubKey, verifyKey *data.ESAMPubKey) error {
 	var (
 		err error
-	)
 
-	var (
 		keyMatchesNumber int
 		targetUserIndex  int
 		trustedData      bool
@@ -145,9 +143,7 @@ func (cache *UserAuth) Update(usersListDB []data.UserDB, userESAMPubKey *data.ES
 }
 
 func (cache *UserAuth) Get() data.UserAuth {
-	var (
-		user data.UserAuth
-	)
+	var user data.UserAuth
 
 	cache.mutex.RLock()
 	user = cache.user

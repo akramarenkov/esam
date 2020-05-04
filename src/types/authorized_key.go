@@ -85,9 +85,7 @@ func (key *AuthorizedKey) FromBlock(block []byte) ([]byte, error) {
 }
 
 func (key *AuthorizedKey) FromString(stringIn string) error {
-	var (
-		err error
-	)
+	var err error
 
 	_, err = key.FromBlock([]byte(stringIn))
 	if err != nil {
@@ -98,9 +96,7 @@ func (key *AuthorizedKey) FromString(stringIn string) error {
 }
 
 func (key *AuthorizedKey) String() string {
-	var (
-		out string
-	)
+	var out string
 
 	for index := range key.Options {
 		if key.Options[index] != "" {
@@ -132,9 +128,7 @@ func (key *AuthorizedKey) String() string {
 }
 
 func (key *AuthorizedKey) Normalize() error {
-	var (
-		err error
-	)
+	var err error
 
 	err = key.FromString(key.String())
 	if err != nil {
@@ -222,9 +216,7 @@ func AuthorizedKeysFromFile(file *os.File) ([]AuthorizedKey, error) {
 }
 
 func AuthorizedKeysToFile(file *os.File, keys []AuthorizedKey) error {
-	var (
-		err error
-	)
+	var err error
 
 	for index := range keys {
 		_, err = file.Write([]byte(keys[index].String() + "\n"))

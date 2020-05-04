@@ -408,9 +408,7 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 	fmt.Printf("%v\n", users)
 
 	for _, user := range users {
-		var (
-			userFilter data.User
-		)
+		var userFilter data.User
 
 		userFilter.ESAMPubKey = user.ESAMPubKey
 
@@ -659,9 +657,7 @@ MFfEXB9N1YZ41wRkysdeNGGewceP9K5Q3K+Szu3gaBsqNiOluJZ7tAW2XyAWTtPv
 	fmt.Printf("%v\n", nodes)
 
 	for _, node := range nodes {
-		var (
-			nodeFilter data.Node
-		)
+		var nodeFilter data.Node
 
 		nodeFilter.ESAMPubKey = node.ESAMPubKey
 
