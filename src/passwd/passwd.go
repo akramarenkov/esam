@@ -26,7 +26,7 @@ import (
 )
 
 import (
-	crypt "github.com/nathanaelle/password"
+	crypt "github.com/nathanaelle/password/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
